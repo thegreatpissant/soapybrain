@@ -10,6 +10,7 @@
 #include "charset.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #define GWH 800
  
 
@@ -37,7 +38,7 @@ GLfloat jump = 2.0f;
 GLfloat cubeposx = 0.0f;
 GLfloat cubeposy = 0.0f;
 GLfloat cubeposz = 0.0f;
-
+GLfloat rot = 0;
 GLubyte fly [] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x03, 0x80, 0x01, 0xC0, 0x06, 0xC0, 0x03, 0x60,
@@ -171,14 +172,14 @@ void MainMenuDisplay(void)
   glPushMatrix ();
   {
 
-    //    glTranslatef (-xcord, -ycord, -zcord);
+    //    glTranslatef ( 0.0f, 0.0f, 20.0f);
     if (rotate_obj)
       {
 	glRotatef (yrotate, 1.0, 0.0, 0.0);
-	glRotatef (xrotate, 0.0, 1.0, 0.0);
+	glRotatef (rot, 0.0, 1.0, 0.0);
       }
     //  glPushMatrix(); {
-      glTranslatef (-xcord, -ycord, -zcord);
+    //   glTranslatef (-xcord, -ycord, -zcord);
       int numCubesX = 0;
       int numCubesY = 0;
       int numCubesZ = 0;
@@ -188,6 +189,7 @@ void MainMenuDisplay(void)
       GLfloat tcubeposx = 0;
       GLfloat tcubeposy = 0;
       GLfloat tcubeposz = 0;
+      //      glScalef (-7.0f, -7.0f, -7.0f);
       for (numCubesZ = 0; numCubesZ < maxCubes; numCubesZ += 1, tcubeposz += jump)
 	{
 	  for (numCubesY = 0; numCubesY < maxCubes; numCubesY += 1, tcubeposy += jump)
@@ -197,7 +199,9 @@ void MainMenuDisplay(void)
 		  glPushMatrix ();
 		  {
 		    glTranslatef (tcubeposx, tcubeposy, tcubeposz);
+		    //drawMan();
 		    drawCube ();
+		    //glutWireTeapot (2.0f);
 		  } glPopMatrix ();
 		}
 	      tcubeposx = 0;
@@ -262,7 +266,6 @@ void drawMan ()
     glDrawElements (GL_LINES, 2, GL_UNSIGNED_BYTE, &(manIndicies[8]));
     //  glDrawElements (GL_LINE_LOOP, 4, GL_UNSIGNED_BYTE, &(manIndicies[10]));  glPopMatrix();
     glTranslatef (ManVertexArray3[0]-1.0f, ManVertexArray3[1], ManVertexArray3[2]-1.0f);
-    glScalef (2.0f, 2.0f, 2.0f);
     drawCube ();
   }  glPopMatrix ();
 }
@@ -272,13 +275,15 @@ void drawCube ()
   //  Cube
   glVertexPointer (3, GL_FLOAT, 0, cubeVertexArray);
   glColorPointer  (3, GL_FLOAT, 0, cubeColorArray);
+  GLenum objType = GL_POINTS;
+  //  GLenum objType = GL_LINE_LOOP;
   glPushMatrix(); {
-    glDrawElements (GL_POLYGON, 4, GL_UNSIGNED_BYTE, cubefront);
-    glDrawElements (GL_POLYGON, 4, GL_UNSIGNED_BYTE, cuberight);
-    glDrawElements (GL_POLYGON, 4, GL_UNSIGNED_BYTE, cubeback);
-    glDrawElements (GL_POLYGON, 4, GL_UNSIGNED_BYTE, cubeleft);
-    glDrawElements (GL_POLYGON, 4, GL_UNSIGNED_BYTE, cubetop);
-    glDrawElements (GL_POLYGON, 4, GL_UNSIGNED_BYTE, cubebottom);
+    glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubefront);
+    glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cuberight);
+    glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubeback);
+    glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubeleft);
+    glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubetop);
+    glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubebottom);
   }  glPopMatrix();
 }
 
@@ -316,7 +321,9 @@ void reshape (int w, int h)
   glLoadIdentity ();
   //  gluOrtho2D (-(0.5f*w), (GLdouble) 0.5f*w, -(0.5f*h), (GLdouble) 0.5*h);
   //  gluOrtho2D (-10.0f, 10.0f, -10.0f, 10.0f);
-  glOrtho    ( -50.0f, 50.0f, -50.0f, 50.0f, -50.0f, 50.0f);
+  glOrtho    ( -150.0f, 150.0f, -150.0f, 150.0f, -150.0f, 150.0f);
+  glMatrixMode (GL_MODELVIEW);
+  glLoadIdentity ();
 } 
 
 
@@ -324,7 +331,7 @@ void keyboard_char (unsigned char key, int x, int y);
 void keyboard_special (int key, int x, int y);
 void mouse( int button, int state, int x, int y);
 void motion_function (int x, int y);
-
+void idlefunction ();
 int main (int argc, char ** argv)
 {
   glutInit(&argc, argv);
@@ -343,10 +350,20 @@ int main (int argc, char ** argv)
   glutSpecialFunc(keyboard_special);
   glutMotionFunc (motion_function);
   glutMouseFunc(mouse);
+  glutIdleFunc(idlefunction);
   glutMainLoop();
   return 0;
 }
 
+void idlefunction () 
+{
+	usleep (20);
+	rot += 0.1;
+	if (rot == 360)
+	  rot = 0;
+  glutPostRedisplay();		
+	
+}
 /*
  * 	Mouse Events.
  */
@@ -354,10 +371,10 @@ void motion_function (int x, int y)
 {
   if (rotate_obj == true)
     {
-      printf ("x %d, y %d\n", x,y);
+      //      printf ("x %d, y %d\n", x,y);
       xrotate = x - xmouse_press;
       yrotate = y - ymouse_press;
-      printf ("xrotate: %f, yrotate: %f \n", xrotate,yrotate);
+      //  printf ("xrotate: %f, yrotate: %f \n", xrotate,yrotate);
     }
   glutPostRedisplay();		
 }
@@ -452,6 +469,7 @@ void keyboard_char (unsigned char key, int x, int y)
     break;
   case 'C':
     maxCubes += 1;
+    printf ("Maxcubes : %d\n",maxCubes);
     initCords ();
     break;
   case 'c':
