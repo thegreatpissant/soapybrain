@@ -16,7 +16,7 @@
 
 #define XCORD 0.0
 #define YCORD 0.0
-#define ZCORD 0.0
+#define ZCORD -50.0
 GLfloat xcord = XCORD, ycord = YCORD, zcord = ZCORD;
 void initCords ();
 GLfloat wcord = 1.0f;
@@ -169,14 +169,14 @@ void MainMenuDisplay(void)
  */
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glLoadIdentity();
+    glTranslatef ( xcord, ycord, zcord);
   glPushMatrix ();
   {
-
-    //    glTranslatef ( 0.0f, 0.0f, 20.0f);
     if (rotate_obj)
       {
 	glRotatef (yrotate, 1.0, 0.0, 0.0);
-	glRotatef (rot, 0.0, 1.0, 0.0);
+	glRotatef (xrotate, 0.0, 1.0, 0.0);
       }
     //  glPushMatrix(); {
     //   glTranslatef (-xcord, -ycord, -zcord);
@@ -200,8 +200,10 @@ void MainMenuDisplay(void)
 		  {
 		    glTranslatef (tcubeposx, tcubeposy, tcubeposz);
 		    //drawMan();
-		    drawCube ();
+		    //drawCube ();
 		    //glutWireTeapot (2.0f);
+		    glCallList (1);
+		    //		    drawMan ();
 		  } glPopMatrix ();
 		}
 	      tcubeposx = 0;
@@ -219,7 +221,8 @@ void MainMenuDisplay(void)
     //  glutWireTorus( 3.0f , 10.0f, 60, 60 );
     //  glLineStipple (1, 0x0101);
   } glPopMatrix();
-  glFinish();
+  //glFinish();
+  glFlush();
   glutSwapBuffers();
 }
 void drawAxis ()
@@ -275,8 +278,9 @@ void drawCube ()
   //  Cube
   glVertexPointer (3, GL_FLOAT, 0, cubeVertexArray);
   glColorPointer  (3, GL_FLOAT, 0, cubeColorArray);
-  GLenum objType = GL_POINTS;
+  //  GLenum objType = GL_POINTS;
   //  GLenum objType = GL_LINE_LOOP;
+  GLenum objType = GL_QUADS;
   glPushMatrix(); {
     glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubefront);
     glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cuberight);
@@ -286,7 +290,12 @@ void drawCube ()
     glDrawElements (objType, 4, GL_UNSIGNED_BYTE, cubebottom);
   }  glPopMatrix();
 }
-
+void init_viewList()
+{
+  glNewList (1, GL_COMPILE);
+  drawCube ();
+  glEndList ();
+}
 
 /*
  * Whole view for the entire Window.
@@ -297,31 +306,26 @@ void init_view(void)
   glShadeModel(GL_SMOOTH);
   glEnableClientState (GL_VERTEX_ARRAY);
   glEnableClientState (GL_COLOR_ARRAY);
+  glEnable (GL_DEPTH_TEST);
   glPointSize (0.0f);
-  //  glEnable(GL_LINE_STIPPLE);
-  glPolygonMode (GL_FRONT, GL_FILL);
-  glPolygonMode (GL_BACK,  GL_LINE);
+  glPolygonMode (GL_BACK, GL_LINE);
+  //  glPolygonMode (GL_BACK,  GL_FILL);
   glFrontFace (GL_CCW);
   glEnable (GL_CULL_FACE);
-  glCullFace (GL_BACK);
-  initCords ();
-
+  glCullFace (GL_FRONT|GL_BACK);
+  init_viewList();
 }
 
-void initCords ()
-{
-  xcord = maxCubes*jump/2.0f;
-  ycord = xcord;
-  zcord = ycord;
-}
 void reshape (int w, int h)
 {
   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+  //  glViewport (w/2, h, (GLsizei) w, (GLsizei) h);
   glMatrixMode (GL_PROJECTION);
   glLoadIdentity ();
   //  gluOrtho2D (-(0.5f*w), (GLdouble) 0.5f*w, -(0.5f*h), (GLdouble) 0.5*h);
   //  gluOrtho2D (-10.0f, 10.0f, -10.0f, 10.0f);
-  glOrtho    ( -150.0f, 150.0f, -150.0f, 150.0f, -150.0f, 150.0f);
+  gluPerspective (60, 1.0, 1.5, 150.0);
+  //  glOrtho    ( -150.0f, 150.0f, -150.0f, 150.0f, -150.0f, 150.0f);
   glMatrixMode (GL_MODELVIEW);
   glLoadIdentity ();
 } 
@@ -332,6 +336,7 @@ void keyboard_special (int key, int x, int y);
 void mouse( int button, int state, int x, int y);
 void motion_function (int x, int y);
 void idlefunction ();
+void init_viewList();
 int main (int argc, char ** argv)
 {
   glutInit(&argc, argv);
@@ -343,6 +348,7 @@ int main (int argc, char ** argv)
   glutInitWindowPosition(200, 100);
   //  Create new window.
   glutCreateWindow("One");
+
   init_view();
   glutDisplayFunc(MainMenuDisplay);
   glutReshapeFunc (reshape);
@@ -351,16 +357,16 @@ int main (int argc, char ** argv)
   glutMotionFunc (motion_function);
   glutMouseFunc(mouse);
   glutIdleFunc(idlefunction);
+
   glutMainLoop();
   return 0;
 }
-
 void idlefunction () 
 {
 	usleep (20);
-	rot += 0.1;
-	if (rot == 360)
-	  rot = 0;
+	//	xrotate += 0.1;
+	if (xrotate == 360)
+	  xrotate = 0;
   glutPostRedisplay();		
 	
 }
@@ -408,29 +414,25 @@ void keyboard_special (int key, int x, int y)
 {
   switch(key) {
   case GLUT_KEY_DOWN :
-    zcord += move_delta;
-    initCords ();
+    zcord += 2.0;
 #ifdef DEBUG_KEYS
     printf("Down\n");
 #endif
     break;
   case GLUT_KEY_UP :
-    zcord -= move_delta;
-    initCords ();
+    zcord -= 2.0;
 #ifdef DEBUG_KEYS
     printf("Up\n");
 #endif
     break;
   case GLUT_KEY_LEFT:
     xcord -= move_delta;
-    initCords ();
 #ifdef DEBUG_KEYS
     printf ("Key up\n");
 #endif
     break;
   case GLUT_KEY_RIGHT:
     xcord += move_delta;
-    initCords ();
 #ifdef DEBUG_KEYS
     printf ("Key right\n");
 #endif
@@ -470,33 +472,26 @@ void keyboard_char (unsigned char key, int x, int y)
   case 'C':
     maxCubes += 1;
     printf ("Maxcubes : %d\n",maxCubes);
-    initCords ();
     break;
   case 'c':
     maxCubes -= 1;
     if (maxCubes < 1)
       maxCubes = 1;
-    initCords ();
     break;
   case 'a': // left
     xcord -= move_delta;
-    initCords ();
     break;
   case 'd': // right
     xcord += move_delta;
-    initCords ();
     break;
   case 'w': // 2D UP
     ycord += move_delta;
-    initCords ();
     break;
   case 's': // 2D DOWN
     ycord -= move_delta;
-    initCords ();
     break;
   case 'r': // Reset cords
     xcord = XCORD, ycord = YCORD, zcord = ZCORD;    
-    initCords ();
     yrotate = 0.0f; xrotate = 0.0f;
     jump = 2;
     break;
