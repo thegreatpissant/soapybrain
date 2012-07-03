@@ -1,6 +1,7 @@
 /*
   Includes
 */
+// This is the planets example.
 
 #include <GL/gl.h>
 #include <X11/Xlib.h>
