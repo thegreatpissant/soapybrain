@@ -39,6 +39,13 @@ GLfloat cubeposx = 0.0f;
 GLfloat cubeposy = 0.0f;
 GLfloat cubeposz = 0.0f;
 GLfloat rot = 0;
+GLfloat xScale = 5.0f;
+GLfloat shoulderAngle = 0.0f;
+#define MAXSHOULDERANGLE 90
+#define MINSHOULDERANGLE -90
+GLfloat elbowAngle    = 0.0f;
+#define MAXELBOWANGLE 0
+#define MINELBOWANGLE -135
 GLubyte fly [] = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x03, 0x80, 0x01, 0xC0, 0x06, 0xC0, 0x03, 0x60,
@@ -120,7 +127,7 @@ GLfloat manColorArray[] = {
   1.0f, 0.0f, 0.0f
 };
 
-
+/*
 GLfloat cubeVertexArray [] = {
   0.0f, 0.0f, 1.0f,  // 0
   1.0f, 0.0f, 1.0f,  // 1
@@ -130,6 +137,17 @@ GLfloat cubeVertexArray [] = {
   1.0f, 0.0f, 0.0f,  // 5
   1.0f, 1.0f, 0.0f,  // 6
   0.0f, 1.0f, 0.0f  // 7
+};
+*/
+GLfloat cubeVertexArray [] = {
+  -0.5f,-0.5f, 0.5f,  // 0
+  0.5f, -0.5f, 0.5f,  // 1
+  0.5f, 0.5f, 0.5f,  // 2
+  -0.5f, 0.5f, 0.5f,  // 3
+  -0.5f, -0.5f, -0.5f,   // 4
+  0.5f, -0.5f, -0.5f,  // 5
+  0.5f, 0.5f, -0.5f,  // 6
+  -0.5f, 0.5f, -0.5f  // 7
 };
 
 GLfloat houseVertexArray[] = {
@@ -171,7 +189,7 @@ void MainMenuDisplay(void)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
     glTranslatef ( xcord, ycord, zcord);
-  glPushMatrix ();
+    /*  glPushMatrix ();
   {
     if (rotate_obj)
       {
@@ -221,6 +239,25 @@ void MainMenuDisplay(void)
     //  glutWireTorus( 3.0f , 10.0f, 60, 60 );
     //  glLineStipple (1, 0x0101);
   } glPopMatrix();
+    */
+    glPushMatrix ();
+    {
+      glRotatef (shoulderAngle,0,0,1);
+      glTranslatef (2.5, 0, 0);
+      glPushMatrix(); {
+	glScalef (xScale, 1, 1);
+	drawCube ();
+      } glPopMatrix();
+      glTranslatef (2.5, 0, 0);
+      glPushMatrix (); {
+	glRotatef (elbowAngle, 0, 0, 1);
+	glTranslatef (2.5, 0, 0);
+	glPushMatrix (); {
+	  glScalef (xScale, 1, 1);
+	  drawCube ();
+	} glPopMatrix ();
+      } glPopMatrix ();
+    } glPopMatrix ();
   //glFinish();
   glFlush();
   glutSwapBuffers();
@@ -361,14 +398,51 @@ int main (int argc, char ** argv)
   glutMainLoop();
   return 0;
 }
+
+int shoulderClose = 0;
+int elbowClose = 0;
+
 void idlefunction () 
 {
-	usleep (20);
+	usleep (2000);
 	//	xrotate += 0.1;
-	if (xrotate == 360)
-	  xrotate = 0;
-  glutPostRedisplay();		
+	GLfloat rotDelta = 0.5;
+	if (shoulderClose == 1) 
+	  {
+	    shoulderAngle += rotDelta;
+	  }
+	else  //  shoulderClose == 0
+	  {
+	    shoulderAngle -= rotDelta;
+	  }
+
+	if (shoulderAngle > MAXSHOULDERANGLE)
+	  {
+	    shoulderClose = 0;
+	  }
+	else if (shoulderAngle < MINSHOULDERANGLE)
+	  {
+	    shoulderClose = 1;
+	  }
 	
+	if (elbowClose == 1) 
+	  {
+	    elbowAngle += rotDelta;
+	  }
+	else  //  elbowClose == 0
+	  {
+	    elbowAngle -= rotDelta;
+	  }
+
+	if (elbowAngle > MAXELBOWANGLE)
+	  {
+	    elbowClose = 0;
+	  }
+	else if (elbowAngle < MINELBOWANGLE)
+	  {
+	    elbowClose = 1;
+	  }
+  glutPostRedisplay();		
 }
 /*
  * 	Mouse Events.
@@ -500,6 +574,14 @@ void keyboard_char (unsigned char key, int x, int y)
     break;
   case 'j': // decrease our jump
     jump -= 0.1;
+    break;
+  case 'i': // decrease scale
+    xScale -= 0.5;
+    printf ("Scale is now %f\n", xScale);
+    break;
+  case 'I': // Increase scale
+    xScale += 0.5;
+    printf ("Scale is now %f\n", xScale);
     break;
   case 49: 
     break;

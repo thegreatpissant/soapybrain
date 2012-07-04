@@ -9,11 +9,14 @@ void init ()
 
 void display ()
 {
+
   glClear (GL_COLOR_BUFFER_BIT);
   glColor3f (1.0, 1.0, 1.0);
   glLoadIdentity ();
   // Viewing Transformation
   gluLookAt (0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+  glTranslatef ( 0, 0, 10);
+
   glScalef (1.0, 2.0, 1.0);
   glutWireCube (1.0);
   
