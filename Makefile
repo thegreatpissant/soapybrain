@@ -6,7 +6,7 @@ TEST_EXECS =
 OBJ_FILES = 
 EDITOR_MESS = *~ \#*
 
-all: chapterone chapterthree planets
+all: $(ALL_EXECS)
 
 chapterone: chapterone.cc
 	gcc $(DEBUG_FLAG) -I. -lGL -lglut -lGLU -o chapterone chapterone.cc
