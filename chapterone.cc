@@ -189,7 +189,7 @@ void MainMenuDisplay(void)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
     glTranslatef ( xcord, ycord, zcord);
-    /*  glPushMatrix ();
+    glPushMatrix ();
   {
     if (rotate_obj)
       {
@@ -239,7 +239,7 @@ void MainMenuDisplay(void)
     //  glutWireTorus( 3.0f , 10.0f, 60, 60 );
     //  glLineStipple (1, 0x0101);
   } glPopMatrix();
-    */
+    /*
     glPushMatrix ();
     {
       glRotatef (shoulderAngle,0,0,1);
@@ -258,6 +258,7 @@ void MainMenuDisplay(void)
 	} glPopMatrix ();
       } glPopMatrix ();
     } glPopMatrix ();
+*/
   //glFinish();
   glFlush();
   glutSwapBuffers();
