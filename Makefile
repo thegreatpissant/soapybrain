@@ -1,7 +1,7 @@
 makefile:
 
-TEST_EXECS = 
 ALL_EXECS = chapterone chapterthree planets
+TEST_EXECS = 
 OBJ_FILES = 
 EDITOR_MESS = *~ \#*
 
