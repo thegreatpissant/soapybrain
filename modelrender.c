@@ -7,17 +7,31 @@
 #include <GL/glut.h>
 #include <GL/freeglut_ext.h>
 #include <X11/Xlib.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define GWH 800
+
+void glut_display_func (void)
+{
+  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glLoadIdentity ();
+
+
+  glEnd ();
+  glutSwapBuffers ();
+}
 
 void  init_view () 
 {
   glClearColor (0.0, 0.0, 0.0, 1.0);
   glShadeModel (GL_SMOOTH);
-  glEnagle (GL_DEPTH_TEST);
+  glEnable (GL_DEPTH_TEST);
 }
 
 void glut_reshape_func (int w, int h)
 {
-  glViewPort (0, 0, (GLsizei) w, (GLsizei) h);
+  glViewport (0, 0, (GLsizei) w, (GLsizei) h);
   glMatrixMode (GL_PROJECTION);
   glLoadIdentity ();
   gluPerspective (60, 1.0, 0.5, 120);
@@ -36,10 +50,25 @@ void glut_idle_func ()
 int main (int argc, char ** argv)
 {
 
+  if (argc <= 1)
+    {
+      fprintf (stderr, "File name not specified\n");
+      exit (EXIT_FAILURE);
+    }
+  FILE * md5mesh_file;
+  md5mesh_file = fopen (argv[1], "r");
+  if (md5mesh_file == NULL)
+    {
+      fprintf (stderr, "Opening file \"%s\", failed\n", argv[1]);
+      exit (EXIT_FAILURE);
+    }
+  pskeleton mySkeleton;
+  mySkeleton = md5mesh_loadfile (md5mesh_file);
+      
   glutInit (&argc, argv);
   glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
   glutInitWindowSize (GWH, GWH);
-  glutInitWinodwPosition (200, 100);
+  glutInitWindowPosition (200, 100);
   
   int window = glutCreateWindow ("Model Render");
   init_view();

@@ -1,6 +1,6 @@
 makefile:
 
-DEBUG_FLAG = -g
+DEBUG_FLAG = -g -Wall
 ALL_EXECS = chapterone chapterthree planets modelrender
 TEST_EXECS = 
 OBJ_FILES = 
@@ -18,6 +18,6 @@ planets: planets.cc
 	gcc $(DEBUG_FLAG) -I. $(LIBS) -o planets planets.cc
 
 modelrender: modelrender.c
-	gcc $(DEBUG_FLAG) -I. $(LIBS) -o modelrender modelrender.c
+	gcc $(DEBUG_FLAG) -I. $(LIBS) -o modelrender modelrender.c ../md5reader/md5reader.o ../md5reader/skeleton.o
 clean:
 	rm -f $(ALL_EXECS) $(EDITOR_MESS)
