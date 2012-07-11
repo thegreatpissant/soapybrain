@@ -78,5 +78,6 @@ int main (int argc, char ** argv)
   glutIdleFunc    (glut_idle_func);
 
   glutMainLoop ();
+  skeletonCleanUp (mySkeleton);
   return 0;
 }
