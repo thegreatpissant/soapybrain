@@ -33,14 +33,20 @@ void glut_display_func (void)
   glTranslatef (xCord, yCord, zCord);
  
   glPushMatrix (); {
+    glRotatef (-90, 1.0, 0.0, 0.0);
+    glRotatef (-90, 0.0, 0.0, 1.0);
     glRotatef (y_rotate, 0.0, 1.0, 0.0);
     glRotatef (x_rotate, 1.0, 0.0, 0.0);
+
    
-    glBegin (GL_POINTS);
+    glBegin (GL_LINES);
     glColor3f( 1.0, 1.0f, 1.0f);
     int dxi;
-    for (dxi = 0; dxi < mySkeleton->numJoints; dxi++)
+    for (dxi = 2; dxi < mySkeleton->numJoints; dxi++)
       {
+	glVertex3f (mySkeleton->joints[dxi]->parent->posX,
+		    mySkeleton->joints[dxi]->parent->posY,
+		    mySkeleton->joints[dxi]->parent->posZ);
 	glVertex3f (mySkeleton->joints[dxi]->posX,
 		    mySkeleton->joints[dxi]->posY,
 		    mySkeleton->joints[dxi]->posZ);
@@ -63,7 +69,7 @@ void glut_reshape_func (int w, int h)
   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
   glMatrixMode (GL_PROJECTION);
   glLoadIdentity ();
-  gluPerspective (60, 1.0, 0.5, 120);
+  gluPerspective (60, 0.7, 0.5, 500);
   glMatrixMode (GL_MODELVIEW);
   glLoadIdentity ();
 }
