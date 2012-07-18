@@ -17,6 +17,9 @@ chapterthree: chapterthree.cc
 planets: planets.cc
 	gcc $(DEBUG_FLAG) -I. $(LIBS) -o planets planets.cc
 
+light: light.c
+	gcc $(DEBUG_FLAG) -I. $(LIBS) -o light light.c
+
 modelrender: modelrender.c
 	gcc $(DEBUG_FLAG) -I. $(LIBS) -o modelrender modelrender.c ../md5reader/md5reader.o ../md5reader/skeleton.o
 clean:
