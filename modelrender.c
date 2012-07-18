@@ -15,6 +15,7 @@
 #define GWH 800
 
 pskeleton mySkeleton;
+pskeleton mySkeleton2;
 #define ZCORD -50.0
 #define XCORD 0.0
 #define YCORD 0.0
@@ -141,16 +142,9 @@ int main (int argc, char ** argv)
       fprintf (stderr, "File name not specified\n");
       exit (EXIT_FAILURE);
     }
-  FILE * md5mesh_file;
-  md5mesh_file = fopen (argv[1], "r");
-  if (md5mesh_file == NULL)
-    {
-      fprintf (stderr, "Opening file \"%s\", failed\n", argv[1]);
-      exit (EXIT_FAILURE);
-    }
+  mySkeleton = md5mesh_loadfile (argv[1]);
+  mySkeleton2 = md5mesh_loadfile (argv[1]);
 
-  mySkeleton = md5mesh_loadfile (md5mesh_file);
-      
   glutInit (&argc, argv);
   glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
   glutInitWindowSize (GWH, GWH);
