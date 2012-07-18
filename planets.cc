@@ -41,7 +41,7 @@ GLfloat cubeposy = 0.0f;
 GLfloat cubeposz = 0.0f;
 GLfloat rot = 0;
 
-void MainMenuDispay(void)
+void MainMenuDisplay(void)
 /*
  * Main Menu screen.
  */
