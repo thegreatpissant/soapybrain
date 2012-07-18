@@ -1,11 +1,12 @@
 makefile:
 
 DEBUG_FLAG = -g -Wall
-ALL_EXECS = chapterone chapterthree planets modelrender
+ALL_EXECS = chapterone chapterthree planets modelrender light
 TEST_EXECS = 
 OBJ_FILES = 
 EDITOR_MESS = *~ 
 LIBS = -lGL -lglut -lGLU
+
 all: $(ALL_EXECS)
 
 chapterone: chapterone.cc
