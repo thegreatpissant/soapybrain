@@ -129,8 +129,8 @@ int main (int argc, char ** argv)
   //                     posx, posy
   glutInitWindowPosition(200, 100);
   //  Create new window.
-  int window = glutCreateWindow("One");
-  int menu = glutCreateMenu(mainMenu);
+  glutCreateWindow("One");
+  glutCreateMenu(mainMenu);
   glutAddMenuEntry ("one", 1);
   glutAddMenuEntry ("two", 2);
   glutAttachMenu (GLUT_RIGHT_BUTTON);

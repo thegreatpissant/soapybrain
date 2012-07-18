@@ -217,10 +217,11 @@ void MainMenuDisplay(void)
 		  glPushMatrix ();
 		  {
 		    glTranslatef (tcubeposx, tcubeposy, tcubeposz);
-		    //drawMan();
-		    //drawCube ();
-		    //glutWireTeapot (2.0f);
-		    glCallList (1);
+		    glutSolidSphere (1.0, 20, 16);
+		    //		    drawMan();
+		    //		    drawCube ();
+		    //		    glutWireTeapot (1.0f);
+		    //		    glCallList (1);
 		    //		    drawMan ();
 		  } glPopMatrix ();
 		}
@@ -340,8 +341,30 @@ void init_viewList()
  */
 void init_view(void)
 {
-  glClearColor(0.0,0.0,0.0,1.0);
-  glShadeModel(GL_SMOOTH);
+  GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+  GLfloat mat_shininess[] = { 50.0 };
+  GLfloat light_position[] = { 1.0, 1.0 ,1.0, 0.0 };
+  GLfloat white_light[] = { 1.0, 1.0, 1.0, 1.0 };
+  GLfloat lmodel_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+
+  glClearColor (0.0, 0.0, 0.0, 0.0);
+  glShadeModel (GL_SMOOTH);
+
+  glMaterialfv (GL_FRONT, GL_SPECULAR, mat_specular);
+  //  glMaterialfv (GL_BACK, GL_SPECULAR, mat_specular);
+  glMaterialfv (GL_FRONT, GL_SHININESS, mat_shininess);
+  //  glMaterialfv (GL_BACK, GL_SHININESS, mat_shininess);
+  glLightfv (GL_LIGHT0, GL_POSITION, light_position);
+  glLightfv (GL_LIGHT0, GL_DIFFUSE, white_light);
+  glLightfv (GL_LIGHT0, GL_SPECULAR, white_light);
+  glLightModelfv (GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+
+  glEnable (GL_LIGHTING);
+  glEnable (GL_LIGHT0);
+  glEnable (GL_DEPTH_TEST);
+  glEnable (GL_NORMALIZE);
+  //  glEnable (GL_RESCALE_NORMAL);
+
   glEnableClientState (GL_VERTEX_ARRAY);
   glEnableClientState (GL_COLOR_ARRAY);
   glEnable (GL_DEPTH_TEST);
@@ -379,7 +402,7 @@ int main (int argc, char ** argv)
 {
   glutInit(&argc, argv);
 
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   //  Window size    width, height
   glutInitWindowSize(GWH, GWH);
   //                     posx, posy
