@@ -14,7 +14,8 @@
 #include <unistd.h>
 #define GWH 800
  
-
+#define true 1
+#define false 0
 #define XCORD 0.0
 #define YCORD 0.0
 #define ZCORD -200.0
@@ -22,7 +23,7 @@ GLfloat xcord = XCORD, ycord = YCORD, zcord = ZCORD;
 void initCords ();
 GLfloat wcord = 1.0f;
 GLfloat move_inc = 0.1f;
-GLfloat move_delta = 1.0f * move_inc;
+GLfloat move_delta = 1.0f;
 GLfloat xrotate = 0.0, yrotate = 0.0;
 GLint xmouse_delta = 0, ymouse_delta = 0;
 GLint xmouse_press = 0, ymouse_press = 0;
