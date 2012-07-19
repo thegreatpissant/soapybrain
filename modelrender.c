@@ -15,7 +15,7 @@
 #define GWH 800
 
 pskeleton mySkeleton;
-pskeleton mySkeleton2;
+
 #define ZCORD -50.0
 #define XCORD 0.0
 #define YCORD 0.0
@@ -143,7 +143,6 @@ int main (int argc, char ** argv)
       exit (EXIT_FAILURE);
     }
   mySkeleton = md5mesh_loadfile (argv[1]);
-  mySkeleton2 = md5mesh_loadfile (argv[1]);
 
   glutInit (&argc, argv);
   glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
