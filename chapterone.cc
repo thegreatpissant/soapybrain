@@ -569,7 +569,7 @@ void keyboard_char (unsigned char key, int x, int y)
     break;
   case 'C':
     maxCubes += 1;
-    printf ("Maxcubes : %d\n",maxCubes);
+   // printf ("Maxcubes : %d\n",maxCubes);
     break;
   case 'c':
     maxCubes -= 1;
