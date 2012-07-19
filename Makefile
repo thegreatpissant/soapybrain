@@ -9,14 +9,14 @@ LIBS = -lGL -lglut -lGLU
 
 all: $(ALL_EXECS)
 
-chapterone: chapterone.cc
-	gcc $(DEBUG_FLAG) -I. $(LIBS) -o chapterone chapterone.cc
+chapterone: chapterone.c
+	gcc $(DEBUG_FLAG) -I. $(LIBS) -o chapterone chapterone.c
 
-chapterthree: chapterthree.cc
-	gcc $(DEBUG_FLAG) -I. $(LIBS) -o chapterthree chapterthree.cc
+chapterthree: chapterthree.c
+	gcc $(DEBUG_FLAG) -I. $(LIBS) -o chapterthree chapterthree.c
 
-planets: planets.cc
-	gcc $(DEBUG_FLAG) -I. $(LIBS) -o planets planets.cc
+planets: planets.c
+	gcc $(DEBUG_FLAG) -I. $(LIBS) -o planets planets.c
 
 light: light.c
 	gcc $(DEBUG_FLAG) -I. $(LIBS) -o light light.c
