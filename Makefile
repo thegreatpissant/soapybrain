@@ -1,7 +1,7 @@
 makefile:
 
 DEBUG_FLAG = -g -Wall
-ALL_EXECS = chapterone chapterthree planets modelrender light
+ALL_EXECS = chapterone chapterthree planets light
 TEST_EXECS = 
 OBJ_FILES = 
 EDITOR_MESS =  

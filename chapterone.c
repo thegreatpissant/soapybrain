@@ -218,7 +218,7 @@ void MainMenuDisplay(void)
 		  glPushMatrix ();
 		  {
 		    glTranslatef (tcubeposx, tcubeposy, tcubeposz);
-		    glutSolidSphere (1.0, 20, 16);
+		    glutSolidSphere (1.0, 50, 25);
 		    //		    drawMan();
 		    //		    drawCube ();
 		    //		    glutWireTeapot (1.0f);
@@ -346,18 +346,19 @@ void init_view(void)
   GLfloat mat_shininess[] = { 50.0 };
   GLfloat light_position[] = { 1.0, 1.0 ,1.0, 0.0 };
   GLfloat white_light[] = { 1.0, 1.0, 1.0, 1.0 };
+  GLfloat red_light[] = { 1.0, 0.0, 0.0, 1.0 };
   GLfloat lmodel_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
 
   glClearColor (0.0, 0.0, 0.0, 0.0);
-  glShadeModel (GL_SMOOTH);
+  glShadeModel (GL_FLAT);
 
   glMaterialfv (GL_FRONT, GL_SPECULAR, mat_specular);
   //  glMaterialfv (GL_BACK, GL_SPECULAR, mat_specular);
   glMaterialfv (GL_FRONT, GL_SHININESS, mat_shininess);
   //  glMaterialfv (GL_BACK, GL_SHININESS, mat_shininess);
   glLightfv (GL_LIGHT0, GL_POSITION, light_position);
-  glLightfv (GL_LIGHT0, GL_DIFFUSE, white_light);
-  glLightfv (GL_LIGHT0, GL_SPECULAR, white_light);
+  //  glLightfv (GL_LIGHT0, GL_DIFFUSE, white_light);
+  glLightfv (GL_LIGHT0, GL_SPECULAR, red_light);
   glLightModelfv (GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
 
   glEnable (GL_LIGHTING);
