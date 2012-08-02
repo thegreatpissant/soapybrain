@@ -1,7 +1,7 @@
 makefile:
 
 DEBUG_FLAG = -g -Wall
-ALL_EXECS = chapterone chapterthree planets light
+ALL_EXECS = chapterone chapterthree chapternine planets light
 TEST_EXECS = 
 OBJ_FILES = 
 EDITOR_MESS =  
@@ -14,6 +14,9 @@ chapterone: chapterone.c
 
 chapterthree: chapterthree.c
 	gcc $(DEBUG_FLAG) -I. $(LIBS) -o chapterthree chapterthree.c
+
+chapternine: chapternine.c
+	gcc $(DEBUG_FLAG) -I. $(LIBS) -o chapternine chapternine.c
 
 planets: planets.c
 	gcc $(DEBUG_FLAG) -I. $(LIBS) -o planets planets.c
