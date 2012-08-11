@@ -1,20 +1,16 @@
-makefile:
+include 	../Makefile.inc
 
-CC=g++
-DEBUG_FLAG = -g -Wall
-DIRS = common
-ALL_EXECS = 
-TEST_EXECS = 
-OBJ_FILES = shader_utils.o
-EDITOR_MESS =  *~
-LDLIBS =-lGL -lglut -lGLEW
+DIRS 		= common
+ALL_EXECS 	= 
+TEST_EXECS 	= 
+OBJ_FILES 	= shader_utils.o
 
 all: $(ALL_EXECS) $(OBJ_FILES)
 
 shader_utils.o :
-	gcc $(DEBUG_FLAG) $(LDLIBS) -c shader_utils.c
+	$(CC) $(DEBUG_FLAG) $(LDLIBS) -c shader_utils.c
 
 clean :
-	rm *.o $(EDITOR_MESS) 2>/dev/null
+	rm -f *.o $(EDITOR_MESS)
 
 .PHONY: all clean
