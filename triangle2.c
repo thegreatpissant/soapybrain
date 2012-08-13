@@ -1,5 +1,5 @@
 
-/* triangle.c
+/* triangle2.c
  * Modern OpenGL programing example 
  * http://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Introduction
  * 

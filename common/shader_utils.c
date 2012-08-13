@@ -35,7 +35,7 @@ static char *file_read (const char *filename)
 /**
  * Display compilation errors from the OpenGL shader compiler
  */
-static void print_log (GLuint object)
+void print_log (GLuint object)
 {
   GLint log_length = 0;
   if (glIsShader (object))
@@ -69,13 +69,33 @@ GLuint create_shader (const char *filename, GLenum type)
       exit (EXIT_FAILURE);
     }
   GLuint res = glCreateShader (type);
-  const GLchar *sources[2] = {
+  const GLchar *sources[] = {
     #ifdef GL_ES_VERSION_2_0
     "#version 100\n"
-    "#define GLES2\n",
     #else
     "#version 120\n",
     #endif
+    ,
+    /* GLES2 precision specifiers */
+    #ifdef GL_ES_VERSION_2_0
+    /*  Define default float precision for fragment shaders: */
+    (type == GL_FRAGMENT_SHADER) ?
+    "#ifdef GL_GRAGMENT_PRECISION_HIGHT\n"
+    "precision highp float;            \n"
+    "#else                             \n"
+    "precision mediump float;          \n"
+    "#endif                            \n"
+    : ""
+    /*  Note: OpengGL ES automatically defines this:
+	#define GL_ES
+    */
+    #else
+    /* Ignore GLES 2 precision specifiers: */
+    "#define lowp    \n"
+    "#define mediump \n"
+    "#define highp   \n"
+    #endif
+    ,
     source };
   glShaderSource (res, 2, sources, NULL);
   free ((void*)source);
