@@ -69,7 +69,7 @@ GLuint create_shader (const char *filename, GLenum type)
       exit (EXIT_FAILURE);
     }
   GLuint res = glCreateShader (type);
-  const GLchar *sources[] = {
+  const GLchar *sources[3] = {
     #ifdef GL_ES_VERSION_2_0
     "#version 100\n"
     #else
@@ -80,11 +80,11 @@ GLuint create_shader (const char *filename, GLenum type)
     #ifdef GL_ES_VERSION_2_0
     /*  Define default float precision for fragment shaders: */
     (type == GL_FRAGMENT_SHADER) ?
-    "#ifdef GL_GRAGMENT_PRECISION_HIGHT\n"
-    "precision highp float;            \n"
-    "#else                             \n"
-    "precision mediump float;          \n"
-    "#endif                            \n"
+    "#ifdef GL_GRAGMENT_PRECISION_HIGH\n"
+    "precision highp float;           \n"
+    "#else                            \n"
+    "precision mediump float;         \n"
+    "#endif                           \n"
     : ""
     /*  Note: OpengGL ES automatically defines this:
 	#define GL_ES
@@ -97,7 +97,7 @@ GLuint create_shader (const char *filename, GLenum type)
     #endif
     ,
     source };
-  glShaderSource (res, 2, sources, NULL);
+  glShaderSource (res, 3, sources, NULL);
   free ((void*)source);
   glCompileShader (res);
   GLint compile_ok = GL_FALSE;
