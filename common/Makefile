@@ -1,6 +1,6 @@
 include 	../Makefile.inc
 
-DIRS 		= common
+DIRS 		= 
 ALL_EXECS 	= 
 TEST_EXECS 	= 
 OBJ_FILES 	= shader_utils.o
