@@ -1,5 +1,4 @@
-
-/* triangle4.c
+/* triangle4.cpp
  * Modern OpenGL programing example 
  * http://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Introduction
  * 
