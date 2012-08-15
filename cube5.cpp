@@ -35,7 +35,7 @@ void onDisplay (void);
 void free_resources (void);
 void keyboard_char (unsigned char key, int x, int y);
 void idle ();
-
+void onReshape (int width, int height);
 struct attributes {
   GLfloat coord3d[3];
   GLfloat v_color[3];
@@ -67,6 +67,7 @@ int main (int argc, char* argv[])
     {
       glutDisplayFunc (onDisplay);
       glutIdleFunc (idle);
+      glutReshapeFunc (onReshape);
       glutKeyboardFunc(keyboard_char);      
       glEnable (GL_BLEND);
       glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -340,6 +341,12 @@ void idle ()
   glUseProgram (program2);
   glUniformMatrix4fv (uniform_mvp, 1, GL_FALSE, glm::value_ptr(mvp2));
 glutPostRedisplay ();
+}
+void onReshape (int width, int height)
+{
+  screen_width = width;
+  screen_height = height;
+  glViewport (0, 0, screen_width, screen_height);
 }
 void keyboard_char (unsigned char key, int x, int y)
 /*
