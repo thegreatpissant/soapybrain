@@ -1,6 +1,6 @@
 include 	Makefile.inc
 DIRS		= common shaders
-ALL_EXECS	= triangle2 triangle3 triangle4 cube5 cube6
+ALL_EXECS	= triangle triangle2 triangle3 triangle4 cube5 cube6
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
@@ -10,6 +10,9 @@ all: $(ALL_EXECS) $(OBJ_FILES)
 
 common : force_look
 	cd common; $(MAKE) all
+
+triangle: triangle.c common
+	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangle triangle.c common/shader_utils.o
 
 triangle2: triangle2.c common
 	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangle2 triangle2.c common/shader_utils.o

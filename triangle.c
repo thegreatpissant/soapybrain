@@ -16,6 +16,13 @@ GLuint vbo_triangle;
 GLuint program;
 GLint attribute_coord2d;
 
+  /* vertices */
+  GLfloat triangle_vertices[] = {
+    0.0,  0.8,
+    -0.8, -0.8,
+    0.8, -0.8
+  };
+ 
 #define WINDOW_HEIGHT 480
 #define WINDOW_WIDTH 640
 
@@ -62,16 +69,6 @@ int main (int argc, char* argv[])
 int init_resources (void)
 {
   GLint link_ok = GL_FALSE;
-
-  /* vertices */
-  GLfloat triangle_vertices[] = {
-    0.0,  0.8,
-    -0.8, -0.8,
-    0.8, -0.8
-  };
-  glGenBuffers (1, &vbo_triangle);
-  glBindBuffer (GL_ARRAY_BUFFER, vbo_triangle);
-  glBufferData (GL_ARRAY_BUFFER, sizeof (triangle_vertices), triangle_vertices, GL_STATIC_DRAW);
   
   /* Shaders */
   GLuint vs, fs;
@@ -107,14 +104,13 @@ void onDisplay ()
   glClearColor (0.0, 0.0, 0.0, 1.0);
   glClear (GL_COLOR_BUFFER_BIT);
   glUseProgram (program);
-  glBindBuffer (GL_ARRAY_BUFFER, vbo_triangle);
   glEnableVertexAttribArray (attribute_coord2d);
   glVertexAttribPointer ( attribute_coord2d,
 			  2,
 			  GL_FLOAT,
 			  GL_FALSE,
 			  0,
-			  0
+			  triangle_vertices
 			  ); 
   glDrawArrays (GL_TRIANGLES, 0, 3);
   glDisableVertexAttribArray (attribute_coord2d);
@@ -124,7 +120,6 @@ void onDisplay ()
 void free_resources ()
 {
   glDeleteProgram (program);
-  glDeleteBuffers (1, &vbo_triangle);
 }
 			 
 void keyboard_char (unsigned char key, int x, int y)

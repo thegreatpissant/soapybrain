@@ -75,9 +75,9 @@ int init_resources (void)
   
   /* Shaders */
   GLuint vs, fs;
-  if ((vs = create_shader ("./shaders/triangle.v.glsl", GL_VERTEX_SHADER)) == 0) 
+  if ((vs = create_shader ("./shaders/triangle2.v.glsl", GL_VERTEX_SHADER)) == 0) 
     exit (EXIT_FAILURE);
-  if ((fs = create_shader ("./shaders/triangle.f.glsl", GL_FRAGMENT_SHADER)) == 0) 
+  if ((fs = create_shader ("./shaders/triangle2.f.glsl", GL_FRAGMENT_SHADER)) == 0) 
     exit (EXIT_FAILURE);
 
   /* Link it together */
