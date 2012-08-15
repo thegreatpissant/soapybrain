@@ -1,6 +1,6 @@
 include 	Makefile.inc
 DIRS		= common shaders
-ALL_EXECS	= triangle2 triangle3 triangle4 cube5
+ALL_EXECS	= triangle2 triangle3 triangle4 cube5 cube6
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
@@ -22,6 +22,9 @@ triangle4: triangle4.cpp common
 
 cube5: cube5.cpp common
 	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o cube5 cube5.cpp common/shader_utils.o
+
+cube6: cube6.cpp res_texture.c common
+	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o cube6 cube6.cpp common/shader_utils.o
 
 clean:
 	rm -f *.o $(ALL_EXECS) $(EDITOR_MESS)
