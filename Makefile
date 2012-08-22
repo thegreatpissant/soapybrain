@@ -1,6 +1,8 @@
 include 	Makefile.inc
 DIRS		= common shaders
-ALL_EXECS	= triangle triangle2 triangle3 triangle4 cube5 cube6
+ALL_EXECS_1	= triangle triangle2 triangle3 triangle4 cube5 cube6
+ALL_EXECS_2	= chptone
+ALL_EXECS 	= $(ALL_EXECS_1) $(ALL_EXECS_2)
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
@@ -8,8 +10,15 @@ EDITOR_MESS 	=  *~
 
 all: $(ALL_EXECS) $(OBJ_FILES)
 
+wikiglbook : $(ALL_EXECS_1)
+
+openglbook : $(ALL_EXECS_2)
+
 common : force_look
 	cd common; $(MAKE) all
+
+chptone: chptone.c common
+	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o chptone chptone.c
 
 triangle: triangle.c common
 	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangle triangle.c common/shader_utils.o
@@ -28,6 +37,9 @@ cube5: cube5.cpp common
 
 cube6: cube6.cpp res_texture.c common
 	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o cube6 cube6.cpp common/shader_utils.o
+
+obj7: obj7.cpp common
+	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o obj7 obj7.cpp common/shader_utils.o
 
 clean:
 	rm -f *.o $(ALL_EXECS) $(EDITOR_MESS)

@@ -47,7 +47,7 @@ int main (int argc, char* argv[])
   glutInit (&argc, argv);
   glutInitDisplayMode (GLUT_RGBA|GLUT_ALPHA|GLUT_DOUBLE|GLUT_DEPTH);
   glutInitWindowSize (screen_width, screen_height);
-  glutCreateWindow ("Glut window");
+  glutCreateWindow ("cube5");
 
   /* Init glew */
   GLenum glew_status = glewInit();

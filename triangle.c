@@ -23,8 +23,8 @@ GLint attribute_coord2d;
     0.8, -0.8
   };
  
-#define WINDOW_HEIGHT 480
 #define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
 
 /* Function Declars */
 int init_resources (void);
@@ -35,9 +35,9 @@ void keyboard_char (unsigned char key, int x, int y);
 int main (int argc, char* argv[])
 {
   glutInit (&argc, argv);
-  glutInitDisplayMode (GLUT_RGBA|GLUT_ALPHA|GLUT_DOUBLE|GLUT_DEPTH);
+  glutInitDisplayMode (GLUT_RGBA|GLUT_DOUBLE|GLUT_DEPTH);
   glutInitWindowSize (WINDOW_WIDTH, WINDOW_HEIGHT);
-  glutCreateWindow ("Glut window");
+  glutCreateWindow ("triangle");
 
   /* Init glew */
   GLenum glew_status = glewInit();
@@ -57,8 +57,6 @@ int main (int argc, char* argv[])
     {
       glutDisplayFunc (onDisplay);
       glutKeyboardFunc(keyboard_char);      
-      glEnable (GL_BLEND);
-      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glutMainLoop ();
     }
 
