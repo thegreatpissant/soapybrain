@@ -80,7 +80,7 @@ GLuint create_shader (const char *filename, GLenum type)
     #ifdef GL_ES_VERSION_2_0
     /*  Define default float precision for fragment shaders: */
     (type == GL_FRAGMENT_SHADER) ?
-    "#ifdef GL_GRAGMENT_PRECISION_HIGH\n"
+    "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
     "precision highp float;           \n"
     "#else                            \n"
     "precision mediump float;         \n"
