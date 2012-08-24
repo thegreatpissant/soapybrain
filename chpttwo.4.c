@@ -10,6 +10,12 @@
 
 #define WINDOW_TITLE_PREFIX "Chapter 2"
 
+typedef struct
+{
+  float XYZW[4];
+  float RGBA[4];
+} Vertex;
+
 int CurrentWidth = 800,
   CurrentHeight = 600,
   WindowHandle = 0;
@@ -19,8 +25,8 @@ GLuint VertexShaderId,
   FragmentShaderId,
   ProgramId,
   VaoId,
-  VboId,
-  ColorBufferId;
+  VboId;
+
 
 const GLchar *VertexShader = 
 {
@@ -60,6 +66,7 @@ void ResizeFunction (int, int);
 void RenderFunction (void);
 void TimerFunction (int);
 void IdleFunction (void);
+void keyboard_char (unsigned char key, int x, int y);
 
 int main (int argc, char * argv[])
 {
@@ -124,6 +131,7 @@ void InitWindow (int argc, char *argv[])
   glutIdleFunc (IdleFunction);
   glutTimerFunc (0, TimerFunction, 0);
   glutCloseFunc (Cleanup);
+  glutKeyboardFunc(keyboard_char);      
 }
 
 void ResizeFunction (int Width, int Height)
@@ -137,7 +145,7 @@ void RenderFunction (void)
 {
   ++FrameCount;
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
+   glDrawArrays (GL_TRIANGLES, 0, 3);
   glutSwapBuffers ();
   glutPostRedisplay ();
 }
@@ -173,41 +181,40 @@ void Cleanup (void)
 
 void CreateVBO (void)
 {
-  GLfloat Vertices[] = {
-    -0.8f, 0.8f, 0.0f, 1.0f,
-    0.8f, 0.8f, 0.0f, 1.0f,
-    -0.8f, -0.8f, 0.0f, 1.0f,
-    0.8f, -0.8f, 0.0f, 1.0f
-  };
-  GLfloat Colors[] = {
-    1.0f, 0.0f, 0.0f, 1.0f,
-    0.0f, 1.0f, 0.0f, 1.0f,
-    0.0f, 0.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f, 1.0f
-  };
+  Vertex Vertices[] =
+    {
+      { { -0.8f, -0.8f, 0.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } },
+      { { 0.0f, 0.8f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } },
+      { { 0.8f, -0.8f, 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } }
+    };
+
   GLenum ErrorCheckValue = glGetError ();
+  const size_t BufferSize = sizeof (Vertices);
+  const size_t VertexSize = sizeof (Vertices[0]);
+  const size_t RgbOffset = sizeof (Vertices[0].XYZW);
+
+  glGenBuffers (1, &VboId);
+  
   glGenVertexArrays (1, &VaoId);
   glBindVertexArray (VaoId);
 
-  glGenBuffers (1, &VboId);
   glBindBuffer (GL_ARRAY_BUFFER, VboId);
-  glBufferData (GL_ARRAY_BUFFER, sizeof (Vertices), Vertices, GL_STATIC_DRAW);
-  glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray (0);
-  
-  glGenBuffers (1, &ColorBufferId);
-  glBindBuffer (GL_ARRAY_BUFFER, ColorBufferId);
-  glBufferData (GL_ARRAY_BUFFER, sizeof (Colors), Colors, GL_STATIC_DRAW);
-  glVertexAttribPointer (1, 4, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray (1);
-  
+  glBufferData (GL_ARRAY_BUFFER, BufferSize, Vertices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer (0, 4, GL_FLOAT, GL_FALSE, VertexSize, 0);
+  glVertexAttribPointer (1, 4, GL_FLOAT, GL_FALSE, VertexSize, (GLvoid*)RgbOffset);
+
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+
   ErrorCheckValue = glGetError ();
-  if (ErrorCheckValue != GL_NO_ERROR) {
-    fprintf (stderr, "ERROR: Could not create a VBO: %s \n",
-	     gluErrorString (ErrorCheckValue)
-	     );
-    exit (EXIT_FAILURE);
-  }
+  if (ErrorCheckValue != GL_NO_ERROR)
+    {
+      fprintf (stderr, "ERROR: Could not create a VBO: %s \n",
+	       gluErrorString (ErrorCheckValue)
+	       );
+      exit (EXIT_FAILURE);
+    }
 }
 
 void DestroyVBO (void)
@@ -216,7 +223,6 @@ void DestroyVBO (void)
   glDisableVertexAttribArray (1);
   glDisableVertexAttribArray (0);
   glBindBuffer (GL_ARRAY_BUFFER, 0);
-  glDeleteBuffers (1, &ColorBufferId);
   glDeleteBuffers (1, &VboId);
   glBindVertexArray (0);
   glDeleteVertexArrays (1, &VaoId);
@@ -276,5 +282,19 @@ void DestroyShaders (void)
 	     gluErrorString (ErrorCheckValue)
 	     );
     exit (EXIT_FAILURE);
+  }
+}
+
+void keyboard_char (unsigned char key, int x, int y)
+/*
+ * Handles all Character key events.
+ */
+{
+  switch(key) {
+  case 27:
+    exit(0);
+    break;
+  default:
+    break;
   }
 }
