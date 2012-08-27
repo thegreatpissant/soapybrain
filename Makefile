@@ -1,7 +1,7 @@
 include 	Makefile.inc
 DIRS		= common shaders
 ALL_EXECS_1	= triangle triangle2 triangle3 triangle4 cube5 cube6 cube6b
-ALL_EXECS_2	= chptone chpttwo chpttwo.4
+ALL_EXECS_2	= chptone chpttwo chpttwo.4 chptthree.1 chptthree.2
 ALL_EXECS 	= $(ALL_EXECS_1) $(ALL_EXECS_2)
 TEST_EXECS 	= 
 OBJ_FILES 	= common
@@ -25,6 +25,12 @@ chpttwo: chpttwo.c
 
 chpttwo.4: chpttwo.4.c
 	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o chpttwo.4 chpttwo.4.c
+
+chptthree.1: chptthree.1.c
+	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o chptthree.1 chptthree.1.c
+
+chptthree.2: chptthree.2.c
+	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o chptthree.2 chptthree.2.c
 
 triangle: triangle.c common
 	$(CC) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangle triangle.c common/shader_utils.o
