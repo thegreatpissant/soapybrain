@@ -1,5 +1,5 @@
 include 	Makefile.inc
-DIRS		= common shaders
+DIRS		= common shaders pre3
 ALL_EXECS_1	= triangle triangle2 triangle3 triangle4 cube5 cube6 cube6b
 ALL_EXECS_2	= chptone chpttwo chpttwo.4 chptthree.1 chptthree.2 chptfour.1
 ALL_EXECS 	= $(ALL_EXECS_1) $(ALL_EXECS_2)
