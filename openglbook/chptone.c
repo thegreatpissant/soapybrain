@@ -36,7 +36,7 @@ void Initialize (int argc, char *argv[])
   TempString = (char *) malloc (512 + strlen(WINDOW_TITLE_PREFIX));
   InitWindow (argc, argv);
   GlewInitResult = glewInit();
-  if (GLEW_OK != GlewInitResult) {
+  if ( ! (GLEW_OK == GlewInitResult)) {
     fprintf (stderr,
 	     "ERROR: %s\n",
 	     glewGetErrorString (GlewInitResult) );
@@ -50,9 +50,9 @@ void InitWindow (int argc, char *argv[])
 {
   glutInit (&argc, argv);
   
-  glutInitContextVersion (3, 3);
-  glutInitContextFlags (GLUT_FORWARD_COMPATIBLE);
-  glutInitContextProfile (GLUT_CORE_PROFILE);
+//  glutInitContextVersion (4, 0);
+//  glutInitContextFlags (GLUT_FORWARD_COMPATIBLE);
+//  glutInitContextProfile (GLUT_CORE_PROFILE);
   
   glutSetOption(
 		GLUT_ACTION_ON_WINDOW_CLOSE,
