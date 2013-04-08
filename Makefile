@@ -1,5 +1,5 @@
 include 	Makefile.inc
-DIRS		= pre3 opengl-wikibook openglbook
+DIRS		= pre3 opengl-wikibook openglbook opengl-programing-guide
 ALL_EXECS 	= 
 TEST_EXECS 	= 
 OBJ_FILES 	= 
