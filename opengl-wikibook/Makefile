@@ -24,7 +24,8 @@ triangle4: triangle4.cpp common
 	$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangle4 triangle4.cpp common/shader_utils.o
 
 cube5: cube5.cpp common
-	$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o cube5 cube5.cpp common/shader_utils.o
+	mpic++ $(DEBUG_FLAG) -I. $(LDLIBS) -o cube5 cube5.cpp common/shader_utils.o
+	#$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o cube5 cube5.cpp common/shader_utils.o
 
 cube6: cube6.cpp res_texture.c common
 	$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o cube6 cube6.cpp common/shader_utils.o

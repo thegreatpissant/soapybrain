@@ -3,7 +3,7 @@
  * http://en.wikibooks.org/wiki/OpenGL_Programming/Modern_OpenGL_Introduction
  * 
  */
-
+#include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -43,6 +43,8 @@ struct attributes {
 
 int main (int argc, char* argv[])
 {
+MPI_Init ( 0, 0 );
+
   glutInit (&argc, argv);
   glutInitDisplayMode (GLUT_RGBA|GLUT_ALPHA|GLUT_DOUBLE|GLUT_DEPTH);
   glutInitWindowSize (screen_width, screen_height);
@@ -76,6 +78,7 @@ int main (int argc, char* argv[])
 
   free_resources ();
   exit (EXIT_SUCCESS);
+MPI_Finalize ();
 }
 
 int init_resources (void)
