@@ -3,11 +3,13 @@
 //  triangles.cpp
 //
 //////////////////////////////////////////////////////////////////////
+#include <string.h>
 #include <iostream>
 #include <unistd.h>
 using namespace std;
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
+#include <glm/glm.hpp>
 #include "common/shader_utils.h"
 //#include "LoadShaders.h"
 enum VAO_IDs { Triangles, NumVAOs };
@@ -21,10 +23,17 @@ GLfloat angle = 60;
 GLint angle_loc = 0;
 GLint color = 1;
 GLuint color_loc = 0;
+glm::vec4 vl(0.2f);
+GLuint v_loc = 0;
+GLfloat Rotation[4][4];
+GLuint Rotation_loc = 0;
 typedef  struct shaderinfo {
   GLuint shadertype;
   char * filename;
 } ShaderInfo;
+
+GLsizei width = 640;
+GLsizei height = 800;
 
 GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
@@ -55,6 +64,10 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'C':
     delta *= -1;
     break;
+  case 'f':
+  case 'F':
+    glutFullScreenToggle ();
+    break;
   }
   glUniform1i ( color_loc, color );
 }
@@ -74,6 +87,12 @@ void init(void)
     {0.90,0.90 },
     {-0.85,0.90 }
   };
+  memset ( Rotation, 0, sizeof (Rotation) );
+  Rotation[0][0] = 1.0f;
+  Rotation[1][1] = 1.0f;
+  Rotation[2][2] = 1.0f;
+  Rotation[3][3] = 1.0f;
+  
   glGenBuffers(NumBuffers, Buffers);
   glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -87,13 +106,23 @@ void init(void)
   GLuint program = LoadShaders(shaders);
 
   glUseProgram(program);
-  angle_loc = glGetUniformLocation ( program, "angle" );
-  color_loc = glGetUniformLocation ( program, "color" );
-  if ( angle_loc == -1 || color_loc == -1 ) {
+  if ( (angle_loc = glGetUniformLocation ( program, "angle" )) == -1 ) {
     std::cout << "Did not find the angle loc\n";
+  }    
+  if ( (color_loc = glGetUniformLocation ( program, "color" )) == -1 ) {
+    std::cout << "Did not find the color loc\n";
   }
+  if ( (v_loc     = glGetUniformLocation ( program, "vPos2" )) == -1 ) {
+    std::cout << "Did not find the vPos2 loc\n";
+  }
+  if ( (Rotation_loc = glGetUniformLocation (program, "mRot" )) == -1 ) {
+    std:: cout << "Did not find the rotation matrix\n";
+  }
+ 
   glUniform1f ( angle_loc, angle );
   glUniform1i ( color_loc, color );
+  glUniform3fv ( v_loc, 3, &vl[0] );
+  glUniformMatrix4fv( Rotation_loc, sizeof(Rotation), GL_TRUE, &Rotation[0][0] );
   
   glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
   glEnableVertexAttribArray(vPosition);
@@ -105,17 +134,28 @@ void init(void)
 void display(void)
 {
   angle = angle + delta;
-  
+  vl[1] = 1.0f;
+
   glUniform1f ( angle_loc, angle );
+  glUniform3fv ( v_loc , 3, &vl[0] );
   glClear(GL_COLOR_BUFFER_BIT);
   glBindVertexArray(VAOs[Triangles]);
+
+  /*  
+      glViewport (0,0, width,height);
+      glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+      glViewport (width,0, width,height); 
+  */
   glDrawArrays(GL_TRIANGLES, 0, NumVertices);
-  //  glFlush();
   glFinish ();
   glutPostRedisplay ();
   usleep(10000);
 }
 
+void Reshape (int newWidth, int newHeight) {
+  width = newWidth / 2.0;
+  height = newHeight;
+}
 /*
   Main
 */
@@ -123,16 +163,18 @@ int main(int argc, char** argv)
 {
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_RGBA);
-  glutInitWindowSize(512, 512);
+  glutInitWindowSize(1280,720);
   //  glutInitContextVersion(4, 3);
   //  glutInitContextProfile(GLUT_CORE_PROFILE);
-  glutCreateWindow(argv[0]);
+
+ glutCreateWindow(argv[0]);
   if (glewInit()) {
     cerr << "Unable to initialize GLEW ... exiting" << endl;
     exit(EXIT_FAILURE);
   }
   init();
   glutDisplayFunc(display);
+  glutReshapeFunc (Reshape);
   glutKeyboardFunc ( GlutKeyboardFunc );
   glutMainLoop();
 }
