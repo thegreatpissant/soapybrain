@@ -1,7 +1,7 @@
-//out vec4 fColor;
+out vec4 fColor;
 uniform int color;
 void main () {
-/*  switch (color) {
+ switch (color) {
   case 1:
     fColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );
     break;
@@ -15,6 +15,4 @@ void main () {
     fColor = vec4 ( 1.0 , 1.0, 1.0, 1.0 );
     break;
   }
-*/
-//	fColor = vec4 ( 1.0, 1.0, 1.0, 1.0 );
 }

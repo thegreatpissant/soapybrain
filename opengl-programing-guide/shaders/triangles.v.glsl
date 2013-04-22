@@ -3,10 +3,8 @@
 
 uniform float angle;
 
-uniform vec4 vPos2;
-
 uniform mat4 mRot;
-
+uniform mat4 mProj;
 attribute vec4 vPosition;
 
 void main (void) 
@@ -18,7 +16,5 @@ void main (void)
     0.0, 0.0, 0.0, 1.0
                       );
 
-  gl_Position = vPosition;
-  gl_Position *= mRot;
-
+  gl_Position = vPosition * mRot * mProj;
 }

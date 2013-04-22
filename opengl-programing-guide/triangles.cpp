@@ -10,6 +10,8 @@ using namespace std;
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "common/shader_utils.h"
 //#include "LoadShaders.h"
 enum VAO_IDs { Triangles, NumVAOs };
@@ -27,6 +29,8 @@ glm::vec4 vl(0.2f);
 GLuint v_loc = 0;
 GLfloat Rotation[4][4];
 GLuint Rotation_loc = 0;
+glm::mat4 Projection = glm::translate (glm::mat4(1.0f), glm::vec3(0.0f,0.0f,10.0f));
+GLuint Projection_loc = 0;
 typedef  struct shaderinfo {
   GLuint shadertype;
   const char * filename;
@@ -70,6 +74,7 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
     break;
   }
   glUniform1i ( color_loc, color );
+  glutPostRedisplay();
 }
 /*
   Init
@@ -87,12 +92,14 @@ void init(void)
     {0.90,0.90 },
     {-0.85,0.90 }
   };
-  memset ( Rotation, 0, sizeof (Rotation) );
-  Rotation[0][0] = 1.0f;
-  Rotation[1][1] = 1.0f;
-  Rotation[2][2] = 1.0f;
-  Rotation[3][3] = 1.0f;
-  
+
+  GLfloat Rotation[4][4] = { 
+    { cos(angle), -sin(angle), 0.0, 0.0 },
+    { sin(angle), cos(angle), 0.0, 0.0  },
+    { 0.0, 0.0, 1.0, 0.0},
+    { 0.0, 0.0, 0.0, 1.0 }
+  };
+
   glGenBuffers(NumBuffers, Buffers);
   glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -116,15 +123,19 @@ void init(void)
     std::cout << "Did not find the vPos2 loc\n";
   }
   if ( (Rotation_loc = glGetUniformLocation (program, "mRot" )) == -1 ) {
-    std:: cout << "Did not find the rotation matrix\n";
+    std:: cout << "Did not find the mRot loc\n";
+  }
+  if ( (Projection_loc = glGetUniformLocation (program, "mProj" )) == -1 ) {
+    std:: cout << "Did not find the mProj loc\n";
   }
  
   glUniform1f ( angle_loc, angle );
   glUniform1i ( color_loc, color );
   glUniform3fv ( v_loc, 3, &vl[0] );
-  glUniformMatrix4fv( Rotation_loc, sizeof(Rotation), GL_TRUE, &Rotation[0][0] );
+  glUniformMatrix4fv( Rotation_loc, 1, GL_TRUE, &Rotation[0][0] );
+  glUniformMatrix4fv( Projection_loc, 1, GL_FALSE, &Projection[0][0] );
   
-  glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+  glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
   glEnableVertexAttribArray(vPosition);
 }
 
