@@ -7,6 +7,7 @@ EDITOR_MESS 	=  *~
 STD		= -std=c++11
 
 
+all: $(OBJ_FILES) $(ALL_EXECS) 
 
 common : force_look
 	cd common; $(MAKE) all
@@ -17,8 +18,6 @@ triangles: triangles.cpp
 clean:
 	rm -f *.o $(ALL_EXECS) $(EDITOR_MESS)
 	for d in $(DIRS); do (cd $$d; $(MAKE) clean ); done
-
-all: $(OBJ_FILES) $(ALL_EXECS) 
 
 .PHONY: all clean
 
