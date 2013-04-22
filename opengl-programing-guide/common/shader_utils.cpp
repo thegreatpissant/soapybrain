@@ -75,7 +75,7 @@ GLuint create_shader (const char *filename, GLenum type)
     #ifdef OPENGL_ES
     "#version 100\n"
     #else
-    "#version 120\n"
+    "#version 130\n"
     #endif
     ,
     /* GLES2 precision specifiers */
