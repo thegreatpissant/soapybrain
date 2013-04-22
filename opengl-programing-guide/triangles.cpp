@@ -29,7 +29,7 @@ GLfloat Rotation[4][4];
 GLuint Rotation_loc = 0;
 typedef  struct shaderinfo {
   GLuint shadertype;
-  char * filename;
+  const char * filename;
 } ShaderInfo;
 
 GLsizei width = 640;
