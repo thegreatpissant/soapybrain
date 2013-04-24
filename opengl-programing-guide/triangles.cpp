@@ -27,9 +27,7 @@ GLint color = 1;
 GLuint color_loc = 0;
 glm::vec4 vl(0.2f);
 GLuint v_loc = 0;
-GLfloat Rotation[4][4];
 GLuint Rotation_loc = 0;
-glm::mat4 Projection = glm::translate (glm::mat4(1.0f), glm::vec3(0.0f,0.0f,10.0f));
 GLuint Projection_loc = 0;
 typedef  struct shaderinfo {
   GLuint shadertype;
@@ -84,20 +82,37 @@ void init(void)
   glClearColor ( 0.5, 0.5, 0.5, 1.0 );
   glGenVertexArrays(NumVAOs, VAOs);
   glBindVertexArray(VAOs[Triangles]);
-  GLfloat  vertices[NumVertices][2] = {
-    {-0.90f,-0.90 },  // Triangle 1
-    {0.85,-0.90 },
-    {-0.90,0.85 },
-    {0.90,-0.85 },  // Triangle 2
-    {0.90,0.90 },
-    {-0.85,0.90 }
+  GLfloat  vertices[NumVertices][3] = {
+    {-0.90f,-0.90,-3.0f },  // Triangle 1
+    {0.85,-0.90, -3.0f },
+    {-0.90,0.85,-3.0f },
+    {0.90,-0.85,-3.0f },  // Triangle 2
+    {0.90,0.90,-3.0f },
+    {-0.85,0.90,-3.0f }
   };
+  angle = 10.0;
 
   GLfloat Rotation[4][4] = { 
     { cos(angle), -sin(angle), 0.0, 0.0 },
     { sin(angle), cos(angle), 0.0, 0.0  },
     { 0.0, 0.0, 1.0, 0.0},
     { 0.0, 0.0, 0.0, 1.0 }
+  };
+  GLfloat zfar = 10.0f;
+  GLfloat znear = 1.0f;
+  /*
+  GLfloat Projection[4][4] = {
+    { znear/(width/2.0f), 0.0f,                0.0f,                             0.0f },
+    { 0.0f,               znear/(height/2.0f), 0.0f,                             0.0f },
+    { 0.0f,               0.0f,               -1.0f*((znear+zfar)/(znear-zfar)), (2.0f*(znear*zfar))/(zfar-znear) },
+    { 0.0f,               0.0f,               -1.0f,                             0.0f }
+  };
+  */
+  GLfloat Projection[4][4] = {
+    {1.0f, 0.0f, 0.0f, 0.0f},
+    {0.0f, 1.0f, 0.0f, 0.0f},
+    {0.0f, 0.0f, 1.0f, 0.0f},
+    {0.0f, 0.0f, 0.0f, 1.0f}
   };
 
   glGenBuffers(NumBuffers, Buffers);
@@ -133,9 +148,9 @@ void init(void)
   glUniform1i ( color_loc, color );
   glUniform3fv ( v_loc, 3, &vl[0] );
   glUniformMatrix4fv( Rotation_loc, 1, GL_TRUE, &Rotation[0][0] );
-  glUniformMatrix4fv( Projection_loc, 1, GL_FALSE, &Projection[0][0] );
+  glUniformMatrix4fv( Projection_loc, 1, GL_TRUE, &Projection[0][0] );
   
-  glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
+  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
   glEnableVertexAttribArray(vPosition);
 }
 
@@ -145,6 +160,7 @@ void init(void)
 void display(void)
 {
   angle = angle + delta;
+  angle = 1.0f;
   vl[1] = 1.0f;
 
   glUniform1f ( angle_loc, angle );
