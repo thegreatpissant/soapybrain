@@ -22,8 +22,8 @@ using namespace std;
 typedef vector < vector<float> > pointVector_t ;
 
 struct model_t {
-  //  pointVector_t vertices;
-  float ** vertices;
+  long   numVertices;
+  vector <float> vertices;
   vector <GLuint> VAOs;
   vector<GLuint> Buffers;
 };
@@ -163,14 +163,16 @@ void init(void)
 void display(void)
 {
   glClear(GL_COLOR_BUFFER_BIT);
-  //  glViewport (0,0, width,height);  
 
+//  Left Side
+  glViewport (0,0, width,height);  
   glBindVertexArray(ex15_1.VAOs[0]);
-  //  glDrawArrays(GL_POINTS, 0, ex15_1.vertices.size());
-  glDrawArrays(GL_POINTS, 0, 600);
+  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
 
-  //  glViewport (width,0, width,height); 
-  //  glDrawArrays(GL_POINTS, 0, NumVertices);
+//  Right Side
+  glViewport (width,0, width,height); 
+  glBindVertexArray(ex15_1.VAOs[0]);
+  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
 
   glFinish ();
   glutPostRedisplay ();
@@ -239,25 +241,23 @@ GLuint LoadShaders(ShaderInfo * si) {
 
 void GenerateModels () {
 
-  ex15_1.vertices = new float*[600]; //pointVector_t ( 600, vector<float>(3,0.0f) );
   float x = -3.0f;
-  //  for (int i = 0; i < ex15_1.vertices.size(); i++, x+= 0.01f) {
-  for (int i = 0; i < 600; i++, x+= 0.01f) {
-    ex15_1.vertices[i] = new float[3];
-    ex15_1.vertices[i][0] = x;
-    ex15_1.vertices[i][1]= powf(x,2);
-    ex15_1.vertices[i][2] = 1.0f;
+  ex15_1.numVertices = 600;
+  ex15_1.vertices.resize(ex15_1.numVertices*3);
+  for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f) {
+    ex15_1.vertices[i*3] = x;
+    ex15_1.vertices[i*3 + 1]= powf(x,2);
+    ex15_1.vertices[i*3 + 2] = 1.0f;
   }
 
-  ex15_1.VAOs = vector <GLuint> (1,0);
+  ex15_1.VAOs.resize(1);
   glGenVertexArrays( ex15_1.VAOs.size(), &ex15_1.VAOs[0] );
   glBindVertexArray( ex15_1.VAOs[0] );
 
-  ex15_1.Buffers = vector<GLuint>(1, 0);
+  ex15_1.Buffers.resize(1);
   glGenBuffers(ex15_1.Buffers.size(), &ex15_1.Buffers[0]);
   glBindBuffer(GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
-  //  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * ex15_1.vertices.size() * 3, &ex15_1.vertices[0][0], GL_STATIC_DRAW);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*600*3, ex15_1.vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_1.vertices.size(), &ex15_1.vertices[0], GL_STATIC_DRAW);
 
 }
 void DrawGrid () {
