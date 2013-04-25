@@ -1,39 +1,48 @@
 //////////////////////////////////////////////////////////////////////
 //
-//  triangles.cpp
+//  ex15_1.cpp
 //
 //////////////////////////////////////////////////////////////////////
-#include <string.h>
+#include <string>
+#include <vector>
 #include <iostream>
 #include <unistd.h>
+#include <math.h>
 using namespace std;
-#include <GL/glew.h>
-#include <GL/freeglut.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
 
 #include "common/shader_utils.h"
-//#include "LoadShaders.h"
-enum VAO_IDs { Triangles, NumVAOs };
-enum Buffer_IDs { ArrayBuffer, NumBuffers };
+
+//  Models
+typedef vector < vector<float> > pointVector_t ;
+
+struct model_t {
+  //  pointVector_t vertices;
+  float ** vertices;
+  vector <GLuint> VAOs;
+  vector<GLuint> Buffers;
+};
+
+struct model_t ex15_1;
+
 enum Attrib_IDs { vPosition = 0 };
-GLuint  VAOs[NumVAOs];
-GLuint  Buffers[NumBuffers];
-const GLuint  NumVertices = 6;
-GLfloat delta = 0.05f;
-GLfloat angle = 60;
-GLint angle_loc = 0;
+
 GLint color = 1;
 GLuint color_loc = 0;
-glm::vec4 vl(0.2f);
-GLuint v_loc = 0;
-GLuint Rotation_loc = 0;
-GLuint Projection_loc = 0;
+glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+GLuint MVP_loc = 0;
+
 typedef  struct shaderinfo {
   GLuint shadertype;
   const char * filename;
 } ShaderInfo;
 
+GLfloat zOffset = -1.0f;
 GLsizei width = 640;
 GLsizei height = 800;
 
@@ -41,11 +50,29 @@ GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
 #define BUFFER_OFFSET(offset)  ((void *)(offset))
 
+void UpdateView ();
+void PostView ();
+void DrawGrid ();
+void GenerateModels ();
 void GlutKeyboardFunc (unsigned char key, int x, int y )
 {
   switch (key) {
   case 27:
     exit (0);
+  case 'w':
+  case 'W':
+    zOffset += 0.10f;
+    cout << "zOffset= " << zOffset << endl;
+    UpdateView ();
+    PostView ();
+    break;
+  case 's':
+  case 'S':
+    zOffset -= 0.10f;
+    cout << "zOffset= " << zOffset << endl;
+    UpdateView ();
+    PostView ();
+    break;
   case 'r':
   case 'R':
     color = 1;
@@ -58,13 +85,9 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'B':
     color = 3;
     break;
-  case 'w':
-  case 'W':
+  case 'n':
+  case 'N':
     color = -1;
-    break;
-  case 'c':
-  case 'C':
-    delta *= -1;
     break;
   case 'f':
   case 'F':
@@ -77,81 +100,61 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
 /*
   Init
 */
-void init(void)
-{
-  glClearColor ( 0.5, 0.5, 0.5, 1.0 );
-  glGenVertexArrays(NumVAOs, VAOs);
-  glBindVertexArray(VAOs[Triangles]);
-  GLfloat  vertices[NumVertices][3] = {
-    {-0.90f,-0.90,3.0f },  // Triangle 1
-    {0.85,-0.90, 3.0f },
-    {-0.90,0.85,3.0f },
-    {0.90,-0.85,3.0f },  // Triangle 2
-    {0.90,0.90,3.0f },
-    {-0.85,0.90,3.0f }
-  };
-  angle = 0.0;
-
-  GLfloat Rotation[4][4] = { 
-    { cos(angle), -sin(angle), 0.0, 0.0 },
-    { sin(angle), cos(angle), 0.0, 0.0  },
-    { 0.0, 0.0, 1.0, 0.0},
-    { 0.0, 0.0, 0.0, 1.0 }
-  };
+void UpdateView () {
   /*
-  GLfloat zfar = -10.0f;
-  GLfloat znear = -1.0f;
-  GLfloat Projection[4][4] = {
+    GLfloat zfar = -10.0f;
+    GLfloat znear = -1.0f;
+    GLfloat Projection[4][4] = {
     { znear/(width/2.0f), 0.0f,                0.0f,                             0.0f },
     { 0.0f,               znear/(height/2.0f), 0.0f,                             0.0f },
     { 0.0f,               0.0f,               -1.0f*((znear+zfar)/(znear-zfar)), (2.0f*(znear*zfar))/(zfar-znear) },
     { 0.0f,               0.0f,               -1.0f,                             0.0f }
-  };
-  */
-  GLfloat Projection[4][4] = {
+    };
+    GLfloat Projection[4][4] = {
     {1.0f, 0.0f, 0.0f, 0.0f},
     {0.0f, 1.0f, 0.0f, 0.0f},
     {0.0f, 0.0f, 1.0f, 0.0f},
     {0.0f, 0.0f, 1.0f, 0.0f}
-  };
+    };
+  */
+  //  Projection = Projection * Translate;
+  glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+  glm::mat4 ViewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset));
+  //  glm::mat4 ViewRotateX = glm::rotate(ViewTranslate, 0.0f /*Rotate.y*/, glm::vec3(-1.0f, 0.0f, 0.0f));
+  //  glm::mat4 View = glm::rotate(ViewRotate, 0.0f /*Rotate.x*/, glm::vec3(0.0f, 1.0f, 0.0f));  
+  glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
+  MVP = Projection * ViewTranslate * Model;
+}
+void PostView () {
+  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
+}
+void init(void)
+{
+  //  Models
+  GenerateModels ();
 
-  glGenBuffers(NumBuffers, Buffers);
-  glBindBuffer(GL_ARRAY_BUFFER, Buffers[ArrayBuffer]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
+  //  Shaders
   ShaderInfo  shaders[] = {
-    { GL_VERTEX_SHADER, "./shaders/triangles.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/triangles.f.glsl" },
+    { GL_VERTEX_SHADER, "./shaders/ex15_1.v.glsl" },
+    { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
     { GL_NONE, NULL }
   };
-
   GLuint program = LoadShaders(shaders);
-
   glUseProgram(program);
-  if ( (angle_loc = glGetUniformLocation ( program, "angle" )) == -1 ) {
-    std::cout << "Did not find the angle loc\n";
-  }    
   if ( (color_loc = glGetUniformLocation ( program, "color" )) == -1 ) {
     std::cout << "Did not find the color loc\n";
   }
-  if ( (v_loc     = glGetUniformLocation ( program, "vPos2" )) == -1 ) {
-    std::cout << "Did not find the vPos2 loc\n";
+  if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
+    std:: cout << "Did not find the mMVP loc\n";
   }
-  if ( (Rotation_loc = glGetUniformLocation (program, "mRot" )) == -1 ) {
-    std:: cout << "Did not find the mRot loc\n";
-  }
-  if ( (Projection_loc = glGetUniformLocation (program, "mProj" )) == -1 ) {
-    std:: cout << "Did not find the mProj loc\n";
-  }
- 
-  glUniform1f ( angle_loc, angle );
   glUniform1i ( color_loc, color );
-  glUniform3fv ( v_loc, 3, &vl[0] );
-  glUniformMatrix4fv( Rotation_loc, 1, GL_TRUE, &Rotation[0][0] );
-  glUniformMatrix4fv( Projection_loc, 1, GL_FALSE, &Projection[0][0] );
-  
   glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
   glEnableVertexAttribArray(vPosition);
+
+  //  View
+  glClearColor ( 0.0, 0.0, 0.0, 1.0 );
+  UpdateView ();
+  PostView ();
 }
 
 /*
@@ -159,21 +162,16 @@ void init(void)
 */
 void display(void)
 {
-  angle = angle + delta;
-  angle = 1.0f;
-  vl[1] = 1.0f;
-
-  glUniform1f ( angle_loc, angle );
-  glUniform3fv ( v_loc , 3, &vl[0] );
   glClear(GL_COLOR_BUFFER_BIT);
-  glBindVertexArray(VAOs[Triangles]);
+  //  glViewport (0,0, width,height);  
 
-  /*  
-      glViewport (0,0, width,height);
-      glDrawArrays(GL_TRIANGLES, 0, NumVertices);
-      glViewport (width,0, width,height); 
-  */
-  glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+  glBindVertexArray(ex15_1.VAOs[0]);
+  //  glDrawArrays(GL_POINTS, 0, ex15_1.vertices.size());
+  glDrawArrays(GL_POINTS, 0, 600);
+
+  //  glViewport (width,0, width,height); 
+  //  glDrawArrays(GL_POINTS, 0, NumVertices);
+
   glFinish ();
   glutPostRedisplay ();
   usleep(10000);
@@ -194,7 +192,7 @@ int main(int argc, char** argv)
   //  glutInitContextVersion(4, 3);
   //  glutInitContextProfile(GLUT_CORE_PROFILE);
 
- glutCreateWindow(argv[0]);
+  glutCreateWindow(argv[0]);
   if (glewInit()) {
     cerr << "Unable to initialize GLEW ... exiting" << endl;
     exit(EXIT_FAILURE);
@@ -238,3 +236,30 @@ GLuint LoadShaders(ShaderInfo * si) {
   fColor = vec4 ( 0.0, 0.0, 1.0, 1.0 );
   }
 */
+
+void GenerateModels () {
+
+  ex15_1.vertices = new float*[600]; //pointVector_t ( 600, vector<float>(3,0.0f) );
+  float x = -3.0f;
+  //  for (int i = 0; i < ex15_1.vertices.size(); i++, x+= 0.01f) {
+  for (int i = 0; i < 600; i++, x+= 0.01f) {
+    ex15_1.vertices[i] = new float[3];
+    ex15_1.vertices[i][0] = x;
+    ex15_1.vertices[i][1]= powf(x,2);
+    ex15_1.vertices[i][2] = 1.0f;
+  }
+
+  ex15_1.VAOs = vector <GLuint> (1,0);
+  glGenVertexArrays( ex15_1.VAOs.size(), &ex15_1.VAOs[0] );
+  glBindVertexArray( ex15_1.VAOs[0] );
+
+  ex15_1.Buffers = vector<GLuint>(1, 0);
+  glGenBuffers(ex15_1.Buffers.size(), &ex15_1.Buffers[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
+  //  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * ex15_1.vertices.size() * 3, &ex15_1.vertices[0][0], GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*600*3, ex15_1.vertices, GL_STATIC_DRAW);
+
+}
+void DrawGrid () {
+  
+}

@@ -1,6 +1,6 @@
 include 	../Makefile.inc
 DIRS		= common 
-ALL_EXECS	= triangles
+ALL_EXECS	= triangles ex15_1
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
@@ -14,6 +14,9 @@ common : force_look
 
 triangles: triangles.cpp 
 	$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangles triangles.cpp $(STD) ./common/shader_utils.o
+
+ex15_1: ex15_1.cpp 
+	$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o ex15_1 ex15_1.cpp $(STD) ./common/shader_utils.o
 
 clean:
 	rm -f *.o $(ALL_EXECS) $(EDITOR_MESS)
