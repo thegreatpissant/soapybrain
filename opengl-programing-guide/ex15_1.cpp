@@ -19,8 +19,6 @@ using namespace std;
 #include "common/shader_utils.h"
 
 //  Models
-typedef vector < vector<float> > pointVector_t ;
-
 struct model_t {
   long   numVertices;
   vector <float> vertices;
@@ -29,6 +27,7 @@ struct model_t {
 };
 
 struct model_t ex15_1;
+struct model_t ex15_2;
 
 enum Attrib_IDs { vPosition = 0 };
 
@@ -43,13 +42,16 @@ typedef  struct shaderinfo {
 } ShaderInfo;
 
 GLfloat zOffset = -1.0f;
-GLsizei width = 640;
-GLsizei height = 800;
+GLsizei deviceWidht = 1280;
+GLsizei deviceHeight = 800;
+GLsizei screenWidth = 1280;
+GLsizei screenHeight = 800;
 
 GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
 #define BUFFER_OFFSET(offset)  ((void *)(offset))
 
+void Init ();
 void UpdateView ();
 void PostView ();
 void DrawGrid ();
@@ -98,37 +100,80 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   glutPostRedisplay();
 }
 /*
-  Init
+  Display
 */
 void UpdateView () {
-  /*
-    GLfloat zfar = -10.0f;
-    GLfloat znear = -1.0f;
-    GLfloat Projection[4][4] = {
-    { znear/(width/2.0f), 0.0f,                0.0f,                             0.0f },
-    { 0.0f,               znear/(height/2.0f), 0.0f,                             0.0f },
-    { 0.0f,               0.0f,               -1.0f*((znear+zfar)/(znear-zfar)), (2.0f*(znear*zfar))/(zfar-znear) },
-    { 0.0f,               0.0f,               -1.0f,                             0.0f }
-    };
-    GLfloat Projection[4][4] = {
-    {1.0f, 0.0f, 0.0f, 0.0f},
-    {0.0f, 1.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f}
-    };
-  */
-  //  Projection = Projection * Translate;
   glm::mat4 Projection = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
   glm::mat4 ViewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset));
-  //  glm::mat4 ViewRotateX = glm::rotate(ViewTranslate, 0.0f /*Rotate.y*/, glm::vec3(-1.0f, 0.0f, 0.0f));
-  //  glm::mat4 View = glm::rotate(ViewRotate, 0.0f /*Rotate.x*/, glm::vec3(0.0f, 1.0f, 0.0f));  
   glm::mat4 Model = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
   MVP = Projection * ViewTranslate * Model;
 }
 void PostView () {
   glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
 }
-void init(void)
+
+void display(void)
+{
+  glClear(GL_COLOR_BUFFER_BIT);
+
+//  Left Side
+  glViewport (0,0, screenWidth/2.0, screenHeight);  
+
+  glBindVertexArray(ex15_1.VAOs[0]);
+  glBindBuffer( GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
+  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
+  
+  glBindVertexArray(ex15_2.VAOs[0]);
+  glBindBuffer( GL_ARRAY_BUFFER, ex15_2.Buffers[0]);
+  glDrawArrays(GL_POINTS, 0, ex15_2.numVertices);
+
+
+//  Right Side
+  glViewport (screenWidth/2.0, 0, screenWidth/2.0,screenHeight); 
+
+  glBindVertexArray(ex15_1.VAOs[0]);
+  glBindBuffer( GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
+  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
+
+  glBindVertexArray(ex15_2.VAOs[0]);
+  glBindBuffer( GL_ARRAY_BUFFER, ex15_2.Buffers[0]);
+  glDrawArrays(GL_POINTS, 0, ex15_2.numVertices);
+
+  glFinish ();
+  glBindVertexArray (0);
+}
+
+void Reshape (int newWidth, int newHeight) {
+  screenWidth = newWidth;
+  screenHeight = newHeight;
+  UpdateView ();
+  PostView ();
+}
+
+/*
+  Main
+*/
+int main(int argc, char** argv)
+{
+  glutInit(&argc, argv);
+  glutInitDisplayMode(GLUT_RGBA);
+  glutInitWindowSize(screenWidth,screenHeight);
+  //  glutInitContextVersion(4, 3);
+  //  glutInitContextProfile(GLUT_CORE_PROFILE);
+
+  glutCreateWindow(argv[0]);
+  if (glewInit()) {
+    cerr << "Unable to initialize GLEW ... exiting" << endl;
+    exit(EXIT_FAILURE);
+  }
+  Init();
+  glutDisplayFunc(display);
+  glutReshapeFunc (Reshape);
+  glutKeyboardFunc ( GlutKeyboardFunc );
+  glutMainLoop();
+}
+
+void Init(void)
 {
   //  Models
   GenerateModels ();
@@ -148,8 +193,6 @@ void init(void)
     std:: cout << "Did not find the mMVP loc\n";
   }
   glUniform1i ( color_loc, color );
-  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
-  glEnableVertexAttribArray(vPosition);
 
   //  View
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
@@ -157,55 +200,61 @@ void init(void)
   PostView ();
 }
 
-/*
-  Display
-*/
-void display(void)
-{
-  glClear(GL_COLOR_BUFFER_BIT);
-
-//  Left Side
-  glViewport (0,0, width,height);  
-  glBindVertexArray(ex15_1.VAOs[0]);
-  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
-
-//  Right Side
-  glViewport (width,0, width,height); 
-  glBindVertexArray(ex15_1.VAOs[0]);
-  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
-
-  glFinish ();
-  glutPostRedisplay ();
-  usleep(10000);
-}
-
-void Reshape (int newWidth, int newHeight) {
-  width = newWidth / 2.0;
-  height = newHeight;
-}
-/*
-  Main
-*/
-int main(int argc, char** argv)
-{
-  glutInit(&argc, argv);
-  glutInitDisplayMode(GLUT_RGBA);
-  glutInitWindowSize(1280,720);
-  //  glutInitContextVersion(4, 3);
-  //  glutInitContextProfile(GLUT_CORE_PROFILE);
-
-  glutCreateWindow(argv[0]);
-  if (glewInit()) {
-    cerr << "Unable to initialize GLEW ... exiting" << endl;
-    exit(EXIT_FAILURE);
+void GenerateModels () {
+  float x = -3.0f;
+  ex15_1.numVertices = 600;
+  ex15_1.vertices.resize(ex15_1.numVertices*3);
+  for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f) {
+    ex15_1.vertices[i*3] = x;
+    ex15_1.vertices[i*3 + 1]= powf(x,2);
+    ex15_1.vertices[i*3 + 2] = 1.0f;
   }
-  init();
-  glutDisplayFunc(display);
-  glutReshapeFunc (Reshape);
-  glutKeyboardFunc ( GlutKeyboardFunc );
-  glutMainLoop();
+
+  x = -3.0f;
+  ex15_2.numVertices = 600;
+  ex15_2.vertices.resize(ex15_2.numVertices*3);
+  for (int i = 0; i < ex15_2.numVertices; i++, x+= 0.01f) {
+    ex15_2.vertices[i*3] = x;
+    ex15_2.vertices[i*3 + 1]= powf(x,3);
+    ex15_2.vertices[i*3 + 2] = 1.0f;
+  }
+
+  ex15_1.VAOs.resize(1);
+  glGenVertexArrays( ex15_1.VAOs.size(), &ex15_1.VAOs[0] );
+  if ( ex15_1.VAOs[0] == 0 ) {
+    cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << endl;
+  } else {
+    cout << "ex15_1: VAOs == " << ex15_1.VAOs[0] << endl;
+  }
+  glBindVertexArray( ex15_1.VAOs[0] );
+  ex15_1.Buffers.resize(1);
+  glGenBuffers(ex15_1.Buffers.size(), &ex15_1.Buffers[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_1.vertices.size(), &ex15_1.vertices[0], GL_STATIC_DRAW);
+  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
+  glEnableVertexAttribArray(vPosition);
+  glBindVertexArray (0);
+
+
+  ex15_2.VAOs.resize(1);
+  glGenVertexArrays( ex15_2.VAOs.size(), &ex15_2.VAOs[0] );
+  if ( ex15_2.VAOs[0] == 0 ) {
+    cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << endl;
+  } else {
+    cout << "ex15_2: VAOs == " << ex15_2.VAOs[0] << endl;
+  }
+  glBindVertexArray( ex15_2.VAOs[0] );
+  ex15_2.Buffers.resize(1);
+  glGenBuffers(ex15_2.Buffers.size(), &ex15_2.Buffers[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, ex15_2.Buffers[0]);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_2.vertices.size(), &ex15_2.vertices[0], GL_STATIC_DRAW);
+  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
+  glEnableVertexAttribArray(vPosition);
+  glBindVertexArray (0);
 }
 
+void DrawGrid () {
+}
 
 void ExitOnGLError ( const char * error_message ) {
   cout << error_message << endl;
@@ -230,36 +279,4 @@ GLuint LoadShaders(ShaderInfo * si) {
   return program;
 }
 
-// Shader fragment
-/*
-  #version 430 core
-  out vec4 fColor;
-  void main () {
-  fColor = vec4 ( 0.0, 0.0, 1.0, 1.0 );
-  }
-*/
 
-void GenerateModels () {
-
-  float x = -3.0f;
-  ex15_1.numVertices = 600;
-  ex15_1.vertices.resize(ex15_1.numVertices*3);
-  for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f) {
-    ex15_1.vertices[i*3] = x;
-    ex15_1.vertices[i*3 + 1]= powf(x,2);
-    ex15_1.vertices[i*3 + 2] = 1.0f;
-  }
-
-  ex15_1.VAOs.resize(1);
-  glGenVertexArrays( ex15_1.VAOs.size(), &ex15_1.VAOs[0] );
-  glBindVertexArray( ex15_1.VAOs[0] );
-
-  ex15_1.Buffers.resize(1);
-  glGenBuffers(ex15_1.Buffers.size(), &ex15_1.Buffers[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_1.vertices.size(), &ex15_1.vertices[0], GL_STATIC_DRAW);
-
-}
-void DrawGrid () {
-  
-}
