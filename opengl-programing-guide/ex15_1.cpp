@@ -48,12 +48,13 @@ GLfloat vResolution = 800.0f;
 GLfloat hScreenSize = 0.14976f;
 GLfloat vScreenSize = 0.0935f;
 GLfloat aspect = hResolution / (2.0f * vResolution);
-GLfloat znear  = 0.1f;
-GLfloat zfar   = 100.0f;
+GLfloat znear  = 0.3f;
+GLfloat zfar   = 1000.0f;
 glm::mat4 MVP = glm::perspective( fov, aspect, znear, zfar );
 //glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
 GLfloat ipd  = 0.064f;
-GLfloat h    = 0.25f * hScreenSize - 0.5f * ipd;
+GLfloat h    = (0.25f * hScreenSize) - (0.5f * ipd);
+GLfloat hOffset = 4.0f* h / hScreenSize;
 GLuint MVP_loc = 0;
 
 typedef  struct shaderinfo {
@@ -62,7 +63,7 @@ typedef  struct shaderinfo {
 } ShaderInfo;
 
 GLfloat zOffset = -1.0f;
-GLsizei deviceWidht = 1280;
+GLsizei deviceWidth = 1280;
 GLsizei deviceHeight = 800;
 GLsizei screenWidth = 1280;
 GLsizei screenHeight = 800;
@@ -114,6 +115,16 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'F':
     glutFullScreenToggle ();
     break;
+  case 'i':
+	hOffset += 0.1f;
+	cout << "hOffset = " << hOffset << endl;
+	UpdateView();
+	break;
+  case 'I':
+	hOffset -= 0.1f;
+	cout << "hOffset = " << hOffset << endl;
+	UpdateView();
+	break;
   }
   glUniform1i ( color_loc, color );
   glutPostRedisplay();
@@ -121,16 +132,16 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
 /*
   Display
 */
-glm::mat4 viewLeft;
-glm::mat4 viewRight;
+glm::mat4 viewLeft = glm::mat4(1.0f);
+glm::mat4 viewRight = glm::mat4(1.0f);
 void UpdateView () {
   glm::mat4 Projection = MVP; 
-  glm::mat4 ViewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset));
-
-  glm::mat4 projectionLeft = glm::translate(MVP /*glm::mat4(1.0f)*/, glm::vec3( h, 0.0f, 0.0f));// * MVP;
-  glm::mat4 projectionRight = glm::translate(MVP /*glm::mat4(1.0f)*/, glm::vec3( -h, 0.0f, 0.0f));// * MVP;
-  glm::mat4 viewLeft = glm::translate(projectionRight /*glm::mat4(1.0f)*/, glm::vec3( 0.5f*ipd, 0.0f, 0.0f));
-  glm::mat4 viewRight = glm::translate(glm::mat4(1.0f), glm::vec3( -(0.5f*ipd), 0.0f, 0.0f));
+  //glm::mat4 ViewTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, zOffset));
+  glm::mat4 projectionLeft  = glm::translate ( Projection, glm::vec3(  hOffset, 0.0f, zOffset));
+  Projection = MVP; 
+  glm::mat4 projectionRight = glm::translate ( Projection, glm::vec3( -hOffset, 0.0f, zOffset));
+  viewLeft  = glm::translate ( projectionLeft, glm::vec3(   0.5f*ipd, 0.0f, 0.0f));
+  viewRight = glm::translate ( projectionRight, glm::vec3( -(0.5f*ipd), 0.0f, 0.0f));
 }
 void PostViewLeft () {
   glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &viewLeft[0][0] ); 
@@ -150,22 +161,19 @@ void display(void)
   ex15_1.Render ();
   ex15_2.Render ();	
 
-
 //  Right Side
   glViewport (screenWidth/2.0, 0, screenWidth/2.0,screenHeight); 
-
   PostViewRight ();
   ex15_1.Render ();
   ex15_2.Render ();	
 
   glBindVertexArray (0);
-
   glFinish ();
 }
 
 void Reshape (int newWidth, int newHeight) {
-  screenWidth = newWidth;
-  screenHeight = newHeight;
+  //screenWidth = newWidth;
+  //screenHeight = newHeight;
   UpdateView ();
   glutPostRedisplay ();
 }
@@ -221,7 +229,7 @@ void Init(void)
 }
 
 void GenerateModels () {
-  float x = -3.0f;
+  float x = 0.0f;
   ex15_1.numVertices = 600;
   ex15_1.vertices.resize(ex15_1.numVertices*3);
   for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f) {
