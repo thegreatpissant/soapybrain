@@ -22,8 +22,14 @@ using namespace std;
 struct model_t {
   long   numVertices;
   vector <float> vertices;
-  vector <GLuint> VAOs;
-  vector<GLuint> Buffers;
+  vector <GLuint> vaos;
+  vector <GLuint> buffers;
+  int    renderPrimitive;
+  void Render () {
+    glBindVertexArray(vaos[0]);
+    glBindBuffer( GL_ARRAY_BUFFER, buffers[0]);
+    glDrawArrays(renderPrimitive, 0, numVertices);
+  } 
 };
 
 struct model_t ex15_1;
@@ -60,6 +66,8 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
 {
   switch (key) {
   case 27:
+  case 'q':
+  case 'Q':
     exit (0);
   case 'w':
   case 'W':
@@ -118,29 +126,17 @@ void display(void)
 
 //  Left Side
   glViewport (0,0, screenWidth/2.0, screenHeight);  
-
-  glBindVertexArray(ex15_1.VAOs[0]);
-  glBindBuffer( GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
-  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
-  
-  glBindVertexArray(ex15_2.VAOs[0]);
-  glBindBuffer( GL_ARRAY_BUFFER, ex15_2.Buffers[0]);
-  glDrawArrays(GL_POINTS, 0, ex15_2.numVertices);
-
+  ex15_1.Render ();
+  ex15_2.Render ();	
 
 //  Right Side
   glViewport (screenWidth/2.0, 0, screenWidth/2.0,screenHeight); 
+  ex15_1.Render ();
+  ex15_2.Render ();	
 
-  glBindVertexArray(ex15_1.VAOs[0]);
-  glBindBuffer( GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
-  glDrawArrays(GL_POINTS, 0, ex15_1.numVertices);
-
-  glBindVertexArray(ex15_2.VAOs[0]);
-  glBindBuffer( GL_ARRAY_BUFFER, ex15_2.Buffers[0]);
-  glDrawArrays(GL_POINTS, 0, ex15_2.numVertices);
+  glBindVertexArray (0);
 
   glFinish ();
-  glBindVertexArray (0);
 }
 
 void Reshape (int newWidth, int newHeight) {
@@ -219,38 +215,36 @@ void GenerateModels () {
     ex15_2.vertices[i*3 + 2] = 1.0f;
   }
 
-  ex15_1.VAOs.resize(1);
-  glGenVertexArrays( ex15_1.VAOs.size(), &ex15_1.VAOs[0] );
-  if ( ex15_1.VAOs[0] == 0 ) {
+  ex15_1.vaos.resize(1);
+  glGenVertexArrays( ex15_1.vaos.size(), &ex15_1.vaos[0] );
+  if ( ex15_1.vaos[0] == 0 ) {
     cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << endl;
-  } else {
-    cout << "ex15_1: VAOs == " << ex15_1.VAOs[0] << endl;
-  }
-  glBindVertexArray( ex15_1.VAOs[0] );
-  ex15_1.Buffers.resize(1);
-  glGenBuffers(ex15_1.Buffers.size(), &ex15_1.Buffers[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, ex15_1.Buffers[0]);
+  } 
+  glBindVertexArray( ex15_1.vaos[0] );
+  ex15_1.buffers.resize(1);
+  glGenBuffers(ex15_1.buffers.size(), &ex15_1.buffers[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, ex15_1.buffers[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_1.vertices.size(), &ex15_1.vertices[0], GL_STATIC_DRAW);
   glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
   glEnableVertexAttribArray(vPosition);
   glBindVertexArray (0);
+  ex15_1.renderPrimitive = GL_POINTS;
 
 
-  ex15_2.VAOs.resize(1);
-  glGenVertexArrays( ex15_2.VAOs.size(), &ex15_2.VAOs[0] );
-  if ( ex15_2.VAOs[0] == 0 ) {
+  ex15_2.vaos.resize(1);
+  glGenVertexArrays( ex15_2.vaos.size(), &ex15_2.vaos[0] );
+  if ( ex15_2.vaos[0] == 0 ) {
     cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << endl;
-  } else {
-    cout << "ex15_2: VAOs == " << ex15_2.VAOs[0] << endl;
-  }
-  glBindVertexArray( ex15_2.VAOs[0] );
-  ex15_2.Buffers.resize(1);
-  glGenBuffers(ex15_2.Buffers.size(), &ex15_2.Buffers[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, ex15_2.Buffers[0]);
+  } 
+  glBindVertexArray( ex15_2.vaos[0] );
+  ex15_2.buffers.resize(1);
+  glGenBuffers(ex15_2.buffers.size(), &ex15_2.buffers[0]);
+  glBindBuffer(GL_ARRAY_BUFFER, ex15_2.buffers[0]);
   glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_2.vertices.size(), &ex15_2.vertices[0], GL_STATIC_DRAW);
   glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
   glEnableVertexAttribArray(vPosition);
   glBindVertexArray (0);
+  ex15_2.renderPrimitive = GL_POINTS;
 }
 
 void DrawGrid () {
