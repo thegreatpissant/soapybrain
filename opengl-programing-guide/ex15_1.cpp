@@ -42,12 +42,13 @@ enum Attrib_IDs { vPosition = 0 };
 
 GLint color = 1;
 GLuint color_loc = 0;
-GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*0.041f)));
 GLfloat hResolution = 640.0f;
 GLfloat vResolution = 800.0f;
 GLfloat hScreenSize = 0.14976f;
 GLfloat vScreenSize = 0.0935f;
+GLfloat eyeScreenDist = 0.041f;
 GLfloat aspect = hResolution / (2.0f * vResolution);
+GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
 GLfloat znear  = 0.3f;
 GLfloat zfar   = 1000.0f;
 glm::mat4 MVP = glm::perspective( fov, aspect, znear, zfar );
