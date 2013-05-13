@@ -17,9 +17,7 @@ using namespace std;
 #include <GL/freeglut.h>
 
 #include "common/shader_utils.h"
-#include "libovr_nsb/OVR.h"
 
-Device *dev;
 //  Models
 struct model_t {
   long   numVertices;
@@ -43,7 +41,7 @@ struct model_t ex15_5;
 enum Attrib_IDs { vPosition = 0 };
 
 GLint color = 1;
-GLuint color_loc = 0;
+GLint color_loc = 0;
 GLfloat hResolution = 640.0f;
 GLfloat vResolution = 800.0f;
 GLfloat hScreenSize = 0.14976f;
@@ -51,14 +49,14 @@ GLfloat vScreenSize = 0.0935f;
 GLfloat eyeScreenDist = 0.041f;
 GLfloat aspect = hResolution / (2.0f * vResolution);
 GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
-GLfloat znear  = 0.3f;
-GLfloat zfar   = 1000.0f;
-glm::mat4 MVP = glm::perspective( fov, aspect, znear, zfar );
+GLfloat zNear  = 0.3f;
+GLfloat zFar   = 1000.0f;
+glm::mat4 MVP = glm::perspective( fov, aspect, zNear, zFar );
 //glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
 GLfloat ipd  = 0.064f;
 GLfloat h    = (0.25f * hScreenSize) - (0.5f * ipd);
 GLfloat hOffset = 4.0f* h / hScreenSize;
-GLuint MVP_loc = 0;
+GLint MVP_loc = 0;
 
 typedef  struct shaderinfo {
   GLuint shadertype;
@@ -160,7 +158,6 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
 glm::mat4 viewLeft = glm::mat4(1.0f);
 glm::mat4 viewRight = glm::mat4(1.0f);
 void UpdateView () {
-  cout << dev->Q << endl;
   glm::mat4 I = glm::mat4 (0.0f);
   I[0][0] = 1.0f;
   I[1][1] = 1.0f;
@@ -225,21 +222,6 @@ void Reshape (int newWidth, int newHeight) {
 */
 int main(int argc, char** argv)
 {
-  dev = openRift (0, 0);
-
-  if (!dev) {
-    cout << "Rift not found." << endl;
-    return -1;
-  }
-
-  cout << "Device info" << endl;
-  cout << "\tname: " << dev->name << endl;
-  cout << "\tlocation: " << dev->location << endl;
-  cout << "\tvendor: " << dev->vendorId << endl;
-  cout << "\tproduct: " << dev->productId << endl;
-
-  runSensorUpdateThread (dev);
-
   glutInit(&argc, argv);
   glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA);
   glutInitWindowSize(screenWidth,screenHeight);
