@@ -5,6 +5,7 @@ TEST_EXECS 	=
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
 STD		= -std=c++11
+LDLIBS          += 
 
 all: $(OBJ_FILES) $(ALL_EXECS) 
 
