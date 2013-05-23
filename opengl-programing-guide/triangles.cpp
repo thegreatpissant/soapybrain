@@ -24,11 +24,11 @@ GLfloat delta = 0.05f;
 GLfloat angle = 60;
 GLint angle_loc = 0;
 GLint color = 1;
-GLuint color_loc = 0;
+GLint color_loc = 0;
 glm::vec4 vl(0.2f);
-GLuint v_loc = 0;
-GLuint Rotation_loc = 0;
-GLuint Projection_loc = 0;
+GLint v_loc = 0;
+GLint Rotation_loc = 0;
+GLint Projection_loc = 0;
 typedef  struct shaderinfo {
   GLuint shadertype;
   const char * filename;

@@ -17,9 +17,7 @@ using namespace std;
 #include <GL/freeglut.h>
 
 #include "common/shader_utils.h"
-#include "libovr_nsb/OVR.h"
 
-Device *dev;
 //  Models
 struct model_t {
   long   numVertices;
@@ -43,7 +41,7 @@ struct model_t ex15_5;
 enum Attrib_IDs { vPosition = 0 };
 
 GLint color = 1;
-GLuint color_loc = 0;
+GLint color_loc = 0;
 GLfloat hResolution = 640.0f;
 GLfloat vResolution = 800.0f;
 GLfloat hScreenSize = 0.14976f;
@@ -57,7 +55,7 @@ glm::mat4 MVP = glm::mat4(0.0f);
 GLfloat ipd  = 0.064f;
 GLfloat h    = (0.25f * hScreenSize) - (0.5f * ipd);
 GLfloat hOffset = 4.0f* h / hScreenSize;
-GLuint MVP_loc = 0;
+GLint MVP_loc = 0;
 
 typedef  struct shaderinfo {
   GLuint shadertype;
@@ -93,31 +91,25 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'W':
     depth += 0.10f;
     cout << "depth= " << depth << endl;
-    UpdateView ();
     break;
   case 's':
   case 'S':
     depth -= 0.10f;
     cout << "depth= " << depth << endl;
-    UpdateView ();
     break;
   case 'a':
   case 'A':
     strafe -= 0.10f;
-    UpdateView ();
   break;
   case 'd':
   case 'D':
     strafe += 0.10f;
-    UpdateView ();
   break;
   case ' ':
     height += 0.10f;
-    UpdateView ();
   break;
   case 'c':
     height -= 0.10f;
-    UpdateView ();
   break;
   case 'r':
   case 'R':
@@ -142,15 +134,14 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'p':
 	hOffset += 0.01f;
 	cout << "hOffset = " << hOffset << endl;
-	UpdateView();
 	break;
   case 'P':
 	hOffset -= 0.01f;
 	cout << "hOffset = " << hOffset << endl;
-	UpdateView();
 	break;
   }
   glUniform1i ( color_loc, color );
+  UpdateView();
   glutPostRedisplay();
 }
 /*
@@ -159,7 +150,6 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
 glm::mat4 viewLeft = glm::mat4(1.0f);
 glm::mat4 viewRight = glm::mat4(1.0f);
 void UpdateView () {
-  cout << dev->Q << endl;
   glm::mat4 I = glm::mat4 (0.0f);
   I[0][0] = 1.0f;
   I[1][1] = 1.0f;
@@ -173,9 +163,7 @@ void UpdateView () {
   h[0][3] = hOffset;
   glm::mat4 projectionLeft  = camera * MVP * h; // * ViewTranslate;
   h[0][3] = -hOffset;
-  //glm::mat4 projectionLeft  = glm::translate ( Projection, glm::vec3(  hOffset, 0.0f, zOffset));
   glm::mat4 projectionRight = camera * MVP * h;// * ViewTranslate;
-  //glm::translate ( Projection, glm::vec3( -hOffset, 0.0f, zOffset));
   viewLeft  = I; 
   viewLeft[0][3] = 0.5f*ipd;
   viewRight = I; 
@@ -213,8 +201,8 @@ void Display(void)
 }
 
 void Reshape (int newWidth, int newHeight) {
-  //screenWidth = newWidth;
-  //screenHeight = newHeight;
+  screenWidth = newWidth;
+  screenHeight = newHeight;
   UpdateView ();
   glutPostRedisplay ();
 }
@@ -224,21 +212,6 @@ void Reshape (int newWidth, int newHeight) {
 */
 int main(int argc, char** argv)
 {
-  dev = openRift (0, 0);
-
-  if (!dev) {
-    cout << "Rift not found." << endl;
-    return -1;
-  }
-
-  cout << "Device info" << endl;
-  cout << "\tname: " << dev->name << endl;
-  cout << "\tlocation: " << dev->location << endl;
-  cout << "\tvendor: " << dev->vendorId << endl;
-  cout << "\tproduct: " << dev->productId << endl;
-
-  runSensorUpdateThread (dev);
-
   glutInit(&argc, argv);
   glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA);
   glutInitWindowSize(screenWidth,screenHeight);
@@ -251,11 +224,11 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
   Init();
-  glutIdleFunc ( IdleFunction );
-  glutMouseFunc ( MouseFunction );
-  glutDisplayFunc(Display);
-  glutReshapeFunc (Reshape);
-  glutKeyboardFunc ( GlutKeyboardFunc );
+  glutIdleFunc     (IdleFunction);
+  glutMouseFunc    (MouseFunction);
+  glutDisplayFunc  (Display);
+  glutReshapeFunc  (Reshape);
+  glutKeyboardFunc (GlutKeyboardFunc);
   glutMainLoop();
 }
 
@@ -282,14 +255,16 @@ void Init(void)
 
   //  View
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
-  UpdateView ();
-  glutPostRedisplay ();
 
   MVP[0][0] = 1.0f/(aspect*tan(fov/2.0f));
   MVP[1][1] = 1.0f/(tan(fov/2.0f));
   MVP[2][2] = zFar/(zNear-zFar);
   MVP[2][3] = (zNear*zFar)/(zNear-zFar);
   MVP[3][2] = -1.0f;
+
+  UpdateView ();
+  glutPostRedisplay ();
+
 }
 
 void GenerateModels () {
@@ -375,8 +350,8 @@ GLuint LoadShaders(ShaderInfo * si) {
 }
 
 void IdleFunction () {
-  glutPostRedisplay ();
+  //  glutPostRedisplay ();
 }
 void MouseFunction (int x, int y, int j, int k) {
-  glutPostRedisplay ();
+  //  glutPostRedisplay ();
 }
