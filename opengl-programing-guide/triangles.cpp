@@ -27,6 +27,7 @@ GLint color = 1;
 GLint color_loc = 0;
 glm::vec4 vl(0.2f);
 GLint v_loc = 0;
+GLfloat Rotation [4][4];
 GLint Rotation_loc = 0;
 GLint Projection_loc = 0;
 typedef  struct shaderinfo {
@@ -41,7 +42,14 @@ GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
 #define BUFFER_OFFSET(offset)  ((void *)(offset))
 
-void GlutKeyboardFunc (unsigned char key, int x, int y )
+void Physics () {
+  //  Update rotation matrix
+  Rotation[0][0] = cos(angle);
+  Rotation[1][1] = cos(angle); 
+  Rotation[0][1] = sin(angle);
+  Rotation[1][0] = -sin(angle);
+}
+ void GlutKeyboardFunc (unsigned char key, int x, int y )
 {
   switch (key) {
   case 27:
@@ -64,7 +72,7 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
     break;
   case 'c':
   case 'C':
-    delta *= -1;
+    delta *= -1.0;
     break;
   case 'f':
   case 'F':
@@ -91,14 +99,15 @@ void init(void)
     {-0.85,0.90,3.0f }
   };
   angle = 0.0;
-
-  GLfloat Rotation[4][4] = { 
-    { cos(angle), -sin(angle), 0.0, 0.0 },
-    { sin(angle), cos(angle), 0.0, 0.0  },
-    { 0.0, 0.0, 1.0, 0.0},
-    { 0.0, 0.0, 0.0, 1.0 }
-  };
-  /*
+  for ( int i = 0; i < 4; i++) {
+    for ( int j = 0; j < 4; j++ )
+	if ( i == j )
+           Rotation [i][j] = 1.0f;
+        else 
+           Rotation [i][j] = 0.0f;
+  }
+  Physics ();
+ /*
   GLfloat zfar = -10.0f;
   GLfloat znear = -1.0f;
   GLfloat Projection[4][4] = {
@@ -111,8 +120,8 @@ void init(void)
   GLfloat Projection[4][4] = {
     {1.0f, 0.0f, 0.0f, 0.0f},
     {0.0f, 1.0f, 0.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f},
-    {0.0f, 0.0f, 1.0f, 0.0f}
+    {0.0f, 0.0f, 1.0f, 1.0f},
+    {0.0f, 0.0f, 0.0f, 0.0f}
   };
 
   glGenBuffers(NumBuffers, Buffers);
@@ -160,10 +169,9 @@ void init(void)
 void display(void)
 {
   angle = angle + delta;
-  angle = 1.0f;
   vl[1] = 1.0f;
-
-  glUniform1f ( angle_loc, angle );
+  Physics ();
+  glUniformMatrix4fv( Rotation_loc, 1, GL_TRUE, &Rotation[0][0] );
   glUniform3fv ( v_loc , 3, &vl[0] );
   glClear(GL_COLOR_BUFFER_BIT);
   glBindVertexArray(VAOs[Triangles]);
