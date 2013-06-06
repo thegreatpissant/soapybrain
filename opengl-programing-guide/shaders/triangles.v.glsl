@@ -16,5 +16,5 @@ void main (void)
     0.0, 0.0, 0.0, 1.0
                       );
 
-  gl_Position = vPosition * mRot * mProj;
+  gl_Position = mProj * mRot * vPosition;
 }

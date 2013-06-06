@@ -10,13 +10,19 @@
 #include <math.h>
 using namespace std;
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include "common/shader_utils.h"
+
+
+#include "libovr_nsb/OVR.h"
 
 //  Models
 struct model_t {
@@ -32,11 +38,10 @@ struct model_t {
   } 
 };
 
+Device *dev;
+
 struct model_t ex15_1;
 struct model_t ex15_2;
-struct model_t ex15_3;
-struct model_t ex15_4;
-struct model_t ex15_5;
 
 enum Attrib_IDs { vPosition = 0 };
 
@@ -50,23 +55,26 @@ GLfloat eyeScreenDist = 0.041f;
 GLfloat aspect = hResolution / (2.0f * vResolution);
 GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
 GLfloat zNear  = 0.3f;
-GLfloat zFar   = 1000.0f;
-glm::mat4 MVP = glm::perspective( fov, aspect, zNear, zFar );
-//glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+GLfloat zFar   = 2000.0f;
+glm::mat4 MVP;
+GLfloat ipd  = 0.064f;
+GLfloat h = (0.25f * hScreenSize) - (0.5f * 0.064f);
+GLfloat hOffset = 4.0f* h / hScreenSize;
 GLint MVP_loc = 0;
-
+glm::mat4 omat;
 typedef  struct shaderinfo {
   GLuint shadertype;
   const char * filename;
 } ShaderInfo;
 
-GLfloat depth = -3.0f;
+GLfloat depth = -300.0f;
 GLfloat height = 0.0f;
 GLfloat strafe = 0.0f;
 GLsizei deviceWidth = 1280;
 GLsizei deviceHeight = 800;
 GLsizei screenWidth = 1280;
 GLsizei screenHeight = 800;
+int RotX= 0, PrevX = 0;
 
 GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
@@ -74,10 +82,12 @@ void ExitOnGLError ( const char * );
 
 void Init ();
 void UpdateView ();
+void UpdateIPD ();
 void DrawGrid ();
 void GenerateModels ();
 void IdleFunction ();
 void MouseFunction (int, int, int, int);
+void PassiveMotionFunction (int, int);
 void GlutKeyboardFunc (unsigned char key, int x, int y )
 {
   switch (key) {
@@ -87,12 +97,12 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
     exit (0);
   case 'w':
   case 'W':
-    depth += 0.10f;
+    depth += 1.0f;
     cout << "depth= " << depth << endl;
     break;
   case 's':
   case 'S':
-    depth -= 0.10f;
+    depth -= 1.0f;
     cout << "depth= " << depth << endl;
     break;
   case 'a':
@@ -109,6 +119,14 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'c':
     height -= 0.10f;
   break;
+  case 'e':
+  case 'E':
+    height= 0.0f;
+    depth = -1000.0f;
+    strafe = 0.0f;
+    ipd  = 0.064f;
+    UpdateIPD();
+    break;
   case 'r':
   case 'R':
     color = 1;
@@ -129,28 +147,50 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'F':
     glutFullScreenToggle ();
     break;
+  case 'p':
+    ipd += 0.001f;  // hOffset += 0.01f;
+    UpdateIPD ();
+	cout << "hOffset = " << hOffset << endl;
+	break;
+  case 'P':
+    ipd -= 0.001f;  // hOffset -= 0.01f;
+    UpdateIPD ();
+	cout << "hOffset = " << hOffset << endl;
+	break;
   }
   glUniform1i ( color_loc, color );
   UpdateView();
   glutPostRedisplay();
 }
 /*
-  Display
+ -Display
 */
+void UpdateIPD () {
+
+}
+
 glm::mat4 viewLeft = glm::mat4(1.0f);
 glm::mat4 viewRight = glm::mat4(1.0f);
 void UpdateView () {
-  glm::mat4 I = glm::mat4 (1.0f);
-  glm::mat4 camera = I;
-  camera[3][0] = strafe;
-  camera[3][1] = height;
-  camera[3][2] = depth;
-  glm::mat4 projectionLeft  = camera*MVP; // * ViewTranslate;
-  viewLeft  = I; 
-  viewLeft = projectionLeft;
+  glm::mat4  model = glm::translate( strafe, height, depth); // * omat;
+
+  glm::mat4 htranslate = glm::translate(model, glm::vec3(hOffset, 0.0f, 0.0f));
+  glm::mat4 projectionLeft  =  MVP*htranslate;
+
+  htranslate = glm::translate(model, glm::vec3(-hOffset, 0.0f, 0.0f));
+
+  glm::mat4 projectionRight = MVP*htranslate; 
+  
+  viewLeft =  glm::translate(projectionLeft, glm::vec3(0.5*ipd, 0.0f, 0.0f));
+  viewRight = glm::translate(projectionRight, glm::vec3(-0.5*ipd, 0.0f, 0.0f));
 }
-void PostView() {
+
+void PostViewLeft () {
   glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &viewLeft[0][0] ); 
+}
+
+void PostViewRight () {
+  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &viewRight[0][0] ); 
 }
 
 void Display(void)
@@ -158,8 +198,14 @@ void Display(void)
   glClear(GL_COLOR_BUFFER_BIT);
 
 //  Left Side
-  glViewport (0,0, screenWidth, screenHeight);  
-  PostView();
+  glViewport (0,0, screenWidth/2.0, screenHeight);  
+  PostViewLeft ();
+  ex15_1.Render ();
+  ex15_2.Render ();	
+
+//  Right Side
+  glViewport (screenWidth/2.0, 0, screenWidth/2.0,screenHeight); 
+  PostViewRight ();
   ex15_1.Render ();
   ex15_2.Render ();	
 
@@ -180,6 +226,20 @@ void Reshape (int newWidth, int newHeight) {
 */
 int main(int argc, char** argv)
 {
+  dev = openRift(0,0);
+
+  if (!dev) {
+	cout << "Error opening rift" << endl;
+	return 0;
+  }
+  cout << "Device Info:\n" << endl;
+  cout << "\tname:\t" << dev->name << endl;
+  cout << "\tlocation:\t" << dev->location << endl;
+  cout << "\tvendor:\t" << dev->vendorId << endl;
+  cout << "\tproduct:\t" << dev->productId << endl;
+
+  runSensorUpdateThread (dev);
+
   glutInit(&argc, argv);
   glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA);
   glutInitWindowSize(screenWidth,screenHeight);
@@ -207,8 +267,8 @@ void Init(void)
 
   //  Shaders
   ShaderInfo  shaders[] = {
-    { GL_VERTEX_SHADER, "./shaders/ex15_1.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
+    { GL_VERTEX_SHADER, "./shaders/oculus.v.glsl" },
+    { GL_FRAGMENT_SHADER, "./shaders/oculus.f.glsl" },
     { GL_NONE, NULL }
   };
   GLuint program = LoadShaders(shaders);
@@ -221,6 +281,10 @@ void Init(void)
   }
   glUniform1i ( color_loc, color );
 
+  MVP = glm::perspective(fov, aspect, zNear, zFar);
+  ipd  = 0.064f;
+  UpdateIPD();
+
   //  View
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
 
@@ -230,13 +294,13 @@ void Init(void)
 }
 
 void GenerateModels () {
-  float x = 0.0f, z = -10.0f;;
+  float x = -3.0f, z = -10.0f;;
   ex15_1.numVertices = 600;
   ex15_1.vertices.resize(ex15_1.numVertices*3);
   for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f, z += 0.05f) {
     ex15_1.vertices[i*3] = x;
-    ex15_1.vertices[i*3 + 1]= powf(x,1);
-    ex15_1.vertices[i*3 + 2] = z;
+    ex15_1.vertices[i*3 + 1] = powf(x,1);
+    ex15_1.vertices[i*3 + 2] = z; // z
     if ( z >= -1.0f)
       z = -10.0f; //(i % 2 ? -8.0f:-12.0f);
   }
@@ -247,8 +311,8 @@ void GenerateModels () {
   ex15_2.vertices.resize(ex15_2.numVertices*3);
   for (int i = 0; i < ex15_2.numVertices; i++, x+= 0.01f, z+= 0.05f) {
     ex15_2.vertices[i*3] = x;
-    ex15_2.vertices[i*3 + 1]= powf(x,3);
-    ex15_2.vertices[i*3 + 2] = -10.0f; //z;
+    ex15_2.vertices[i*3 + 1] = powf(x,3);
+    ex15_2.vertices[i*3 + 2] = z; // z
     if ( z >= -1.0f) 
        z = -10.0f;
   }
@@ -313,7 +377,20 @@ GLuint LoadShaders(ShaderInfo * si) {
 
 void IdleFunction () {
   //  glutPostRedisplay ();
+  static glm::detail::tquat<float> oquat;
+  oquat = glm::detail::tquat<float> (dev->Q[3], dev->Q[0], dev->Q[1], dev->Q[2]);
+  //  cout << "quat: " << dev->Q[0] << ", " << dev->Q[1] << ", " << dev->Q[2] << ", " << dev->Q[3] << endl;
+  omat = glm::mat4_cast(oquat); 
+  UpdateView();
+  glutPostRedisplay ();
+
 }
 void MouseFunction (int x, int y, int j, int k) {
+  
   //  glutPostRedisplay ();
+}
+
+void PassiveMotionFunction (int x, int y) {
+  RotX = PrevX - x;
+  PrevX = x;
 }

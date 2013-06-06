@@ -168,11 +168,6 @@ void display(void)
   glClear(GL_COLOR_BUFFER_BIT);
   glBindVertexArray(VAOs[Triangles]);
 
-  /*  
-      glViewport (0,0, width,height);
-      glDrawArrays(GL_TRIANGLES, 0, NumVertices);
-      glViewport (width,0, width,height); 
-  */
   glDrawArrays(GL_TRIANGLES, 0, NumVertices);
   glFinish ();
   glutPostRedisplay ();
