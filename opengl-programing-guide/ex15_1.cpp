@@ -293,7 +293,6 @@ void ExitOnGLError ( const char * error_message ) {
 }
 
 GLuint LoadShaders(ShaderInfo * si) {
-
   GLuint vertshader = create_shader ( si->filename, si->shadertype );
   si++;
   GLuint fragshader = create_shader ( si->filename, si->shadertype );

@@ -4,7 +4,8 @@
 
 #include <iostream>
 #include <vector>
-
+#include <queue>
+#include <unistd.h>
 using namespace std;
 
 //  OpenGL
@@ -20,6 +21,8 @@ using namespace std;
 #include "common/shader_utils.h"
 #include "Model.h"
 
+queue <int> gqueue;
+
 //  Constants and Vars  
 //  @@TODO Should move into a variable system
 int screenWidth = 640;
@@ -28,6 +31,7 @@ glm::mat4 Projection;
 
 //  Function Declarations
 void Init ();
+void GlutIdle ();
 void GlutReshape ( int newWidth, int newHeight );
 void GlutDisplay ( void );
 void GlutKeyboard ( unsigned char key, int x, int y );
@@ -35,7 +39,6 @@ void UpdatePerspective ();
 void CleanupAndExit ();
 
 int main ( int argc, char ** argv) {
-  
   glutInit ( &argc, argv );
   glutInitDisplayMode ( GLUT_DOUBLE | GLUT_RGBA );
   glutInitWindowSize ( screenWidth, screenHeight );
@@ -48,6 +51,7 @@ int main ( int argc, char ** argv) {
   
   Init ();
 
+  glutIdleFunc ( GlutIdle );
   glutReshapeFunc ( GlutReshape );
   glutDisplayFunc ( GlutDisplay );
   glutKeyboardFunc ( GlutKeyboard );
@@ -87,6 +91,22 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
   case 'Q':
     CleanupAndExit ();
     break;
+  case 'a':
+  case 'A':
+    gqueue.push ( 1 );
+    break;
+  case 's':
+  case 'S':
+    gqueue.push ( 2 );
+    break;
+  case 'd':
+  case 'D':
+    gqueue.push ( 3 );
+    break;
+  case 'w':
+  case 'W':
+    gqueue.push ( 4 );
+    break;
   }
 }
 
@@ -102,8 +122,18 @@ void UpdatePerspective () {
   GLfloat zNear  = 0.3f;
   GLfloat zFar   = 1000.0f;
   Projection = glm::perspective( fov, aspect, zNear, zFar );
-
 }
+
+void GlutIdle () {
+  //  Pump the events loop
+  while ( !gqueue.empty () ) {
+    cout << "queue item: " << gqueue.front() << endl;
+    gqueue.pop ();
+  }
+  cout << "--------Queue empty----------" << endl;
+  usleep ( 1000000 );
+}
+
 void CleanupAndExit () {
   exit ( EXIT_SUCCESS );
 }

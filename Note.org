@@ -15,8 +15,14 @@
      - next obtained from that current
    - Then swap
 ** This will feed into other systems.
-   1. Objects contain this state?
-   2. Systems contain this state?
+   - Where does this state live?
+   - In Assets?
+     - Data now lives out in classes
+     - Manipulation systems request access from asset directly
+   - In Systems?
+     - Data is centralized to that system
+     - Association links need maintained
+
 * Load Variables
   - Examples:
     - Setting screen description
@@ -38,6 +44,9 @@
     - Sounds
     - Scripts
     - Shaders
+    - Maps
+    - AI
+  - Reference the repository and make copies
 * Initiate Game
 * Check options
 * Launch game
@@ -49,7 +58,6 @@
     - Destroy
     - Start
     - Stop
-    - 
   - Perform physics
   - Render
 * Shutdown loop
