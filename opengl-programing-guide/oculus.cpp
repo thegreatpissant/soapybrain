@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////
 //
-//  ex15_1.cpp
+//  oculus.cpp
 //
 //////////////////////////////////////////////////////////////////////
 #include <string>
@@ -21,8 +21,14 @@ using namespace std;
 
 #include "common/shader_utils.h"
 
-
-#include "libovr_nsb/OVR.h"
+//  Oculus subsystem
+#include <OVR.h>
+using namespace OVR;
+Ptr<DeviceManager> pManager;
+Ptr<HMDDevice>     pHMD;
+Ptr<SensorDevice>  pSensor;
+SensorFusion SFusion;
+void Initialize_hmd ();
 
 //  Models
 struct model_t {
@@ -37,8 +43,6 @@ struct model_t {
     glDrawArrays(renderPrimitive, 0, numVertices);
   } 
 };
-
-Device *dev;
 
 struct model_t ex15_1;
 struct model_t ex15_2;
@@ -58,14 +62,20 @@ GLfloat zNear  = 0.3f;
 GLfloat zFar   = 2000.0f;
 glm::mat4 MVP;
 GLfloat ipd  = 0.064f;
-GLfloat h = (0.25f * hScreenSize) - (0.5f * 0.064f);
-GLfloat hOffset = 4.0f* h / hScreenSize;
+GLfloat eyeProjectionShift = 0.0f;
+GLfloat projectionCenterOffset = 0.0f;
+glm::mat4 projectionCenter;
+glm::mat4 projectionLeft ;
+glm::mat4 projectionRight ;
+
 GLint MVP_loc = 0;
 glm::mat4 omat;
 typedef  struct shaderinfo {
   GLuint shadertype;
   const char * filename;
 } ShaderInfo;
+glm::mat4 viewLeft = glm::mat4(1.0f);
+glm::mat4 viewRight = glm::mat4(1.0f);
 
 GLfloat depth = -300.0f;
 GLfloat height = 0.0f;
@@ -82,13 +92,13 @@ void ExitOnGLError ( const char * );
 
 void Init ();
 void UpdateView ();
-void UpdateIPD ();
 void DrawGrid ();
 void GenerateModels ();
 void IdleFunction ();
 void MouseFunction (int, int, int, int);
 void PassiveMotionFunction (int, int);
 void GlutKeyboardFunc (unsigned char key, int x, int y )
+
 {
   switch (key) {
   case 27:
@@ -125,7 +135,6 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
     depth = -1000.0f;
     strafe = 0.0f;
     ipd  = 0.064f;
-    UpdateIPD();
     break;
   case 'r':
   case 'R':
@@ -149,48 +158,34 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
     break;
   case 'p':
     ipd += 0.001f;  // hOffset += 0.01f;
-    UpdateIPD ();
-	cout << "hOffset = " << hOffset << endl;
+	cout << "eyeProjectionShift = " << eyeProjectionShift << endl;
 	break;
   case 'P':
     ipd -= 0.001f;  // hOffset -= 0.01f;
-    UpdateIPD ();
-	cout << "hOffset = " << hOffset << endl;
+	cout << "eyeProjectionShift = " << eyeProjectionShift << endl;
 	break;
   }
   glUniform1i ( color_loc, color );
   UpdateView();
   glutPostRedisplay();
 }
+
 /*
- -Display
+  Display
 */
-void UpdateIPD () {
-
-}
-
-glm::mat4 viewLeft = glm::mat4(1.0f);
-glm::mat4 viewRight = glm::mat4(1.0f);
 void UpdateView () {
-  glm::mat4  model = glm::translate( strafe, height, depth); // * omat;
-
-  glm::mat4 htranslate = glm::translate(model, glm::vec3(hOffset, 0.0f, 0.0f));
-  glm::mat4 projectionLeft  =  MVP*htranslate;
-
-  htranslate = glm::translate(model, glm::vec3(-hOffset, 0.0f, 0.0f));
-
-  glm::mat4 projectionRight = MVP*htranslate; 
-  
-  viewLeft =  glm::translate(projectionLeft, glm::vec3(0.5*ipd, 0.0f, 0.0f));
-  viewRight = glm::translate(projectionRight, glm::vec3(-0.5*ipd, 0.0f, 0.0f));
+  //  Vector3f accel = SFusion.GetAcceleration (); 
+  //  cout << "Acceleration: x:" << accel.x << ", y:" << accel.y << ", z:" << accel.z << endl;
+  Quatf orient = SFusion.GetOrientation ();
+  //  cout << "Orientation x:" << orient.x << ", y:" << orient.y << ", z:" << orient.z << endl;
 }
 
 void PostViewLeft () {
-  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &viewLeft[0][0] ); 
+  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &projectionLeft[0][0] ); 
 }
 
 void PostViewRight () {
-  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &viewRight[0][0] ); 
+  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &projectionRight[0][0] ); 
 }
 
 void Display(void)
@@ -226,20 +221,8 @@ void Reshape (int newWidth, int newHeight) {
 */
 int main(int argc, char** argv)
 {
-  dev = openRift(0,0);
-
-  if (!dev) {
-	cout << "Error opening rift" << endl;
-	return 0;
-  }
-  cout << "Device Info:\n" << endl;
-  cout << "\tname:\t" << dev->name << endl;
-  cout << "\tlocation:\t" << dev->location << endl;
-  cout << "\tvendor:\t" << dev->vendorId << endl;
-  cout << "\tproduct:\t" << dev->productId << endl;
-
-  runSensorUpdateThread (dev);
-
+  System::Init( Log::ConfigureDefaultLog (LogMask_All));
+  Initialize_hmd ();
   glutInit(&argc, argv);
   glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA);
   glutInitWindowSize(screenWidth,screenHeight);
@@ -258,6 +241,8 @@ int main(int argc, char** argv)
   glutReshapeFunc  (Reshape);
   glutKeyboardFunc (GlutKeyboardFunc);
   glutMainLoop();
+
+  System::Destroy ();
 }
 
 void Init(void)
@@ -283,7 +268,6 @@ void Init(void)
 
   MVP = glm::perspective(fov, aspect, zNear, zFar);
   ipd  = 0.064f;
-  UpdateIPD();
 
   //  View
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
@@ -376,14 +360,8 @@ GLuint LoadShaders(ShaderInfo * si) {
 }
 
 void IdleFunction () {
-  //  glutPostRedisplay ();
-  static glm::detail::tquat<float> oquat;
-  oquat = glm::detail::tquat<float> (dev->Q[3], dev->Q[0], dev->Q[1], dev->Q[2]);
-  //  cout << "quat: " << dev->Q[0] << ", " << dev->Q[1] << ", " << dev->Q[2] << ", " << dev->Q[3] << endl;
-  omat = glm::mat4_cast(oquat); 
   UpdateView();
   glutPostRedisplay ();
-
 }
 void MouseFunction (int x, int y, int j, int k) {
   
@@ -394,3 +372,54 @@ void PassiveMotionFunction (int x, int y) {
   RotX = PrevX - x;
   PrevX = x;
 }
+void Initialize_hmd ( ) {
+
+  pManager = *DeviceManager::Create ();
+  pHMD     = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
+  pSensor  = *pHMD->GetSensor ();
+  if (pSensor)
+    SFusion.AttachToSensor (pSensor);
+
+  HMDInfo hmd;
+  if (pHMD->GetDeviceInfo (&hmd)) {
+    cout << "Monitor Name = " << hmd.DisplayDeviceName << endl;
+    cout << "Eye Distace = " << hmd.InterpupillaryDistance << endl;
+    cout << "DistortionK[0] = " << hmd.DistortionK[0] << endl;
+    cout << "DistortionK[1] = " << hmd.DistortionK[1] << endl;
+    cout << "DistortionK[2] = " << hmd.DistortionK[2] << endl;
+    cout << "DistortionK[3] = " << hmd.DistortionK[3] << endl;
+    cout << endl;
+  }
+
+  hResolution = (GLfloat) hmd.HResolution;
+  vResolution = (GLfloat) hmd.VResolution;
+  hScreenSize = (GLfloat) hmd.HScreenSize;
+  vScreenSize = (GLfloat) hmd.VScreenSize;
+  eyeScreenDist = (GLfloat) hmd.EyeToScreenDistance;
+
+  aspect = (0.5f * hResolution) / vResolution;
+  fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
+
+  ipd = hmd.InterpupillaryDistance;
+  GLfloat viewCenter = hScreenSize * 0.25f;
+  eyeProjectionShift = viewCenter - (hmd.LensSeparationDistance * 0.5f);
+  projectionCenterOffset = 4.0f * eyeProjectionShift / hScreenSize;
+
+  projectionCenter = glm::perspective (fov, aspect, 0.3f, 1000.0f);
+  projectionLeft =  glm::translate(projectionCenter, glm::vec3(projectionCenterOffset, 0, 0));
+  projectionRight = glm::translate(projectionCenter, glm::vec3(-projectionCenterOffset, 0, 0));
+
+  viewLeft = glm::translate(glm::mat4 (1.0f), glm::vec3(ipd * 0.5f, 0, 0)) * viewCenter;
+  viewRight = glm::translate(glm::mat4 (1.0f), glm::vec3(ipd * -0.5f, 0, 0)) * viewCenter; 
+
+  zNear  = 0.3f;
+  zFar   = 2000.0f;
+  depth  = -300.0f;
+  height = 0.0f;
+  strafe = 0.0f;
+  
+  RotX = 0;
+  PrevX = 0;
+
+}
+
