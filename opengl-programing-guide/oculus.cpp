@@ -17,7 +17,7 @@ using namespace std;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include "common/shader_utils.h"
 
@@ -69,6 +69,8 @@ glm::mat4 projectionLeft ;
 glm::mat4 projectionRight ;
 
 GLint MVP_loc = 0;
+glm::mat4 orientation;
+GLint orientation_loc = 0;
 glm::mat4 omat;
 typedef  struct shaderinfo {
   GLuint shadertype;
@@ -177,7 +179,10 @@ void UpdateView () {
   //  Vector3f accel = SFusion.GetAcceleration (); 
   //  cout << "Acceleration: x:" << accel.x << ", y:" << accel.y << ", z:" << accel.z << endl;
   Quatf orient = SFusion.GetOrientation ();
+  orientation =  glm::toMat4 (glm::quat ( orient.w, orient.x, orient.y, orient.z ));
   //  cout << "Orientation x:" << orient.x << ", y:" << orient.y << ", z:" << orient.z << endl;
+  // Reference: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/#Quaternions
+  glUniformMatrix4fv (orientation_loc, 1, GL_FALSE, &orientation[0][0] );
 }
 
 void PostViewLeft () {
@@ -263,6 +268,9 @@ void Init(void)
   }
   if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
     std:: cout << "Did not find the mMVP loc\n";
+  }
+  if ( (orientation_loc = glGetUniformLocation (program, "mOrientation" )) == -1 ) {
+    std:: cout << "Did not find the mOrientation loc\n";
   }
   glUniform1i ( color_loc, color );
 

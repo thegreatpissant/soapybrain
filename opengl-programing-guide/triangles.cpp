@@ -156,7 +156,7 @@ void init(void)
   glUniform1f ( angle_loc, angle );
   glUniform1i ( color_loc, color );
   glUniform3fv ( v_loc, 3, &vl[0] );
-  glUniformMatrix4fv( Rotation_loc, 1, GL_TRUE, &Rotation[0][0] );
+  glUniformMatrix4fv( Rotation_loc, 1, GL_FALSE, &Rotation[0][0] );
   glUniformMatrix4fv( Projection_loc, 1, GL_FALSE, &Projection[0][0] );
   
   glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
@@ -171,7 +171,7 @@ void display(void)
   angle = angle + delta;
   vl[1] = 1.0f;
   Physics ();
-  glUniformMatrix4fv( Rotation_loc, 1, GL_TRUE, &Rotation[0][0] );
+  glUniformMatrix4fv( Rotation_loc, 1, GL_FALSE, &Rotation[0][0] );
   glUniform3fv ( v_loc , 3, &vl[0] );
   glClear(GL_COLOR_BUFFER_BIT);
   glBindVertexArray(VAOs[Triangles]);
