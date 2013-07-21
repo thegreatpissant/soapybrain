@@ -40,6 +40,7 @@ struct model_t ex15_5;
 
 enum Attrib_IDs { vPosition = 0 };
 
+GLfloat rotate = 0.0f;
 GLint color = 1;
 GLint color_loc = 0;
 GLfloat hResolution = 640.0f;
@@ -51,9 +52,11 @@ GLfloat aspect = hResolution / (2.0f * vResolution);
 GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
 GLfloat zNear  = 0.3f;
 GLfloat zFar   = 1000.0f;
-glm::mat4 MVP = glm::perspective( fov, aspect, zNear, zFar );
-//glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+//glm::mat4 MVP = glm::perspective( fov, aspect, zNear, zFar );
+glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 1.0f, 100.f);
+glm::mat4 camera = glm::mat4(0.0);
 GLint MVP_loc = 0;
+GLint camera_loc = 0;
 
 typedef  struct shaderinfo {
   GLuint shadertype;
@@ -129,28 +132,29 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'F':
     glutFullScreenToggle ();
     break;
+  case '+':
+  case '=':
+    rotate += 0.5f;
+    break;
+  case '-':
+    rotate -= 0.5f;
+    break;
   }
   glUniform1i ( color_loc, color );
   UpdateView();
-  glutPostRedisplay();
+  glutPostRedisplay ();
 }
 /*
   Display
 */
-glm::mat4 viewLeft = glm::mat4(1.0f);
-glm::mat4 viewRight = glm::mat4(1.0f);
 void UpdateView () {
-  glm::mat4 I = glm::mat4 (1.0f);
-  glm::mat4 camera = I;
-  camera[3][0] = strafe;
-  camera[3][1] = height;
-  camera[3][2] = depth;
-  glm::mat4 projectionLeft  = camera*MVP; // * ViewTranslate;
-  viewLeft  = I; 
-  viewLeft = projectionLeft;
+  //  camera = glm::rotate (glm::mat4(1.0f), rotate, glm::vec3 (0.0f, 1.0f, 0.0f) );
+  camera = glm::translate (glm::mat4(), glm::vec3 ( strafe, height, depth ) );
+  camera = glm::rotate (camera, rotate, glm::vec3 (0.0f, 1.0f, 0.0f) );
 }
 void PostView() {
-  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &viewLeft[0][0] ); 
+  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
+  glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera[0][0] ); 
 }
 
 void Display(void)
@@ -192,7 +196,7 @@ int main(int argc, char** argv)
     exit(EXIT_FAILURE);
   }
   Init();
-  glutIdleFunc     (IdleFunction);
+  //  glutIdleFunc     (IdleFunction);
   glutMouseFunc    (MouseFunction);
   glutDisplayFunc  (Display);
   glutReshapeFunc  (Reshape);
@@ -219,6 +223,9 @@ void Init(void)
   if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
     std:: cout << "Did not find the mMVP loc\n";
   }
+  if ( (camera_loc = glGetUniformLocation (program, "mCamera" )) == -1 ) {
+    std:: cout << "Did not find the mCamera loc\n";
+  }
   glUniform1i ( color_loc, color );
 
   //  View
@@ -230,7 +237,7 @@ void Init(void)
 }
 
 void GenerateModels () {
-  float x = 0.0f, z = -10.0f;;
+  float x = 0.0f, z = 0.0f;;
   ex15_1.numVertices = 600;
   ex15_1.vertices.resize(ex15_1.numVertices*3);
   for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f, z += 0.05f) {
@@ -242,15 +249,15 @@ void GenerateModels () {
   }
 
   x = -3.0f;
-  z = -10.0f;
+  z = 0.0f;
   ex15_2.numVertices = 600;
   ex15_2.vertices.resize(ex15_2.numVertices*3);
   for (int i = 0; i < ex15_2.numVertices; i++, x+= 0.01f, z+= 0.05f) {
     ex15_2.vertices[i*3] = x;
     ex15_2.vertices[i*3 + 1]= powf(x,3);
-    ex15_2.vertices[i*3 + 2] = -10.0f; //z;
+    ex15_2.vertices[i*3 + 2] = 0.0f; //z;
     if ( z >= -1.0f) 
-       z = -10.0f;
+       z = 0.0f;
   }
 
   ex15_1.vaos.resize(1);
