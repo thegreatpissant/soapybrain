@@ -239,6 +239,9 @@ int main(int argc, char** argv)
     cerr << "Unable to initialize GLEW ... exiting" << endl;
     exit(EXIT_FAILURE);
   }
+  else { 
+    cout << "Initialized" << endl;
+  }
   Init();
   glutIdleFunc     (IdleFunction);
   glutMouseFunc    (MouseFunction);
@@ -384,10 +387,6 @@ void Initialize_hmd ( ) {
 
   pManager = *DeviceManager::Create ();
   pHMD     = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
-  pSensor  = *pHMD->GetSensor ();
-  if (pSensor)
-    SFusion.AttachToSensor (pSensor);
-
   HMDInfo hmd;
   if (pHMD->GetDeviceInfo (&hmd)) {
     cout << "Monitor Name = " << hmd.DisplayDeviceName << endl;
@@ -399,7 +398,7 @@ void Initialize_hmd ( ) {
     cout << endl;
   }
 
-  hResolution = (GLfloat) hmd.HResolution;
+  /*  hResolution = (GLfloat) hmd.HResolution;
   vResolution = (GLfloat) hmd.VResolution;
   hScreenSize = (GLfloat) hmd.HScreenSize;
   vScreenSize = (GLfloat) hmd.VScreenSize;
@@ -428,6 +427,12 @@ void Initialize_hmd ( ) {
   
   RotX = 0;
   PrevX = 0;
+  */
+  pSensor  = *pHMD->GetSensor ();
 
+  if (pSensor)
+    SFusion.AttachToSensor (pSensor);
+  else 
+    cout << "No pSensor" << endl;
 }
 
