@@ -27,7 +27,9 @@ using namespace OVR;
 Ptr<DeviceManager> pManager;
 Ptr<HMDDevice>     pHMD;
 Ptr<SensorDevice>  pSensor;
-SensorFusion SFusion;
+HMDInfo hmdInfo;
+SensorFusion sFusion;
+bool hmdInfoLoaded;
 void Initialize_hmd ();
 
 //  Models
@@ -55,13 +57,16 @@ GLfloat hResolution = 640.0f;
 GLfloat vResolution = 800.0f;
 GLfloat hScreenSize = 0.14976f;
 GLfloat vScreenSize = 0.0935f;
+GLfloat ipd  = 0.064f;
 GLfloat eyeScreenDist = 0.041f;
+GLfloat lensSeparationDistance = 0.064f;
+
 GLfloat aspect = hResolution / (2.0f * vResolution);
 GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
 GLfloat zNear  = 0.3f;
 GLfloat zFar   = 2000.0f;
 glm::mat4 MVP;
-GLfloat ipd  = 0.064f;
+
 GLfloat eyeProjectionShift = 0.0f;
 GLfloat projectionCenterOffset = 0.0f;
 glm::mat4 projectionCenter;
@@ -79,9 +84,10 @@ typedef  struct shaderinfo {
 glm::mat4 viewLeft = glm::mat4(1.0f);
 glm::mat4 viewRight = glm::mat4(1.0f);
 
-GLfloat depth = -300.0f;
+GLfloat depth = -3.0f;
 GLfloat height = 0.0f;
 GLfloat strafe = 0.0f;
+GLfloat rotate = 0.0f;
 GLsizei deviceWidth = 1280;
 GLsizei deviceHeight = 800;
 GLsizei screenWidth = 1280;
@@ -106,6 +112,7 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 27:
   case 'q':
   case 'Q':
+    System::Destroy ();
     exit (0);
   case 'w':
   case 'W':
@@ -134,7 +141,7 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'e':
   case 'E':
     height= 0.0f;
-    depth = -1000.0f;
+    depth = -1.0f;
     strafe = 0.0f;
     ipd  = 0.064f;
     break;
@@ -166,6 +173,13 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
     ipd -= 0.001f;  // hOffset -= 0.01f;
 	cout << "eyeProjectionShift = " << eyeProjectionShift << endl;
 	break;
+  case '-':
+    rotate -= 0.5f;
+    break;
+  case '+':
+  case '=':
+    rotate += 0.5f;
+    break;
   }
   glUniform1i ( color_loc, color );
   UpdateView();
@@ -178,9 +192,11 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
 void UpdateView () {
   //  Vector3f accel = SFusion.GetAcceleration (); 
   //  cout << "Acceleration: x:" << accel.x << ", y:" << accel.y << ", z:" << accel.z << endl;
-  Quatf orient = SFusion.GetOrientation ();
-  orientation =  glm::toMat4 (glm::quat ( orient.w, orient.x, orient.y, orient.z ));
-  //  cout << "Orientation x:" << orient.x << ", y:" << orient.y << ", z:" << orient.z << endl;
+  Quatf orient = sFusion.GetOrientation ();
+  orientation =  glm::toMat4 (glm::quat ( orient.w, -orient.x, -orient.y, -orient.z ));
+  orientation =  glm::translate (orientation, glm::vec3 (strafe, height, depth ) );
+  orientation =  glm::rotate (orientation, rotate, glm::vec3 (0.0f, 1.0f, 0.0f) );
+   
   // Reference: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-17-quaternions/#Quaternions
   glUniformMatrix4fv (orientation_loc, 1, GL_FALSE, &orientation[0][0] );
 }
@@ -226,7 +242,8 @@ void Reshape (int newWidth, int newHeight) {
 */
 int main(int argc, char** argv)
 {
-  System::Init( Log::ConfigureDefaultLog (LogMask_All));
+  //System::Init( Log::ConfigureDefaultLog (LogMask_All));
+  System::Init ();
   Initialize_hmd ();
   glutInit(&argc, argv);
   glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA);
@@ -250,7 +267,6 @@ int main(int argc, char** argv)
   glutKeyboardFunc (GlutKeyboardFunc);
   glutMainLoop();
 
-  System::Destroy ();
 }
 
 void Init(void)
@@ -290,7 +306,7 @@ void Init(void)
 
 void GenerateModels () {
   float x = -3.0f, z = -10.0f;;
-  ex15_1.numVertices = 600;
+  ex15_1.numVertices = 6000;
   ex15_1.vertices.resize(ex15_1.numVertices*3);
   for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f, z += 0.05f) {
     ex15_1.vertices[i*3] = x;
@@ -302,7 +318,7 @@ void GenerateModels () {
 
   x = -3.0f;
   z = -10.0f;
-  ex15_2.numVertices = 600;
+  ex15_2.numVertices = 6000;
   ex15_2.vertices.resize(ex15_2.numVertices*3);
   for (int i = 0; i < ex15_2.numVertices; i++, x+= 0.01f, z+= 0.05f) {
     ex15_2.vertices[i*3] = x;
@@ -384,32 +400,47 @@ void PassiveMotionFunction (int x, int y) {
   PrevX = x;
 }
 void Initialize_hmd ( ) {
-
   pManager = *DeviceManager::Create ();
   pHMD     = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
-  HMDInfo hmd;
-  if (pHMD->GetDeviceInfo (&hmd)) {
-    cout << "Monitor Name = " << hmd.DisplayDeviceName << endl;
-    cout << "Eye Distace = " << hmd.InterpupillaryDistance << endl;
-    cout << "DistortionK[0] = " << hmd.DistortionK[0] << endl;
-    cout << "DistortionK[1] = " << hmd.DistortionK[1] << endl;
-    cout << "DistortionK[2] = " << hmd.DistortionK[2] << endl;
-    cout << "DistortionK[3] = " << hmd.DistortionK[3] << endl;
-    cout << endl;
+  if (pHMD) {
+    hmdInfoLoaded = pHMD->GetDeviceInfo (&hmdInfo);
+    pSensor = *pHMD->GetSensor ();
+    hResolution = (GLfloat) hmdInfo.HResolution;
+    vResolution = (GLfloat) hmdInfo.VResolution;
+    hScreenSize = (GLfloat) hmdInfo.HScreenSize;
+    vScreenSize = (GLfloat) hmdInfo.VScreenSize;
+    eyeScreenDist = (GLfloat) hmdInfo.EyeToScreenDistance;
+    ipd = hmdInfo.InterpupillaryDistance;
+    lensSeparationDistance = hmdInfo.LensSeparationDistance;
+    cout << "Got a sensor and hmd info" << endl;
   }
-
-  /*  hResolution = (GLfloat) hmd.HResolution;
-  vResolution = (GLfloat) hmd.VResolution;
-  hScreenSize = (GLfloat) hmd.HScreenSize;
-  vScreenSize = (GLfloat) hmd.VScreenSize;
-  eyeScreenDist = (GLfloat) hmd.EyeToScreenDistance;
+  else {
+    pSensor = *pManager->EnumerateDevices<SensorDevice>().CreateDevice();
+    cout << "Got a sensor" << endl;
+  }
+  if (pSensor) {
+    sFusion.AttachToSensor (pSensor);
+  }
+  cout << "pHMD: " << pHMD << endl;
+  if ( hmdInfoLoaded ) {
+    cout << "Monitor Name = " << hmdInfo.DisplayDeviceName << endl;
+    cout << "Eye Distace = " << hmdInfo.InterpupillaryDistance << endl;
+    cout << "DistortionK[0] = " << hmdInfo.DistortionK[0] << endl;
+    cout << "DistortionK[1] = " << hmdInfo.DistortionK[1] << endl;
+    cout << "DistortionK[2] = " << hmdInfo.DistortionK[2] << endl;
+    cout << "DistortionK[3] = " << hmdInfo.DistortionK[3] << endl;
+    cout << endl;
+  } 
+  else {
+    cerr << "hmdInfo did not load." << endl;
+  }
 
   aspect = (0.5f * hResolution) / vResolution;
   fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
 
-  ipd = hmd.InterpupillaryDistance;
+
   GLfloat viewCenter = hScreenSize * 0.25f;
-  eyeProjectionShift = viewCenter - (hmd.LensSeparationDistance * 0.5f);
+  eyeProjectionShift = viewCenter - (lensSeparationDistance * 0.5f);
   projectionCenterOffset = 4.0f * eyeProjectionShift / hScreenSize;
 
   projectionCenter = glm::perspective (fov, aspect, 0.3f, 1000.0f);
@@ -418,21 +449,16 @@ void Initialize_hmd ( ) {
 
   viewLeft = glm::translate(glm::mat4 (1.0f), glm::vec3(ipd * 0.5f, 0, 0)) * viewCenter;
   viewRight = glm::translate(glm::mat4 (1.0f), glm::vec3(ipd * -0.5f, 0, 0)) * viewCenter; 
+  
 
   zNear  = 0.3f;
   zFar   = 2000.0f;
-  depth  = -300.0f;
+  depth  = -30.0f;
   height = 0.0f;
   strafe = 0.0f;
   
   RotX = 0;
   PrevX = 0;
-  */
-  pSensor  = *pHMD->GetSensor ();
 
-  if (pSensor)
-    SFusion.AttachToSensor (pSensor);
-  else 
-    cout << "No pSensor" << endl;
 }
 
