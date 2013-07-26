@@ -30,15 +30,10 @@ GLint v_loc = 0;
 GLfloat Rotation [4][4];
 GLint Rotation_loc = 0;
 GLint Projection_loc = 0;
-typedef  struct shaderinfo {
-  GLuint shadertype;
-  const char * filename;
-} ShaderInfo;
 
 GLsizei width = 640;
 GLsizei height = 800;
 
-GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
 #define BUFFER_OFFSET(offset)  ((void *)(offset))
 
@@ -214,24 +209,6 @@ void ExitOnGLError ( const char * error_message ) {
   cout << error_message << endl;
 }
 
-GLuint LoadShaders(ShaderInfo * si) {
-
-  GLuint vertshader = create_shader ( si->filename, si->shadertype );
-  si++;
-  GLuint fragshader = create_shader ( si->filename, si->shadertype );
-  GLuint program = glCreateProgram ();
-  glAttachShader (program, vertshader);
-  glAttachShader (program, fragshader);
-  glLinkProgram (program);
-  GLint link_ok;
-  glGetProgramiv (program, GL_LINK_STATUS , &link_ok);
-  if (!link_ok) {
-    cerr << "glLinkProgram: ";
-    print_log (program);
-    return 0;
-  }
-  return program;
-}
 
 // Shader fragment
 /*

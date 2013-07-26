@@ -58,11 +58,6 @@ glm::mat4 camera = glm::mat4(0.0);
 GLint MVP_loc = 0;
 GLint camera_loc = 0;
 
-typedef  struct shaderinfo {
-  GLuint shadertype;
-  const char * filename;
-} ShaderInfo;
-
 GLfloat depth = -3.0f;
 GLfloat height = 0.0f;
 GLfloat strafe = 0.0f;
@@ -71,7 +66,6 @@ GLsizei deviceHeight = 800;
 GLsizei screenWidth = 1280;
 GLsizei screenHeight = 800;
 
-GLuint LoadShaders(ShaderInfo * si);
 void ExitOnGLError ( const char * );
 #define BUFFER_OFFSET(offset)  ((void *)(offset))
 
@@ -297,24 +291,6 @@ void DrawGrid () {
 
 void ExitOnGLError ( const char * error_message ) {
   cout << error_message << endl;
-}
-
-GLuint LoadShaders(ShaderInfo * si) {
-  GLuint vertshader = create_shader ( si->filename, si->shadertype );
-  si++;
-  GLuint fragshader = create_shader ( si->filename, si->shadertype );
-  GLuint program = glCreateProgram ();
-  glAttachShader (program, vertshader);
-  glAttachShader (program, fragshader);
-  glLinkProgram (program);
-  GLint link_ok;
-  glGetProgramiv (program, GL_LINK_STATUS , &link_ok);
-  if (!link_ok) {
-    cerr << "glLinkProgram: ";
-    print_log (program);
-    return 0;
-  }
-  return program;
 }
 
 void IdleFunction () {

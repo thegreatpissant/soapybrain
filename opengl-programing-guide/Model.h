@@ -3,6 +3,9 @@
 
 #include <GL/glew.h>
 
+enum Attrib_IDs { vPosition = 0 };
+#define BUFFER_OFFSET(offset)  ((void *)(offset))
+
 struct model_t {
   long numVertices;
   vector <float> vertices;

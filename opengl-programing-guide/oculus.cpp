@@ -77,10 +77,7 @@ GLint MVP_loc = 0;
 glm::mat4 orientation;
 GLint orientation_loc = 0;
 glm::mat4 omat;
-typedef  struct shaderinfo {
-  GLuint shadertype;
-  const char * filename;
-} ShaderInfo;
+
 glm::mat4 viewLeft = glm::mat4(1.0f);
 glm::mat4 viewRight = glm::mat4(1.0f);
 
@@ -367,24 +364,6 @@ void ExitOnGLError ( const char * error_message ) {
   cout << error_message << endl;
 }
 
-GLuint LoadShaders(ShaderInfo * si) {
-
-  GLuint vertshader = create_shader ( si->filename, si->shadertype );
-  si++;
-  GLuint fragshader = create_shader ( si->filename, si->shadertype );
-  GLuint program = glCreateProgram ();
-  glAttachShader (program, vertshader);
-  glAttachShader (program, fragshader);
-  glLinkProgram (program);
-  GLint link_ok;
-  glGetProgramiv (program, GL_LINK_STATUS , &link_ok);
-  if (!link_ok) {
-    cerr << "glLinkProgram: ";
-    print_log (program);
-    return 0;
-  }
-  return program;
-}
 
 void IdleFunction () {
   UpdateView();

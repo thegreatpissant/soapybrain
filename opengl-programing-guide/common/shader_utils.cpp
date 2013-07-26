@@ -113,3 +113,21 @@ GLuint create_shader (const char *filename, GLenum type)
     }
   return res;
 }
+
+GLuint LoadShaders(ShaderInfo * si) {
+  GLuint vertshader = create_shader ( si->filename, si->shadertype );
+  si++;
+  GLuint fragshader = create_shader ( si->filename, si->shadertype );
+  GLuint program = glCreateProgram ();
+  glAttachShader (program, vertshader);
+  glAttachShader (program, fragshader);
+  glLinkProgram (program);
+  GLint link_ok;
+  glGetProgramiv (program, GL_LINK_STATUS , &link_ok);
+  if (!link_ok) {
+    std::cerr << "glLinkProgram: ";
+    print_log (program);
+    return 0;
+  }
+  return program;
+}

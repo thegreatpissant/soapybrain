@@ -131,6 +131,7 @@ void GlutIdle () {
     gqueue.pop ();
   }
   cout << "--------Queue empty----------" << endl;
+  glutPostRedisplay ();
   usleep ( 1000000 );
 }
 

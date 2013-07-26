@@ -1,11 +1,10 @@
 include 	../Makefile.inc
 DIRS		= common 
-ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus
+ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus exj_2
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
-STD		= 
-# -std=c++11
+STD		= -std=c++0x
 OCULUS_LIBS	= -ludev -lpthread -lXext -lX11 -lXinerama
 DEBUG_FLAG	+= -g -O3 -Wall
 OCULUS_SDK	= /home/thegreatpissant
@@ -24,6 +23,10 @@ ex15_1: ex15_1.cpp common
 # These are my personal endeavors
 exj_1: exj_1.cpp common 
 	$(CXX) $(DEBUG_FLAG) -I. -o exj_1 exj_1.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
+
+exj_2: exj_2.cpp common 
+	$(CXX) $(DEBUG_FLAG) -I. -o exj_2 exj_2.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
+
 
 oculus: oculus.cpp common
 	$(CXX) $(DEBUG_FLAG) -I$(OCULUS_SDK)/LibOVR/Include -o oculus oculus.cpp $(OCULUS_SDK)/LibOVR/Lib/Linux/Release/x86_64/libovr.a  ./common/shader_utils.o  $(LDLIBS) $(OCULUS_LIBS)
