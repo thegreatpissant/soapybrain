@@ -267,6 +267,8 @@ void GenerateModels () {
   //  Renderer.models.push_back(tmp);
 
   for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f} ) {
+    static int ext;
+    ext++;
     tmp = new simple_equation_model_t;
     x = -3.0f;
     z = 0.0f;
@@ -279,7 +281,8 @@ void GenerateModels () {
       if ( z >= -1.0f) 
 	z = 0.0f;
     }
-    tmp->name = "ex15_2";
+    tmp->name = "ex15_" + to_string(ext);
+    cout << "name: " << tmp->name << endl;
     tmp->renderPrimitive = GL_POINTS;
     tmp->SetupRenderModel ();
     Renderer.models.push_back(tmp);
