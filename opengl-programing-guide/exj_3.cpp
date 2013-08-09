@@ -1,5 +1,8 @@
-/*  exj_2.cpp
+/*  exj_3.cpp
  *  James A. Feister - thegreatpissant@gmail.com
+ *  Break out different model types.
+ *  Add a simple render system
+ *  Add an actor
  */
 
 #include <iostream>
@@ -19,19 +22,22 @@ using namespace std;
 
 //  Engine parts
 #include "common/shader_utils.h"
+#include "Render.h"
 #include "Model.h"
+#include "Display.h"
 
 enum class queue_events {
   STRAFE_LEFT, STRAFE_RIGHT, MOVE_FORWARD, MOVE_BACKWARD, ROTATE_LEFT, ROTATE_RIGHT, 
     COLOR_CHANGE,
- APPLICATION_QUIT
-};
+    APPLICATION_QUIT
+    };
 queue <queue_events> gqueue;
-
+render Renderer;
 //  Constants and Vars  
 //  @@TODO Should move into a variable system
-int screenWidth = 640;
-int screenHeight = 480;
+Display screen0;
+int screenWidth = screen0.screenWidth;
+int screenHeight = screen0.screenHeight;
 glm::mat4 Projection;
 glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 1.0f, 100.f);
 glm::mat4 camera = glm::mat4(0.0);
@@ -50,13 +56,14 @@ void UpdatePerspective ();
 void CleanupAndExit ();
 
 //  Globalized user vars
-GLfloat strafe = 1.0f, height = 0.0f, depth = -1.0f, rotate = 0.0f;
+GLfloat strafe = 1.0f, height = 0.0f, depth = -3.0f, rotate = 0.0f;
 GLint color = 1;
 GLint color_loc = 0;
 
 //  Models
 simple_equation_model_t ex15_1;
 simple_equation_model_t ex15_2;
+
 void GenerateModels ();
 
 int main ( int argc, char ** argv) {
@@ -126,8 +133,7 @@ void GlutDisplay ( void ) {
   //
   //  Eventually Call on rederer to render Entities
   //
-  ex15_1.Render ();
-  ex15_2.Render ();
+  Renderer.Render ();
   
   glBindVertexArray (0);
   glFinish ();
@@ -243,57 +249,39 @@ void CleanupAndExit () {
 
 
 void GenerateModels () {
-  float x = 0.0f, z = 0.0f;;
-  ex15_1.numVertices = 600;
-  ex15_1.vertices.resize(ex15_1.numVertices*3);
-  for (int i = 0; i < ex15_1.numVertices; i++, x+= 0.01f, z += 0.05f) {
-    ex15_1.vertices[i*3] = x;
-    ex15_1.vertices[i*3 + 1]= powf(x,1);
-    ex15_1.vertices[i*3 + 2] = z;
+  simple_equation_model_t *tmp = new simple_equation_model_t;
+  
+  tmp->numVertices = 600;
+  tmp->vertices.resize(tmp->numVertices*3);
+  float x = 0.0f, z = 0.0f;
+  for (int i = 0; i < tmp->numVertices; i++, x+= 0.01f, z += 0.05f) {
+    tmp->vertices[i*3] = x;
+    tmp->vertices[i*3 + 1]= powf(x,1);
+    tmp->vertices[i*3 + 2] = z;
     if ( z >= -1.0f)
       z = -10.0f; //(i % 2 ? -8.0f:-12.0f);
   }
+  tmp->name = "ex15_1";
+  tmp->renderPrimitive = GL_POINTS;
+  tmp->SetupRenderModel ();
+  //  Renderer.models.push_back(tmp);
 
-  x = -3.0f;
-  z = 0.0f;
-  ex15_2.numVertices = 600;
-  ex15_2.vertices.resize(ex15_2.numVertices*3);
-  for (int i = 0; i < ex15_2.numVertices; i++, x+= 0.01f, z+= 0.05f) {
-    ex15_2.vertices[i*3] = x;
-    ex15_2.vertices[i*3 + 1]= powf(x,3);
-    ex15_2.vertices[i*3 + 2] = 0.0f; //z;
-    if ( z >= -1.0f) 
-       z = 0.0f;
+  for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f} ) {
+    tmp = new simple_equation_model_t;
+    x = -3.0f;
+    z = 0.0f;
+    tmp->numVertices = 600;
+    tmp->vertices.resize(tmp->numVertices*3);
+    for (int i = 0; i < tmp->numVertices; i++, x+= 0.01f, z+= 0.05f) {
+      tmp->vertices[i*3] = x;
+      tmp->vertices[i*3 + 1]= powf(x,power_to);
+      tmp->vertices[i*3 + 2] = 0.0f; //z;
+      if ( z >= -1.0f) 
+	z = 0.0f;
+    }
+    tmp->name = "ex15_2";
+    tmp->renderPrimitive = GL_POINTS;
+    tmp->SetupRenderModel ();
+    Renderer.models.push_back(tmp);
   }
-
-  ex15_1.vaos.resize(1);
-  glGenVertexArrays( ex15_1.vaos.size(), &ex15_1.vaos[0] );
-  if ( ex15_1.vaos[0] == 0 ) {
-    cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << endl;
-  } 
-  glBindVertexArray( ex15_1.vaos[0] );
-  ex15_1.buffers.resize(1);
-  glGenBuffers(ex15_1.buffers.size(), &ex15_1.buffers[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, ex15_1.buffers[0]);
-
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_1.vertices.size(), &ex15_1.vertices[0], GL_STATIC_DRAW);
-  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
-  glEnableVertexAttribArray(vPosition);
-  glBindVertexArray (0);
-  ex15_1.renderPrimitive = GL_POINTS;
-
-  ex15_2.vaos.resize(1);
-  glGenVertexArrays( ex15_2.vaos.size(), &ex15_2.vaos[0] );
-  if ( ex15_2.vaos[0] == 0 ) {
-    cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << endl;
-  } 
-  glBindVertexArray( ex15_2.vaos[0] );
-  ex15_2.buffers.resize(1);
-  glGenBuffers(ex15_2.buffers.size(), &ex15_2.buffers[0]);
-  glBindBuffer(GL_ARRAY_BUFFER, ex15_2.buffers[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float)*ex15_2.vertices.size(), &ex15_2.vertices[0], GL_STATIC_DRAW);
-  glVertexAttribPointer(vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET(0));
-  glEnableVertexAttribArray(vPosition);
-  glBindVertexArray (0);
-  ex15_2.renderPrimitive = GL_POINTS;
 }

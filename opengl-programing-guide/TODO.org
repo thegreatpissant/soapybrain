@@ -1,0 +1,40 @@
+* Todo
+** Adjustable fov and aspect ratio
+** Var system
+** Models require a ID to associate actors with them
+** Actors objects are required to access those Models
+
+* EventQueue system
+** Define Event Queue types??
+** types
+   - CREATE
+   - REMOVE
+   - MOVE
+   - INPUT KEYBOARD
+   - INPUT TRACKER
+   - INPUT MOUSE
+   - INPUT TOUCH
+   - INPUT ANY
+   - NETWORK ??
+* Render system
+** Reference the model assets
+* Asset manager
+** Sounds
+** Load Models from files
+* Models (Representation??)
+** Load from equations
+** Store points
+** Store Keyframes
+* NEXT
+** RENDER system
+*** Create a scene graph
+*** Handle different model attributes
+** ASSET manager
+** Actors
+** Model types
+*** Associate attributes
+* exj_2
+** Proved the queue system
+* exj_3
+** Broke out different model types.
+** Added a simple render system.

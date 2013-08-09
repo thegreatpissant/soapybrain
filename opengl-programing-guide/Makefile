@@ -1,6 +1,6 @@
 include 	../Makefile.inc
 DIRS		= common 
-ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus exj_2
+ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus exj_2 exj_3
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
@@ -26,6 +26,9 @@ exj_1: exj_1.cpp common
 
 exj_2: exj_2.cpp common 
 	$(CXX) $(DEBUG_FLAG) -I. -o exj_2 exj_2.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
+
+exj_3: exj_3.cpp common 
+	$(CXX) $(DEBUG_FLAG) -I. -o exj_3 exj_3.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
 
 
 oculus: oculus.cpp common
