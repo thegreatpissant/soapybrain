@@ -9,7 +9,7 @@
 
 class render {
  public:
-  std::vector <model_t*> models;
+  std::vector <shared_ptr<model_t>> models;
   render () { 
   };
   void Render () {

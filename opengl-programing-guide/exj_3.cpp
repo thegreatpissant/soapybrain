@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <memory>
 #include <unistd.h>
 using namespace std;
 
@@ -249,7 +250,7 @@ void CleanupAndExit () {
 
 
 void GenerateModels () {
-  simple_equation_model_t *tmp = new simple_equation_model_t;
+  shared_ptr <simple_equation_model_t> tmp = shared_ptr <simple_equation_model_t> {new simple_equation_model_t};
   
   tmp->numVertices = 600;
   tmp->vertices.resize(tmp->numVertices*3);
@@ -269,7 +270,7 @@ void GenerateModels () {
   for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f} ) {
     static int ext;
     ext++;
-    tmp = new simple_equation_model_t;
+    tmp = shared_ptr <simple_equation_model_t> { new simple_equation_model_t };
     x = -3.0f;
     z = 0.0f;
     tmp->numVertices = 600;
