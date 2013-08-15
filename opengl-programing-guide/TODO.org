@@ -29,12 +29,15 @@
 ** RENDER system
 *** Create a scene graph
 *** Handle different model attributes
+*** What vars do we need to pump to shaders and what shaders can we use?
 ** ASSET manager
 ** Actors
 ** Model types
+** Entity types
 *** Associate attributes
 * exj_2
 ** Proved the queue system
 * exj_3
 ** Broke out different model types.
 ** Added a simple render system.
+** Added a entity class with camera and actor subs
