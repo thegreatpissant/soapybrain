@@ -1,8 +1,8 @@
 /*  exj_3.cpp
- *  James A. Feister - thegreatpissant@gmail.com
- *  Break out different model types.
- *  Add a simple render system
- *  Add an actor
+ * James A. Feister - thegreatpissant@gmail.com
+ * DONE - Break out different model types.
+ * DONE - Add a simple render system, yes it is very simple
+ * Add an actor a subclass of an entity
  */
 
 #include <iostream>
@@ -26,14 +26,19 @@ using namespace std;
 #include "Render.h"
 #include "Model.h"
 #include "Display.h"
+#include "Actor.h"
+#include "Camera.h"
 
 enum class queue_events {
-  STRAFE_LEFT, STRAFE_RIGHT, MOVE_FORWARD, MOVE_BACKWARD, ROTATE_LEFT, ROTATE_RIGHT, 
+  STRAFE_LEFT, STRAFE_RIGHT, MOVE_FORWARD, MOVE_BACKWARD, ROTATE_LEFT, ROTATE_RIGHT, MOVE_UP, MOVE_DOWN,
     COLOR_CHANGE,
     APPLICATION_QUIT
     };
 queue <queue_events> gqueue;
 render Renderer;
+shared_ptr<camera> Camera;
+shared_ptr<entity> Selected;
+
 //  Constants and Vars  
 //  @@TODO Should move into a variable system
 Display screen0;
@@ -41,7 +46,7 @@ int screenWidth = screen0.screenWidth;
 int screenHeight = screen0.screenHeight;
 glm::mat4 Projection;
 glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 1.0f, 100.f);
-glm::mat4 camera = glm::mat4(0.0);
+glm::mat4 camera_matrix = glm::mat4(0.0);
 GLint MVP_loc = 0;
 GLint camera_loc = 0;
 
@@ -62,11 +67,12 @@ GLint color = 1;
 GLint color_loc = 0;
 
 //  Models
-simple_equation_model_t ex15_1;
-simple_equation_model_t ex15_2;
-
 void GenerateModels ();
 
+//  Entities
+void GenerateEntities ();
+
+// MAIN //
 int main ( int argc, char ** argv) {
   glutInit ( &argc, argv );
   glutInitDisplayMode ( GLUT_DOUBLE | GLUT_RGBA );
@@ -92,7 +98,7 @@ int main ( int argc, char ** argv) {
 void Init () {
   //  Models
   GenerateModels ();
-
+  GenerateEntities ();
   //  Shaders
   ShaderInfo shaders [] = {
     { GL_VERTEX_SHADER, "./shaders/ex15_1.v.glsl" },
@@ -150,29 +156,37 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
   case 'Q':
     gqueue.push ( queue_events::APPLICATION_QUIT );
     break;
-  case '-':
-  case '_':
+  case 'h':
+  case 'H':
     gqueue.push ( queue_events::ROTATE_LEFT );
     break;
-  case '+':
-  case '=':
+  case 'l':
+  case 'L':
     gqueue.push ( queue_events::ROTATE_RIGHT );
     break;
   case 'a':
   case 'A':
     gqueue.push ( queue_events::STRAFE_LEFT );
     break;
-  case 's':
-  case 'S':
-    gqueue.push ( queue_events::MOVE_BACKWARD );
-    break;
   case 'd':
   case 'D':
     gqueue.push ( queue_events::STRAFE_RIGHT );
     break;
+  case 's':
+  case 'S':
+    gqueue.push ( queue_events::MOVE_BACKWARD );
+    break;
   case 'w':
   case 'W':
     gqueue.push ( queue_events::MOVE_FORWARD );
+    break;
+  case 'k':
+  case 'K':
+    gqueue.push ( queue_events::MOVE_UP );
+    break;
+  case 'j':
+  case 'J':
+    gqueue.push ( queue_events::MOVE_DOWN );
     break;
   case 'c':
   case 'C':
@@ -182,14 +196,13 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
 }
 
 void UpdateView () {
-  //  camera = glm::rotate (glm::mat4(1.0f), rotate, glm::vec3 (0.0f, 1.0f, 0.0f) );
-  camera = glm::translate (glm::mat4(), glm::vec3 ( strafe, height, depth ) );
-  camera = glm::rotate (camera, rotate, glm::vec3 (0.0f, 1.0f, 0.0f) );
+  camera_matrix = glm::translate (glm::mat4(), glm::vec3 ( Camera->_px, Camera->_py, Camera->_pz ) );
+  camera_matrix = glm::rotate (camera_matrix, Camera->_ox, glm::vec3 (0.0f, 1.0f, 0.0f) );
 }
 
 void PostView() {
   glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
-  glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera[0][0] ); 
+  glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] ); 
   glUniform1i ( color_loc, color );
 }
 
@@ -213,22 +226,28 @@ void GlutIdle () {
   while ( !gqueue.empty () ) {
     switch ( gqueue.front() ) {
     case queue_events::MOVE_FORWARD :
-      depth += 1.0f;
+      Selected->_pz += 1.0f;
       break;
     case queue_events::MOVE_BACKWARD :
-      depth -= 1.0f;
+      Selected->_pz -= 1.0f;
       break;
     case queue_events::STRAFE_RIGHT :
-      strafe += 1.0f;
+      Selected->_px += 1.0f;
       break;
     case queue_events::STRAFE_LEFT :
-      strafe -= 1.0f;
+      Selected->_px -= 1.0f;
       break;
     case queue_events::ROTATE_RIGHT :
-      rotate += 0.5f;
+      Selected->_ox += 0.5f;
       break;
     case queue_events::ROTATE_LEFT :
-      rotate -= 0.5f;
+      Selected->_ox -= 0.5f;
+      break;
+    case queue_events::MOVE_UP :
+      Selected->_py += 0.5f;
+      break;
+    case queue_events::MOVE_DOWN :
+      Selected->_py -= 0.5f;
       break;
     case queue_events::COLOR_CHANGE :
       color = (color >= 4 ? 1 : color + 1 );
@@ -251,7 +270,8 @@ void CleanupAndExit () {
 
 void GenerateModels () {
   shared_ptr <simple_equation_model_t> tmp = shared_ptr <simple_equation_model_t> {new simple_equation_model_t};
-  
+  int ext {0};
+
   tmp->numVertices = 600;
   tmp->vertices.resize(tmp->numVertices*3);
   float x = 0.0f, z = 0.0f;
@@ -262,14 +282,13 @@ void GenerateModels () {
     if ( z >= -1.0f)
       z = -10.0f; //(i % 2 ? -8.0f:-12.0f);
   }
-  tmp->name = "ex15_1";
+  tmp->name = "ex15_" + to_string(ext++);
+  cout << "name: " << tmp->name << endl;
   tmp->renderPrimitive = GL_POINTS;
   tmp->SetupRenderModel ();
-  //  Renderer.models.push_back(tmp);
+  Renderer.models.push_back(tmp);
 
-  for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f} ) {
-    static int ext;
-    ext++;
+  for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f} ) {
     tmp = shared_ptr <simple_equation_model_t> { new simple_equation_model_t };
     x = -3.0f;
     z = 0.0f;
@@ -282,10 +301,21 @@ void GenerateModels () {
       if ( z >= -1.0f) 
 	z = 0.0f;
     }
-    tmp->name = "ex15_" + to_string(ext);
+    tmp->name = "ex15_" + to_string(ext++);
     cout << "name: " << tmp->name << endl;
     tmp->renderPrimitive = GL_POINTS;
     tmp->SetupRenderModel ();
     Renderer.models.push_back(tmp);
   }
+}
+
+void GenerateEntities () {
+
+  //  Camera
+  Camera = shared_ptr <camera> { new camera (strafe, height, depth, 0.0f, 0.0f, 0.0f) };
+
+  //  Actors
+  
+  //  Selected Entity
+  Selected = Camera;
 }
