@@ -2,6 +2,8 @@
 #define __MODEL_H__
 
 #include <GL/glew.h>
+#include <vector>
+using namespace std;
 
 enum Attrib_IDs { vPosition = 0 };
 #define BUFFER_OFFSET(offset)  ((void *)(offset))

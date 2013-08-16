@@ -36,6 +36,7 @@ enum class queue_events {
     };
 queue <queue_events> gqueue;
 render Renderer;
+render Renderer1;
 shared_ptr<camera> Camera;
 shared_ptr<entity> Selected;
 
@@ -49,7 +50,10 @@ glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 1.0f, 100.f);
 glm::mat4 camera_matrix = glm::mat4(0.0);
 GLint MVP_loc = 0;
 GLint camera_loc = 0;
+GLint MVP_loc2 = 0;
+GLint camera_loc2 = 0;
 
+GLuint program, program2;
 //  Function Declarations
 void Init ();
 void UpdateView ();
@@ -65,6 +69,7 @@ void CleanupAndExit ();
 GLfloat strafe = 1.0f, height = 0.0f, depth = -3.0f, rotate = 0.0f;
 GLint color = 1;
 GLint color_loc = 0;
+GLint color_loc2 = 0;
 
 //  Models
 void GenerateModels ();
@@ -80,7 +85,7 @@ int main ( int argc, char ** argv) {
 
   glutCreateWindow (argv[0]);
   if ( glewInit() ) {
-    std::cerr << "Unable to initialize GLEW ... exiting " << std::endl;
+    cerr << "Unable to initialize GLEW ... exiting " << endl;
     exit ( EXIT_FAILURE );
   }
   
@@ -101,30 +106,49 @@ void Init () {
   GenerateEntities ();
   //  Shaders
   ShaderInfo shaders [] = {
-    { GL_VERTEX_SHADER, "./shaders/ex15_1.v.glsl" },
+    { GL_VERTEX_SHADER,   "./shaders/ex15_1.v.glsl" },
     { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
     { GL_NONE, NULL }
   };
-  GLuint program = LoadShaders(shaders);
-
-  glUseProgram(program);
+  ShaderInfo shaders2 [] = {
+    { GL_VERTEX_SHADER,   "./shaders/exj_3_1.v.glsl"},
+    { GL_FRAGMENT_SHADER, "./shaders/exj_3_1.f.glsl"},
+    { GL_NONE, NULL }
+  };
+  program = LoadShaders(shaders);
+  cout << "Program : " << program << endl;
+  program2 = LoadShaders(shaders2);
+  cout << "Program2 : " << program2 << endl;
+  
+  glUseProgram (program);
   if ( (color_loc = glGetUniformLocation ( program, "color" )) == -1 ) {
-    std::cout << "Did not find the color loc\n";
+    cerr << "Did not find the color loc\n";
   }
   if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
-    std:: cout << "Did not find the mMVP loc\n";
+    cerr << "Did not find the mMVP loc\n";
   }
   if ( (camera_loc = glGetUniformLocation (program, "mCamera" )) == -1 ) {
-    std:: cout << "Did not find the mCamera loc\n";
+    cerr << "Did not find the mCamera loc\n";
   }
   glUniform1i ( color_loc, color );
 
+  glUseProgram (program2);
+  if ( (color_loc2 = glGetUniformLocation ( program2, "color" )) == -1 ) {
+    cerr << "2: Did not find the color loc\n";
+  }
+  if ( (MVP_loc2 = glGetUniformLocation (program2, "mMVP" )) == -1 ) {
+    cerr << "2: Did not find the mMVP loc\n";
+  }
+  if ( (camera_loc2 = glGetUniformLocation (program2, "mCamera" )) == -1 ) {
+    cerr << "2: Did not find the mCamera loc\n";
+  }
+  glUniform1i ( color_loc2, color );
+  glUseProgram (0);
   //  View
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
 
   UpdateView ();
-  glutPostRedisplay ();
-
+  PostView ();
 }
 
 void GlutReshape ( int newWidth, int newHeight ) {
@@ -140,11 +164,18 @@ void GlutDisplay ( void ) {
   //
   //  Eventually Call on rederer to render Entities
   //
-  Renderer.Render ();
-  
+  glUseProgram(program);
+  Renderer1.Render ();
   glBindVertexArray (0);
+
+  glUseProgram(program2);
+  Renderer.Render ();
+  glBindVertexArray (0);  
+
+  glUseProgram (0);
   glFinish ();
   glutSwapBuffers ();
+
 }
 
 void GlutKeyboard ( unsigned char key, int x, int y ) {
@@ -201,9 +232,17 @@ void UpdateView () {
 }
 
 void PostView() {
+  glUseProgram (program);
   glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
   glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] ); 
   glUniform1i ( color_loc, color );
+
+  glUseProgram (program2);
+  glUniformMatrix4fv( MVP_loc2, 1, GL_FALSE, &MVP[0][0] ); 
+  glUniformMatrix4fv( camera_loc2, 1, GL_FALSE, &camera_matrix[0][0] ); 
+  glUniform1i ( color_loc2, color );
+
+  glUseProgram (0);
 }
 
 
@@ -286,7 +325,7 @@ void GenerateModels () {
   cout << "name: " << tmp->name << endl;
   tmp->renderPrimitive = GL_POINTS;
   tmp->SetupRenderModel ();
-  Renderer.models.push_back(tmp);
+  Renderer1.models.push_back(tmp);
 
   for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f} ) {
     tmp = shared_ptr <simple_equation_model_t> { new simple_equation_model_t };

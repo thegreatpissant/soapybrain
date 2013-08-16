@@ -10,5 +10,5 @@ typedef  struct shaderinfo {
   const char * filename;
 } ShaderInfo;
 GLuint LoadShaders(ShaderInfo * si);
-GLuint LoadShaders(ShaderInfo * si);
+
 #endif
