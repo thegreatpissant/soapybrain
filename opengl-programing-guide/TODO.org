@@ -1,12 +1,6 @@
-* Todo
-** Adjustable fov and aspect ratio
-** Var system
-** Models require a ID to associate actors with them
-** Actors objects are required to access those Models
-
+* TODO Var system
 * EventQueue system
-** Define Event Queue types??
-** types
+** Event Queue types
    - CREATE
    - REMOVE
    - MOVE
@@ -15,29 +9,69 @@
    - INPUT MOUSE
    - INPUT TOUCH
    - INPUT ANY
-   - NETWORK ??
+   - NETWORK
+** Problems
+   - Smoothness of input from multiple keys
+   - Pull vs Push from input devices
+   - Timestamps within Frametime
+* TODO Game loop / Timmer
 * Render system
-** Reference the model assets
-* Asset manager
+** Shaders and required variables
+** Display attributes
+- Aspect ration
+- FOV
+- Output device(s)
+** Ways to reference the model assets
+   Entities require a way to associate themselves with models in the
+   render system.  Do we use:
+   - Pointers: fastest, but could break. This nullifies the design
+     holdup a second
+   - Some sort of ID lookup, string or numeric fasion: Lookup
+     overhead, less likley to break.
+   - Hybrid:
+* TODO Scene Graph
+  - Contains a positional representation of all entities in the world.
+  - Used to determine who gets drawn at the current time.
+  - Tells the entities to draw themsleves or tells the renderer to draw
+    this set of entities
+* TODO Asset manager
 ** Sounds
 ** Load Models from files
-* Models (Representation??)
-** Load from equations
-** Store points
-** Store Keyframes
-* NEXT
-** RENDER system
-*** Create a scene graph
-*** Handle different model attributes
-*** What vars do we need to pump to shaders and what shaders can we use?
-** ASSET manager
-** Actors
-** Model types
-** Entity types
-*** Associate attributes
-* exj_2
-** Proved the queue system
-* exj_3
-** Broke out different model types.
-** Added a simple render system.
-** Added a entity class with camera and actor subs
+* Models
+  A very broad term, Render physics, collision, sound.  Im sure there
+  are more.  It gives us a way to perform these calculations somewhat
+  quickly on entities.
+** Discussion
+   Require more information on how far to break this stuff out.
+** Render Models
+   What awe use to provide a visual representation of physical objects
+   in a virtual world.
+*** TODO Types
+    - Load from equations
+    - Load from files
+*** Requirements
+    - Points
+    - Keyframes
+    - Orientation
+** TODO Collision Models
+* Example Progress
+  Most of these originated from the ex15_1.cpp file and brought in new
+  ideas as I went along.
+** exj_2
+   - Proved the queue system
+** exj_3
+   - Broke out different model types.
+   - Added a simple render system.
+   - Added a entity class with camera and actor subs
+** TODO exj_4
+*** Come back into more OpenGL related items from book
+*** Concentration on learning shaders
+*** Concentrate on render model representation
+*** Color support
+*** Texture support
+*** Get mouse integration
+*** Gameloop/Timer integration
+* Future Application Ideas
+  Should inspiration come my way from this stuff put results here.
+** Implement a version of Mathographics computer examples
+** Give it oculus support
