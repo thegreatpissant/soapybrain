@@ -1,1 +1,21 @@
-Requires glew libraries and glm libraries
+* Requires
+  - glew
+  - glm
+  - freeglut
+  - A decent video card
+
+* Projects
+  All of the sub projects located here are part of my learning trials.
+  A solid project idea will get spun out.
+** openglbook
+   An online tutorial I was going through
+** opengl-programing-guide
+   The updated defacto std to learing opengl.  This is turning into
+   more then just the book examples.  Some other items for developing
+   parts to a game or rendering engine are creeping in.
+** opengl-wikibook 
+   An online tutorial I was going through
+** pre3
+   Items I had tried from a OpenGL 1.X series perspective.
+** tests
+   Various tests
