@@ -8,6 +8,6 @@ attribute vec4 vPosition;
 
 void main (void) 
 {
-  gl_Position =   mMVP * mCamera * vPosition;
+  gl_Position =   1.4f * mMVP * mCamera * vPosition;
 
 }
