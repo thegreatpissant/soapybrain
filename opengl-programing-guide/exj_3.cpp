@@ -53,7 +53,9 @@ GLint camera_loc = 0;
 GLint MVP_loc2 = 0;
 GLint camera_loc2 = 0;
 
+//  Shader programs
 GLuint program, program2;
+
 //  Function Declarations
 void Init ();
 void UpdateView ();
@@ -64,6 +66,14 @@ void GlutDisplay ( void );
 void GlutKeyboard ( unsigned char key, int x, int y );
 void UpdatePerspective ();
 void CleanupAndExit ();
+//  Models
+void GenerateModels ();
+//  Entities
+void GenerateEntities ();
+//  View items
+void InitializeView ();
+//  Shaders
+void GenerateShaders ();
 
 //  Globalized user vars
 GLfloat strafe = 1.0f, height = 0.0f, depth = -3.0f, rotate = 0.0f;
@@ -71,11 +81,6 @@ GLint color = 1;
 GLint color_loc = 0;
 GLint color_loc2 = 0;
 
-//  Models
-void GenerateModels ();
-
-//  Entities
-void GenerateEntities ();
 
 // MAIN //
 int main ( int argc, char ** argv) {
@@ -89,21 +94,22 @@ int main ( int argc, char ** argv) {
     exit ( EXIT_FAILURE );
   }
   
-  Init ();
+  //  Load our Application Items
+  GenerateModels ();
+  GenerateEntities ();
+  GenerateShaders ();
 
+  //  Boiler Plate
   glutIdleFunc ( GlutIdle );
   glutReshapeFunc ( GlutReshape );
   glutDisplayFunc ( GlutDisplay );
   glutKeyboardFunc ( GlutKeyboard );
   
+  //  Go forth and loop
   glutMainLoop ();
-
 }
 
-void Init () {
-  //  Models
-  GenerateModels ();
-  GenerateEntities ();
+void GenerateShaders () {
   //  Shaders
   ShaderInfo shaders [] = {
     { GL_VERTEX_SHADER,   "./shaders/ex15_1.v.glsl" },
@@ -115,11 +121,8 @@ void Init () {
     { GL_FRAGMENT_SHADER, "./shaders/exj_3_1.f.glsl"},
     { GL_NONE, NULL }
   };
+
   program = LoadShaders(shaders);
-  cout << "Program : " << program << endl;
-  program2 = LoadShaders(shaders2);
-  cout << "Program2 : " << program2 << endl;
-  
   glUseProgram (program);
   if ( (color_loc = glGetUniformLocation ( program, "color" )) == -1 ) {
     cerr << "Did not find the color loc\n";
@@ -131,7 +134,9 @@ void Init () {
     cerr << "Did not find the mCamera loc\n";
   }
   glUniform1i ( color_loc, color );
+  glUseProgram (0);
 
+  program2 = LoadShaders(shaders2);
   glUseProgram (program2);
   if ( (color_loc2 = glGetUniformLocation ( program2, "color" )) == -1 ) {
     cerr << "2: Did not find the color loc\n";
@@ -144,6 +149,9 @@ void Init () {
   }
   glUniform1i ( color_loc2, color );
   glUseProgram (0);
+}
+
+void InitializeView () {
   //  View
   glClearColor ( 0.0, 0.0, 0.0, 1.0 );
 
@@ -226,40 +234,6 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
   }
 }
 
-void UpdateView () {
-  camera_matrix = glm::translate (glm::mat4(), glm::vec3 ( Camera->_px, Camera->_py, Camera->_pz ) );
-  camera_matrix = glm::rotate (camera_matrix, Camera->_ox, glm::vec3 (0.0f, 1.0f, 0.0f) );
-}
-
-void PostView() {
-  glUseProgram (program);
-  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
-  glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] ); 
-  glUniform1i ( color_loc, color );
-
-  glUseProgram (program2);
-  glUniformMatrix4fv( MVP_loc2, 1, GL_FALSE, &MVP[0][0] ); 
-  glUniformMatrix4fv( camera_loc2, 1, GL_FALSE, &camera_matrix[0][0] ); 
-  glUniform1i ( color_loc2, color );
-
-  glUseProgram (0);
-}
-
-
-void UpdatePerspective () {
-  //  @@TODO Adjustable FOV and Aspect ration
-  GLfloat hResolution = screenWidth;  //  640.0f;
-  GLfloat vResolution = screenHeight; //  800.0f;
-  //  GLfloat hScreenSize = 0.14976f;
-  //  GLfloat vScreenSize = 0.0935f;
-  GLfloat eyeScreenDist = 0.041f;
-  GLfloat aspect = hResolution / (2.0f * vResolution);
-  GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
-  GLfloat zNear  = 0.3f;
-  GLfloat zFar   = 1000.0f;
-  Projection = glm::perspective( fov, aspect, zNear, zFar );
-}
-
 void GlutIdle () {
   //  Pump the events loop
   while ( !gqueue.empty () ) {
@@ -305,7 +279,6 @@ void GlutIdle () {
 void CleanupAndExit () {
   exit ( EXIT_SUCCESS );
 }
-
 
 void GenerateModels () {
   shared_ptr <simple_equation_model_t> tmp = shared_ptr <simple_equation_model_t> {new simple_equation_model_t};
@@ -357,4 +330,37 @@ void GenerateEntities () {
   
   //  Selected Entity
   Selected = Camera;
+}
+
+void UpdateView () {
+  camera_matrix = glm::translate (glm::mat4(), glm::vec3 ( Camera->_px, Camera->_py, Camera->_pz ) );
+  camera_matrix = glm::rotate (camera_matrix, Camera->_ox, glm::vec3 (0.0f, 1.0f, 0.0f) );
+}
+
+void PostView() {
+  glUseProgram (program);
+  glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
+  glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] ); 
+  glUniform1i ( color_loc, color );
+
+  glUseProgram (program2);
+  glUniformMatrix4fv( MVP_loc2, 1, GL_FALSE, &MVP[0][0] ); 
+  glUniformMatrix4fv( camera_loc2, 1, GL_FALSE, &camera_matrix[0][0] ); 
+  glUniform1i ( color_loc2, color );
+
+  glUseProgram (0);
+}
+
+void UpdatePerspective () {
+  //  @@TODO Adjustable FOV and Aspect ration
+  GLfloat hResolution = screenWidth;  //  640.0f;
+  GLfloat vResolution = screenHeight; //  800.0f;
+  //  GLfloat hScreenSize = 0.14976f;
+  //  GLfloat vScreenSize = 0.0935f;
+  GLfloat eyeScreenDist = 0.041f;
+  GLfloat aspect = hResolution / (2.0f * vResolution);
+  GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
+  GLfloat zNear  = 0.3f;
+  GLfloat zFar   = 1000.0f;
+  Projection = glm::perspective( fov, aspect, zNear, zFar );
 }
