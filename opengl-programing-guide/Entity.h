@@ -9,13 +9,13 @@
 
 class entity {
  public:
-  float _px, _py, _pz;
-  float _ox, _oy, _oz; 
+  float position_x, position_y, position_z;
+  float orientation_x, orientation_y, orientation_z; 
   int model_id;
   entity ( float px, float py, float pz, float ox, float oy, float oz)
-    :_px{px}, _py{py}, _pz{pz}, _ox{ox}, _oy{oy}, _oz{oz} 
+    :position_x{px}, position_y{py}, position_z{pz}, orientation_x{ox}, orientation_y{oy}, orientation_z{oz} 
   {}
-  entity () :_px{0.0f}, _py{0.0f}, _pz{0.0f}, _ox{0.0f}, _oy{0.0f}, _oz{0.0f} 
+  entity () :position_x{0.0f}, position_y{0.0f}, position_z{0.0f}, orientation_x{0.0f}, orientation_y{0.0f}, orientation_z{0.0f} 
   {}
 
 };

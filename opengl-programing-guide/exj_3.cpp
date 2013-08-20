@@ -239,28 +239,28 @@ void GlutIdle () {
   while ( !gqueue.empty () ) {
     switch ( gqueue.front() ) {
     case queue_events::MOVE_FORWARD :
-      Selected->_pz += 1.0f;
+      Selected->position_z += 1.0f;
       break;
     case queue_events::MOVE_BACKWARD :
-      Selected->_pz -= 1.0f;
+      Selected->position_z -= 1.0f;
       break;
     case queue_events::STRAFE_RIGHT :
-      Selected->_px += 1.0f;
+      Selected->position_x += 1.0f;
       break;
     case queue_events::STRAFE_LEFT :
-      Selected->_px -= 1.0f;
+      Selected->position_x -= 1.0f;
       break;
     case queue_events::ROTATE_RIGHT :
-      Selected->_ox += 0.5f;
+      Selected->orientation_x += 0.5f;
       break;
     case queue_events::ROTATE_LEFT :
-      Selected->_ox -= 0.5f;
+      Selected->orientation_x -= 0.5f;
       break;
     case queue_events::MOVE_UP :
-      Selected->_py += 0.5f;
+      Selected->position_y += 0.5f;
       break;
     case queue_events::MOVE_DOWN :
-      Selected->_py -= 0.5f;
+      Selected->position_y -= 0.5f;
       break;
     case queue_events::COLOR_CHANGE :
       color = (color >= 4 ? 1 : color + 1 );
@@ -333,8 +333,8 @@ void GenerateEntities () {
 }
 
 void UpdateView () {
-  camera_matrix = glm::translate (glm::mat4(), glm::vec3 ( Camera->_px, Camera->_py, Camera->_pz ) );
-  camera_matrix = glm::rotate (camera_matrix, Camera->_ox, glm::vec3 (0.0f, 1.0f, 0.0f) );
+  camera_matrix = glm::translate (glm::mat4(), glm::vec3 ( Camera->position_x, Camera->position_y, Camera->position_z ) );
+  camera_matrix = glm::rotate (camera_matrix, Camera->orientation_x, glm::vec3 (0.0f, 1.0f, 0.0f) );
 }
 
 void PostView() {
