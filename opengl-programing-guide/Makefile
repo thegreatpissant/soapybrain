@@ -27,7 +27,7 @@ exj_1: exj_1.cpp common
 exj_2: exj_2.cpp common 
 	$(CXX) $(DEBUG_FLAG) -I. -o exj_2 exj_2.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
 
-exj_3: exj_3.cpp common 
+exj_3: exj_3.cpp common Model.h Actor.h Render.h Camera.h Display.h Entity.h
 	$(CXX) $(DEBUG_FLAG) -I. -o exj_3 exj_3.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
 
 
