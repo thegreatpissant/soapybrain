@@ -1,9 +1,4 @@
-* Requires
-  - glew
-  - glm
-  - freeglut
-  - A decent video card
-
+My OpenGL projects
 * Projects
   All of the sub projects located here are part of my learning trials.
   A solid project idea will get spun out.
@@ -19,3 +14,8 @@
    Items I had tried from a OpenGL 1.X series perspective.
 ** tests
    Various tests
+* Requires
+  - glew
+  - glm
+  - freeglut
+  - A decent video card
