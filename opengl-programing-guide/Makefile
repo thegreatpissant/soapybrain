@@ -1,6 +1,6 @@
 include 	../Makefile.inc
 DIRS		= common 
-ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus exj_2 exj_3
+ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus exj_2 exj_3 exj_4
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
@@ -8,6 +8,7 @@ STD		= -std=c++0x
 OCULUS_LIBS	= -ludev -lpthread -lXext -lX11 -lXinerama
 DEBUG_FLAG	+= -g -O3 -Wall
 OCULUS_SDK	= /home/thegreatpissant
+ENGINE_COMMON   = ./common/Actor.h ./common/Render.h ./common/Camera.h ./common/Model.h ./common/Entity.h ./common/Display.h
 
 all: $(OBJ_FILES) $(ALL_EXECS) 
 
@@ -29,6 +30,9 @@ exj_2: exj_2.cpp common
 
 exj_3: exj_3.cpp common Model.h Actor.h Render.h Camera.h Display.h Entity.h
 	$(CXX) $(DEBUG_FLAG) -I. -o exj_3 exj_3.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
+
+exj_4: exj_4.cpp common $(ENGINE_COMMON)
+	$(CXX) $(DEBUG_FLAG) -I. -o exj_4 exj_4.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
 
 
 oculus: oculus.cpp common
