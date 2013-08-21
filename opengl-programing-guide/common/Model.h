@@ -6,6 +6,7 @@
 using namespace std;
 
 using ModelID = GLint;
+ModelID current_model_id = 0;
 
 #include "Actor.h"
 

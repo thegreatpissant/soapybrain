@@ -6,16 +6,23 @@
 
 //  Engine lib
 #include "Model.h"
+#include "Shader.h"
 #include "Actor.h"
 
 class Renderer {
  public:
-  int current_model_id;
   std::unordered_map <ModelID, shared_ptr<Model>> models;
-  Renderer ():current_model_id{0} { 
+  std::unordered_map <ShaderID, shared_ptr<Shader>> shaders;
+  Renderer () { 
   };
+
   void render ( Actor a ) {
+    //  Select appropriate shaders for this model
+    //  Will Chain standard MVW transforms as well as effects
+
     models[a.model_id]->render(a.state);
+
+    //  Unload the shader and continue
   }
 };
 

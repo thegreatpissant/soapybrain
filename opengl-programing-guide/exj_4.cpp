@@ -1,8 +1,8 @@
-/*  exj_3.cpp
+/*  exj_4.cpp
  * James A. Feister - thegreatpissant@gmail.com
  * DONE - Break out different model types.
  * DONE - Add a simple render system, yes it is very simple
- * Add an actor a subclass of an entity
+ * DONE - Add an actor a subclass of an entity
  */
 
 #include <iostream>
@@ -237,7 +237,7 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
     break;
   case 'm':
     a1->model_id += 1;
-    if (a1->model_id >= renderer.current_model_id)
+    if (a1->model_id >= current_model_id)
       a1->model_id = 0;
     break;
   }
@@ -306,7 +306,7 @@ void GenerateModels () {
   tmp->name = "ex15_" + to_string(ext++);
   tmp->renderPrimitive = GL_POINTS;
   tmp->setup_render_model ();
-  renderer.models[renderer1.current_model_id++] = tmp;
+  renderer.models[current_model_id++] = tmp;
 
   for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f} ) {
     tmp = shared_ptr <Simple_equation_model_t> { new Simple_equation_model_t };
@@ -324,7 +324,7 @@ void GenerateModels () {
     tmp->name = "ex15_" + to_string(ext++);
     tmp->renderPrimitive = GL_POINTS;
     tmp->setup_render_model ();
-    renderer.models[renderer.current_model_id++] = tmp;
+    renderer.models[current_model_id++] = tmp;
   }
 }
 
