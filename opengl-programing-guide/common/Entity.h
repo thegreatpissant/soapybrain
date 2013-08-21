@@ -22,9 +22,16 @@ class Entity {
  public:
   EntityState state;
 
-  Entity ( float px, float py, float pz, float ox, float oy, float oz):state (px, py, pz, ox, oy, oz)
-  {}
-  Entity (): state ()
+  Entity ( float px, float py, float pz, float ox, float oy, float oz)
+  {
+    this->state.position_x = px;
+    this->state.position_y = py;
+    this->state.position_z = pz;
+    this->state.orientation_x = ox;
+    this->state.orientation_y = oy;
+    this->state.orientation_z = oz;
+  }
+  Entity ()
   {}
 
 };

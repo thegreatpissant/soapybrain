@@ -7,9 +7,9 @@ class Camera : public Entity {
  public:
   Camera () {};
 
-  Camera (float px, float py, float pz, float ox, float oy, float oz) 
+  Camera (float px, float py, float pz, float ox, float oy, float oz) :Entity(px, py, pz, ox, oy, oz)
     {
-      ::Entity(px, py, pz, ox, oy, oz);
+      
     };
 
 };

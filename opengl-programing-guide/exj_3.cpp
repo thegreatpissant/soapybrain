@@ -2,7 +2,7 @@
  * James A. Feister - thegreatpissant@gmail.com
  * DONE - Break out different model types.
  * DONE - Add a simple render system, yes it is very simple
- * Add an actor a subclass of an entity
+ * Add an actor a subclass of an entity - Moved to exj_4.cpp
  */
 
 #include <iostream>

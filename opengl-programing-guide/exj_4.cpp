@@ -31,7 +31,7 @@ using namespace std;
 
 enum class queue_events {
   STRAFE_LEFT, STRAFE_RIGHT, MOVE_FORWARD, MOVE_BACKWARD, ROTATE_LEFT, ROTATE_RIGHT, MOVE_UP, MOVE_DOWN,
-    COLOR_CHANGE,
+    COLOR_CHANGE, MODEL_CHANGE,
     APPLICATION_QUIT
     };
 queue <queue_events> gqueue;
@@ -54,6 +54,7 @@ GLint MVP_loc2 = 0;
 GLint camera_loc2 = 0;
 
 shared_ptr <Actor> a1;
+shared_ptr <Actor> a2;
 
 //  Shader programs
 GLuint program, program2;
@@ -78,7 +79,7 @@ void InitializeView ();
 void GenerateShaders ();
 
 //  Globalized user vars
-GLfloat strafe = 1.0f, height = 0.0f, depth = -3.0f, rotate = 0.0f;
+GLfloat strafe {1.0f}, height {0.0f}, depth {-25.0f}, rotate {0.0f};
 GLint color = 1;
 GLint color_loc = 0;
 GLint color_loc2 = 0;
@@ -171,18 +172,16 @@ void GlutReshape ( int newWidth, int newHeight ) {
 void GlutDisplay ( void ) {
   glClear (GL_COLOR_BUFFER_BIT);
   glViewport ( 0, 0, screenWidth, screenHeight );
-  //
-  //  Eventually Call on rederer to render Entities
-  //
+
   glUseProgram(program);
   renderer.render (*a1);
-  //  renderer1.render ();
+  renderer.render (*a2);
   glBindVertexArray (0);
 
-  glUseProgram(program2);
-  renderer.render (*a1);
-  //  renderer.render ();
-  glBindVertexArray (0);  
+  // glUseProgram(program2);
+  // renderer.render (*a1);
+  // renderer.render (*a2);
+  // glBindVertexArray (0);  
 
   glUseProgram (0);
   glFinish ();
@@ -236,9 +235,8 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
     gqueue.push ( queue_events::COLOR_CHANGE );
     break;
   case 'm':
-    a1->model_id += 1;
-    if (a1->model_id >= current_model_id)
-      a1->model_id = 0;
+  case 'M':
+    gqueue.push ( queue_events::MODEL_CHANGE );
     break;
   }
 }
@@ -273,6 +271,11 @@ void GlutIdle () {
       break;
     case queue_events::COLOR_CHANGE :
       color = (color >= 4 ? 1 : color + 1 );
+      break;
+    case queue_events::MODEL_CHANGE :
+      a1->model_id += 1;
+      if (a1->model_id >= current_model_id)
+	a1->model_id = 0;
       break;
     case queue_events::APPLICATION_QUIT :
       CleanupAndExit ();
@@ -336,6 +339,8 @@ void GenerateEntities () {
   //  Actors
   a1 = shared_ptr <Actor> { new Actor () };
   a1->model_id = 1;
+  a2 = shared_ptr <Actor> { new Actor () };
+  a2->model_id = 1;
 
   //  Selected Entity
   selected = camera;
@@ -361,11 +366,8 @@ void PostView() {
 }
 
 void UpdatePerspective () {
-  //  @@TODO Adjustable FOV and Aspect ration
   GLfloat hResolution = screenWidth;  //  640.0f;
   GLfloat vResolution = screenHeight; //  800.0f;
-  //  GLfloat hScreenSize = 0.14976f;
-  //  GLfloat vScreenSize = 0.0935f;
   GLfloat eyeScreenDist = 0.041f;
   GLfloat aspect = hResolution / (2.0f * vResolution);
   GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
