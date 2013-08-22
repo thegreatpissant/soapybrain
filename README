@@ -18,4 +18,4 @@ My OpenGL projects
   - glew
   - glm
   - freeglut
-  - A decent video card
+  - video card supporting at least opengl 2.0
