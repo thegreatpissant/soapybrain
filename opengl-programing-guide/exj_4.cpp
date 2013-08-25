@@ -3,6 +3,12 @@
  * DONE - Break out different model types.
  * DONE - Add a simple render system, yes it is very simple
  * DONE - Add an actor a subclass of an entity
+ * PROOF - Use std library to load shaders
+ * PROOF - Rendering function in renderer only
+ * PROOF - Independent model movement
+ * Proposed - Physics engine
+ * Proposed - Selection
+ * Proposed - Display class, Oculus and traditional
  */
 
 #include <iostream>
@@ -52,7 +58,7 @@ GLint MVP_loc = 0;
 GLint camera_loc = 0;
 GLint MVP_loc2 = 0;
 GLint camera_loc2 = 0;
-
+GLint model_matrix_loc = 0;
 shared_ptr <Actor> a1;
 shared_ptr <Actor> a2;
 
@@ -115,13 +121,13 @@ int main ( int argc, char ** argv) {
 void GenerateShaders () {
   //  Shaders
   ShaderInfo shaders [] = {
-    { GL_VERTEX_SHADER,   "./shaders/ex15_1.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
+    { GL_VERTEX_SHADER,   "./shaders/exj_4_1.v.glsl" },
+    { GL_FRAGMENT_SHADER, "./shaders/exj_4_1.f.glsl" },
     { GL_NONE, NULL }
   };
   ShaderInfo shaders2 [] = {
-    { GL_VERTEX_SHADER,   "./shaders/exj_3_1.v.glsl"},
-    { GL_FRAGMENT_SHADER, "./shaders/exj_3_1.f.glsl"},
+    { GL_VERTEX_SHADER,   "./shaders/exj_4_1.v.glsl"},
+    { GL_FRAGMENT_SHADER, "./shaders/exj_4_1.f.glsl"},
     { GL_NONE, NULL }
   };
 
@@ -135,6 +141,9 @@ void GenerateShaders () {
   }
   if ( (camera_loc = glGetUniformLocation (program, "mCamera" )) == -1 ) {
     cerr << "Did not find the mCamera loc\n";
+  }
+  if ( (model_matrix_loc = glGetUniformLocation (program, "model_matrix" )) == -1 ) {
+    cerr << "Did not find the model_matrix loc\n";
   }
   glUniform1i ( color_loc, color );
   glUseProgram (0);
@@ -170,23 +179,7 @@ void GlutReshape ( int newWidth, int newHeight ) {
 }
 
 void GlutDisplay ( void ) {
-  glClear (GL_COLOR_BUFFER_BIT);
-  glViewport ( 0, 0, screenWidth, screenHeight );
-
-  glUseProgram(program);
-  renderer.render (*a1);
-  renderer.render (*a2);
-  glBindVertexArray (0);
-
-  // glUseProgram(program2);
-  // renderer.render (*a1);
-  // renderer.render (*a2);
-  // glBindVertexArray (0);  
-
-  glUseProgram (0);
-  glFinish ();
-  glutSwapBuffers ();
-
+  renderer.render ();
 }
 
 void GlutKeyboard ( unsigned char key, int x, int y ) {
@@ -238,6 +231,13 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
   case 'M':
     gqueue.push ( queue_events::MODEL_CHANGE );
     break;
+  case 'i':
+    a1->state.position_x -= 0.1f;
+    break;
+  case 'o':
+    a1->state.position_x += 0.1f;
+    break;
+
   }
 }
 
@@ -337,10 +337,12 @@ void GenerateEntities () {
   camera = shared_ptr <Camera> { new Camera (strafe, height, depth, 0.0f, 0.0f, 0.0f) };
 
   //  Actors
-  a1 = shared_ptr <Actor> { new Actor () };
+  a1 = shared_ptr <Actor> { new Actor (2.0f, 2.0f, 4.0f, 0.0f, 0.0f, 0.0f) };
   a1->model_id = 1;
+  renderer.addActor (a1);
   a2 = shared_ptr <Actor> { new Actor () };
   a2->model_id = 1;
+  renderer.addActor (a2);
 
   //  Selected Entity
   selected = camera;
