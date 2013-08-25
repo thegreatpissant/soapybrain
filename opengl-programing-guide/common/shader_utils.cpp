@@ -6,8 +6,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <string>
+
 using namespace std;
 
+string file_read_string (const char *filename ) {
+  std::fstream ifile;
+  ifile.open(filename, ios_base::in);
+
+  string istring, estring;
+  while (getline (ifile,istring)) {
+    estring += istring + '\n';
+  }
+  ifile.close();
+  return estring;
+}
 static char *file_read (const char *filename)
 {
   FILE *in = fopen (filename, "rb");
@@ -61,6 +75,64 @@ void print_log (GLuint object)
 /**
  * Compile the shader from 'filename', with error handeling
  */
+GLuint create_shader_string (const char *filename, GLenum type)
+{
+  // const GLchar *source = file_read (filename);
+  // if (source == NULL)
+  //   {
+  //     fprintf (stderr, "Error Opening %s: ", filename);
+  //     perror ("");
+  //     exit (EXIT_FAILURE);
+  //   }
+  string shader_source = file_read_string (filename);
+  if (shader_source.empty()) {
+    cerr << "Error Opening " << filename << endl;
+    exit (EXIT_FAILURE);
+  }
+
+  GLuint res = glCreateShader (type);
+  string source;
+#ifdef OPENGL_ES
+  source += "#version 100\n";
+#else
+  source += "#version 120\n";
+#endif
+    /* GLES2 precision specifiers */
+#ifdef GL_ES_VERSION_2_0
+    /*  Define default float precision for fragment shaders: */
+    if (type == GL_FRAGMENT_SHADER) {
+      source += "#ifdef GL_FRAGMENT_PRECISION_HIGH\n";
+      source += "precision highp float;           \n";
+      source += "#else                            \n";
+      source += "precision mediump float;         \n";
+      source += "#endif                           \n";
+    }
+    /*  Note: OpengGL ES automatically defines this:
+	#define GL_ES
+    */
+#else
+    /* Ignore GLES 2 precision specifiers: */
+    source += "#define lowp    \n";
+    source += "#define mediump \n";
+    source += "#define highp   \n";
+#endif
+
+  source += shader_source;
+  const GLchar *c_source = source.c_str();
+  glShaderSource (res, 1, &c_source, NULL);
+  glCompileShader (res);
+  GLint compile_ok = GL_FALSE;
+  glGetShaderiv (res, GL_COMPILE_STATUS, &compile_ok);
+  if (compile_ok == GL_FALSE)
+    {
+      cerr << "Compile failed on file : " << filename << endl;
+      print_log (res);
+      glDeleteShader (res);
+      exit (EXIT_FAILURE);
+    }
+  return res;
+}
+
 GLuint create_shader (const char *filename, GLenum type)
 {
   const GLchar *source = file_read (filename);
@@ -115,9 +187,11 @@ GLuint create_shader (const char *filename, GLenum type)
 }
 
 GLuint LoadShaders(ShaderInfo * si) {
-  GLuint vertshader = create_shader ( si->filename, si->shadertype );
+  //  GLuint vertshader = create_shader ( si->filename, si->shadertype );
+  GLuint vertshader = create_shader_string ( si->filename, si->shadertype );
   si++;
-  GLuint fragshader = create_shader ( si->filename, si->shadertype );
+  //  GLuint fragshader = create_shader ( si->filename, si->shadertype );
+  GLuint fragshader = create_shader_string ( si->filename, si->shadertype );
   GLuint program = glCreateProgram ();
   glAttachShader (program, vertshader);
   glAttachShader (program, fragshader);

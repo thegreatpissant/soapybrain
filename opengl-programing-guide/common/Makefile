@@ -7,7 +7,7 @@ OBJ_FILES 	= shader_utils.o
 
 all: $(ALL_EXECS) $(OBJ_FILES)
 
-shader_utils.o :
+shader_utils.o : shader_utils.cpp shader_utils.h
 	$(CXX) $(DEBUG_FLAG) -c shader_utils.cpp
 
 clean :
