@@ -60,8 +60,6 @@ GLint camera_loc = 0;
 GLint MVP_loc2 = 0;
 GLint camera_loc2 = 0;
 GLint model_matrix_loc = 0;
-shared_ptr <Actor> a1;
-shared_ptr <Actor> a2;
 
 //  Shader programs
 GLuint program, program2;
@@ -232,13 +230,6 @@ void GlutKeyboard ( unsigned char key, int x, int y ) {
   case 'M':
     gqueue.push ( queue_events::MODEL_CHANGE );
     break;
-  case 'i':
-    a1->state.position_x -= 0.1f;
-    break;
-  case 'o':
-    a1->state.position_x += 0.1f;
-    break;
-
   }
 }
 
@@ -274,9 +265,6 @@ void GlutIdle () {
       color = (color >= 4 ? 1 : color + 1 );
       break;
     case queue_events::MODEL_CHANGE :
-      a1->model_id += 1;
-      if (a1->model_id >= current_model_id)
-	a1->model_id = 0;
       break;
     case queue_events::APPLICATION_QUIT :
       CleanupAndExit ();
@@ -354,12 +342,6 @@ void GenerateEntities () {
   for ( int i = 0; i < 1000; i++, a+= 0.2f ) {
     scene_graph.push_back (shared_ptr <Actor> { new Actor (10.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 8) } );
   }
-
-  // a1->model_id = 1;
-  // renderer.addActor (a1);
-  // a2 = shared_ptr <Actor> { new Actor () };
-  // a2->model_id = 1;
-  // renderer.addActor (a2);
 
   //  Selected Entity
   selected = camera;
