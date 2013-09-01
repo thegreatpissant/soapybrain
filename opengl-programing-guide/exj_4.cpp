@@ -6,6 +6,7 @@
  * PROOF - Use std library to load shaders
  * PROOF - Rendering function in renderer only
  * PROOF - Independent model movement
+ * PROOF - very simple scene graph of entities to render 
  * Proposed - Physics engine
  * Proposed - Selection
  * Proposed - Display class, Oculus and traditional
@@ -45,7 +46,7 @@ Renderer renderer;
 Renderer renderer1;
 shared_ptr<Camera> camera;
 shared_ptr<Entity> selected;
-
+vector <shared_ptr<Actor>> scene_graph;
 //  Constants and Vars  
 //  @@TODO Should move into a variable system
 Display screen0;
@@ -179,7 +180,7 @@ void GlutReshape ( int newWidth, int newHeight ) {
 }
 
 void GlutDisplay ( void ) {
-  renderer.render ();
+  renderer.render (scene_graph);
 }
 
 void GlutKeyboard ( unsigned char key, int x, int y ) {
@@ -337,12 +338,28 @@ void GenerateEntities () {
   camera = shared_ptr <Camera> { new Camera (strafe, height, depth, 0.0f, 0.0f, 0.0f) };
 
   //  Actors
-  a1 = shared_ptr <Actor> { new Actor (2.0f, 2.0f, 4.0f, 0.0f, 0.0f, 0.0f) };
-  a1->model_id = 1;
-  renderer.addActor (a1);
-  a2 = shared_ptr <Actor> { new Actor () };
-  a2->model_id = 1;
-  renderer.addActor (a2);
+  GLfloat a = 0.0f;
+  for ( int i = 0; i < 1000; i++, a+= 0.2f ) {
+    scene_graph.push_back (shared_ptr <Actor> { new Actor (-5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 1) } );
+  }
+  a = 0.0f;
+  for ( int i = 0; i < 1000; i++, a+= 0.2f ) {
+    scene_graph.push_back (shared_ptr <Actor> { new Actor (-0.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 3) } );
+  }
+  a = 0.0f;
+  for ( int i = 0; i < 1000; i++, a+= 0.2f ) {
+    scene_graph.push_back (shared_ptr <Actor> { new Actor (5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 7) } );
+  }
+  a = 0.0f;
+  for ( int i = 0; i < 1000; i++, a+= 0.2f ) {
+    scene_graph.push_back (shared_ptr <Actor> { new Actor (10.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 8) } );
+  }
+
+  // a1->model_id = 1;
+  // renderer.addActor (a1);
+  // a2 = shared_ptr <Actor> { new Actor () };
+  // a2->model_id = 1;
+  // renderer.addActor (a2);
 
   //  Selected Entity
   selected = camera;

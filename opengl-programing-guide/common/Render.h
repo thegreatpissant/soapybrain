@@ -27,14 +27,15 @@ class Renderer {
  public:
   std::unordered_map <ModelID, shared_ptr<Model>> models;
   std::unordered_map <ShaderID, shared_ptr<Shader>> shaders;
-  std::vector <shared_ptr<Actor>> actors;
+  //  std::vector <shared_ptr<Actor>> actors;
   Renderer () { 
   };
-  void addActor ( shared_ptr<Actor> a ) {
-    actors.push_back(a);
-  };
 
-  void render () {
+  /* void addActor ( shared_ptr<Actor> a ) { */
+  /*   actors.push_back(a); */
+  /* }; */
+
+  void render (  std::vector <shared_ptr<Actor>> &actors ) {
     //  Select appropriate shaders for this model
     //  Will Chain standard MVW transforms as well as effects
 
