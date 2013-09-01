@@ -42,6 +42,7 @@ enum class queue_events {
     APPLICATION_QUIT
     };
 queue <queue_events> gqueue;
+Display display;
 Renderer renderer;
 Renderer renderer1;
 shared_ptr<Camera> camera;
@@ -49,12 +50,9 @@ shared_ptr<Entity> selected;
 vector <shared_ptr<Actor>> scene_graph;
 //  Constants and Vars  
 //  @@TODO Should move into a variable system
-Display screen0;
-int screenWidth = screen0.screenWidth;
-int screenHeight = screen0.screenHeight;
 glm::mat4 Projection;
-glm::mat4 MVP = glm::perspective(45.0f, 4.0f / 3.0f, 1.0f, 100.f);
-glm::mat4 camera_matrix = glm::mat4(0.0);
+glm::mat4 MVP;
+glm::mat4 camera_matrix;
 GLint MVP_loc = 0;
 GLint camera_loc = 0;
 GLint MVP_loc2 = 0;
@@ -94,7 +92,7 @@ GLint color_loc2 = 0;
 int main ( int argc, char ** argv) {
   glutInit ( &argc, argv );
   glutInitDisplayMode ( GLUT_DOUBLE | GLUT_RGBA );
-  glutInitWindowSize ( screenWidth, screenHeight );
+  glutInitWindowSize ( display.screen_width, display.screen_height );
 
   glutCreateWindow (argv[0]);
   if ( glewInit() ) {
@@ -102,6 +100,9 @@ int main ( int argc, char ** argv) {
     exit ( EXIT_FAILURE );
   }
   
+  //  Initialize common systems
+  renderer.init ();
+
   //  Load our Application Items
   GenerateModels ();
   GenerateEntities ();
@@ -163,16 +164,13 @@ void GenerateShaders () {
 }
 
 void InitializeView () {
-  //  View
-  glClearColor ( 0.0, 0.0, 0.0, 1.0 );
-
   UpdateView ();
   PostView ();
 }
 
 void GlutReshape ( int newWidth, int newHeight ) {
-  screenWidth = newWidth;
-  screenHeight = newHeight;
+  display.screen_width = newWidth;
+  display.screen_height = newHeight;
   UpdatePerspective ();
   glutPostRedisplay ();
 }
@@ -274,7 +272,6 @@ void GlutIdle () {
   UpdateView ();
   PostView ();
   glutPostRedisplay ();
-  //usleep ( 1000000 );
 }
 
 void CleanupAndExit () {
@@ -367,12 +364,13 @@ void PostView() {
 }
 
 void UpdatePerspective () {
-  GLfloat hResolution = screenWidth;  //  640.0f;
-  GLfloat vResolution = screenHeight; //  800.0f;
-  GLfloat eyeScreenDist = 0.041f;
-  GLfloat aspect = hResolution / (2.0f * vResolution);
-  GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
-  GLfloat zNear  = 0.3f;
-  GLfloat zFar   = 1000.0f;
-  Projection = glm::perspective( fov, aspect, zNear, zFar );
+  // GLfloat hResolution = display.screen_width;  //  640.0f;
+  // GLfloat vResolution = display.screen_height; //  800.0f;
+  // GLfloat eyeScreenDist = 0.041f;
+  // GLfloat aspect = hResolution / (2.0f * vResolution);
+  // GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
+  // GLfloat zNear  = 0.3f;
+  // GLfloat zFar   = 1000.0f;
+  // Projection = glm::perspective( fov, aspect, zNear, zFar );
+  MVP = glm::perspective(45.0f, 4.0f / 3.0f, 1.0f, 100.f);
 }

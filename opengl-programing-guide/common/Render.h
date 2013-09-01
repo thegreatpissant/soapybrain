@@ -14,12 +14,13 @@
 #include <glm/gtc/type_ptr.hpp>
 
 //  Engine lib
+#include "Display.h"
 #include "Model.h"
 #include "Shader.h"
 #include "Actor.h"
 
 //  Externs <- Remove these
-extern int screenWidth, screenHeight;
+extern Display display;
 extern GLuint program;
 extern GLint model_matrix_loc;
 
@@ -29,6 +30,7 @@ class Renderer {
   std::unordered_map <ShaderID, shared_ptr<Shader>> shaders;
 
   Renderer () { 
+
   };
 
   void render (  std::vector <shared_ptr<Actor>> &actors ) {
@@ -38,7 +40,7 @@ class Renderer {
     //  Unload the shader and continue
     glm::mat4 model_matrix;
     glClear (GL_COLOR_BUFFER_BIT);
-    glViewport ( 0, 0, screenWidth, screenHeight );
+    glViewport ( 0, 0, display.screen_width, display.screen_height );
     glUseProgram(program);
     for ( auto a: actors ) {
       model_matrix = glm::translate (glm::mat4(), glm::vec3 (a->state.position_x, a->state.position_y, a->state.position_z));
@@ -51,6 +53,9 @@ class Renderer {
     glutSwapBuffers ();
 
     };
+  void init () {
+    glClearColor ( 0.0, 0.0, 0.0, 1.0 );
+  };
 };
 
 #endif
