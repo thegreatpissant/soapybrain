@@ -7,9 +7,12 @@
  * PROOF - Rendering function in renderer only
  * PROOF - Independent model movement
  * PROOF - very simple scene graph of entities to render 
- * Proposed - Physics engine
- * Proposed - Selection
- * Proposed - Display class, Oculus and traditional
+ * TODO - Move the shaders out of here
+ * TODO - Move any other OpenGL stuff out of here.
+ * Proposed exj_5 - Physics engine
+ * Proposed exj_5 - Selection
+ * Proposed exj_5 - Display class, Oculus and traditional
+ * Proposed exj_5 - Fix input system to be more fluent
  */
 
 #include <iostream>
