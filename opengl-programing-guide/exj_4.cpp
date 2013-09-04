@@ -19,11 +19,14 @@
 #include <vector>
 #include <queue>
 #include <memory>
-#include <unistd.h>
+#include <cstdlib>
+
 using namespace std;
 
 //  OpenGL
 #include <GL/glew.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include <GL/freeglut.h>
 
 // 3rd Party
@@ -58,8 +61,6 @@ glm::mat4 MVP;
 glm::mat4 camera_matrix;
 GLint MVP_loc = 0;
 GLint camera_loc = 0;
-GLint MVP_loc2 = 0;
-GLint camera_loc2 = 0;
 GLint model_matrix_loc = 0;
 
 //  Shader programs
@@ -88,8 +89,6 @@ void GenerateShaders ();
 GLfloat strafe {1.0f}, height {0.0f}, depth {-25.0f}, rotate {0.0f};
 GLint color = 1;
 GLint color_loc = 0;
-GLint color_loc2 = 0;
-
 
 // MAIN //
 int main ( int argc, char ** argv) {
@@ -128,17 +127,13 @@ void GenerateShaders () {
     { GL_FRAGMENT_SHADER, "./shaders/exj_4_1.f.glsl" },
     { GL_NONE, NULL }
   };
-  ShaderInfo shaders2 [] = {
-    { GL_VERTEX_SHADER,   "./shaders/exj_4_1.v.glsl"},
-    { GL_FRAGMENT_SHADER, "./shaders/exj_4_1.f.glsl"},
-    { GL_NONE, NULL }
-  };
 
   program = LoadShaders(shaders);
   glUseProgram (program);
   if ( (color_loc = glGetUniformLocation ( program, "color" )) == -1 ) {
     cerr << "Did not find the color loc\n";
   }
+
   if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
     cerr << "Did not find the mMVP loc\n";
   }
@@ -148,22 +143,10 @@ void GenerateShaders () {
   if ( (model_matrix_loc = glGetUniformLocation (program, "model_matrix" )) == -1 ) {
     cerr << "Did not find the model_matrix loc\n";
   }
+
   glUniform1i ( color_loc, color );
   glUseProgram (0);
 
-  program2 = LoadShaders(shaders2);
-  glUseProgram (program2);
-  if ( (color_loc2 = glGetUniformLocation ( program2, "color" )) == -1 ) {
-    cerr << "2: Did not find the color loc\n";
-  }
-  if ( (MVP_loc2 = glGetUniformLocation (program2, "mMVP" )) == -1 ) {
-    cerr << "2: Did not find the mMVP loc\n";
-  }
-  if ( (camera_loc2 = glGetUniformLocation (program2, "mCamera" )) == -1 ) {
-    cerr << "2: Did not find the mCamera loc\n";
-  }
-  glUniform1i ( color_loc2, color );
-  glUseProgram (0);
 }
 
 void InitializeView () {
@@ -282,6 +265,8 @@ void CleanupAndExit () {
 }
 
 void GenerateModels () {
+  ModelID current_model_id = 0;
+
   shared_ptr <Simple_equation_model_t> tmp = shared_ptr <Simple_equation_model_t> {new Simple_equation_model_t};
   int ext {0};
 
@@ -298,7 +283,7 @@ void GenerateModels () {
   tmp->name = "ex15_" + to_string(ext++);
   tmp->renderPrimitive = GL_POINTS;
   tmp->setup_render_model ();
-  renderer.models[current_model_id++] = tmp;
+  renderer.add_model (current_model_id++,tmp);
 
   for (auto power_to : {1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f} ) {
     tmp = shared_ptr <Simple_equation_model_t> { new Simple_equation_model_t };
@@ -316,7 +301,7 @@ void GenerateModels () {
     tmp->name = "ex15_" + to_string(ext++);
     tmp->renderPrimitive = GL_POINTS;
     tmp->setup_render_model ();
-    renderer.models[current_model_id++] = tmp;
+    renderer.add_model ( current_model_id ++, tmp );
   }
 }
 
@@ -350,6 +335,7 @@ void GenerateEntities () {
 void UpdateView () {
   camera_matrix = glm::translate (glm::mat4(), glm::vec3 ( camera->state.position_x, camera->state.position_y, camera->state.position_z ) );
   camera_matrix = glm::rotate (camera_matrix, camera->state.orientation_x, glm::vec3 (0.0f, 1.0f, 0.0f) );
+
 }
 
 void PostView() {
@@ -357,12 +343,6 @@ void PostView() {
   glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] ); 
   glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] ); 
   glUniform1i ( color_loc, color );
-
-  glUseProgram (program2);
-  glUniformMatrix4fv( MVP_loc2, 1, GL_FALSE, &MVP[0][0] ); 
-  glUniformMatrix4fv( camera_loc2, 1, GL_FALSE, &camera_matrix[0][0] ); 
-  glUniform1i ( color_loc2, color );
-
   glUseProgram (0);
 }
 

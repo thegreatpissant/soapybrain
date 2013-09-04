@@ -3,6 +3,7 @@
  */
 
 #include "shader_utils.h"
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -34,13 +35,13 @@ void print_log (GLuint object)
     return;
   }
 
-  char *log = (char*)malloc (log_length);
+  char *log = new char[log_length];
   if (glIsShader (object))
     glGetShaderInfoLog (object, log_length, NULL, log);
   else if (glIsProgram (object))
     glGetProgramInfoLog (object, log_length, NULL, log);
   std::cerr << log << std::endl;
-  free (log);
+  delete[] log;
 }
 
 /**
@@ -51,7 +52,7 @@ GLuint create_shader_string (const char *filename, GLenum type)
   std::string shader_source = file_read_string (filename);
   if (shader_source.empty()) {
     std::cerr << "Error Opening " << filename << std::endl;
-    exit (EXIT_FAILURE);
+    std::exit (EXIT_FAILURE);
   }
   GLuint res = glCreateShader (type);
   std::string source;
