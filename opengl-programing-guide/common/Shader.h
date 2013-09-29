@@ -10,7 +10,7 @@ class Shader {};
 //  Some are more model specific - ex: model space transforms
 //
 //  Vertex -> Model Transform -> Camera Transform -> ViewportTransform
-//  
+//
 //  How do we chain these properly?
 
 #endif
