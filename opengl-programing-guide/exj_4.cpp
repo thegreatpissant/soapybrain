@@ -6,7 +6,7 @@
  * PROOF - Use std library to load shaders
  * PROOF - Rendering function in renderer only
  * PROOF - Independent model movement
- * PROOF - very simple scene graph of entities to render 
+ * PROOF - very simple scene graph of entities to render
  * TODO - Move the shaders out of here
  * TODO - Move any other OpenGL stuff out of here.
  * Proposed exj_5 - Physics engine
