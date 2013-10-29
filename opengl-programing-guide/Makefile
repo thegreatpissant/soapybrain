@@ -4,7 +4,8 @@ ALL_EXECS	= triangles ex15_1 exj_1 glm_tests oculus exj_2 exj_3 exj_4
 TEST_EXECS 	= 
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
-STD		= --std=c++11
+#STD		= --std=c++11 
+STD		= --std=c++11 -fsanitize=address
 OCULUS_LIBS	= -ludev -lpthread -lXext -lX11 -lXinerama
 DEBUG_FLAG	+= -g -O3 -Wall
 OCULUS_SDK	= /home/thegreatpissant

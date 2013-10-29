@@ -51,6 +51,8 @@ enum class queue_events {
     ROTATE_RIGHT,
     MOVE_UP,
     MOVE_DOWN,
+      VIEW_UP,
+      VIEW_DOWN,
     COLOR_CHANGE,
     MODEL_CHANGE,
     APPLICATION_QUIT
@@ -67,6 +69,7 @@ vector<shared_ptr<Actor>> scene_graph;
 glm::mat4 Projection;
 glm::mat4 MVP;
 glm::mat4 camera_matrix;
+glm::mat4 model_matrix;
 GLint MVP_loc = 0;
 GLint camera_loc = 0;
 GLint model_matrix_loc = 0;
@@ -97,6 +100,10 @@ void GenerateShaders( );
 GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -25.0f }, rotate{ 0.0f };
 GLint color = 1;
 GLint color_loc = 0;
+
+float dir = 1.0f;
+float xpos = 2.0f;
+float ypos = 0.0f;
 
 // MAIN //
 int main( int argc, char **argv ) {
@@ -206,6 +213,12 @@ void GlutKeyboard( unsigned char key, int x, int y ) {
     case 'K':
         gqueue.push( queue_events::MOVE_UP );
         break;
+    case '-':
+      gqueue.push( queue_events::VIEW_UP );
+      break;
+    case '+':
+      gqueue.push( queue_events::VIEW_DOWN );
+      break;
     case 'j':
     case 'J':
         gqueue.push( queue_events::MOVE_DOWN );
@@ -238,10 +251,10 @@ void GlutIdle( ) {
             selected->state.position_x -= 1.0f;
             break;
         case queue_events::ROTATE_RIGHT:
-            selected->state.orientation_x += 0.5f;
+            selected->state.orientation_y += 0.5f;
             break;
         case queue_events::ROTATE_LEFT:
-            selected->state.orientation_x -= 0.5f;
+            selected->state.orientation_y -= 0.5f;
             break;
         case queue_events::MOVE_UP:
             selected->state.position_y += 0.5f;
@@ -249,6 +262,12 @@ void GlutIdle( ) {
         case queue_events::MOVE_DOWN:
             selected->state.position_y -= 0.5f;
             break;
+	case queue_events::VIEW_UP:
+	  selected->state.orientation_x += 0.5f;
+	  break;
+	case queue_events::VIEW_DOWN:
+	  selected->state.orientation_x += -0.5f;
+	  break;
         case queue_events::COLOR_CHANGE:
             color = ( color >= 4 ? 1 : color + 1 );
             break;
@@ -259,18 +278,31 @@ void GlutIdle( ) {
         }
         gqueue.pop( );
     }
+    for (auto &i : scene_graph)
+      i->state.orientation_z += 0.5f;
+
+    ypos = xpos * xpos;
+    xpos += 1.0f * dir;
+    if (xpos > 400) {
+      dir = -1.0f;
+    } else if ( xpos < -400) {
+      dir = 1.0f;
+    }
     UpdateView( );
     PostView( );
     glutPostRedisplay( );
 }
 
-void CleanupAndExit( ) { exit( EXIT_SUCCESS ); }
+void CleanupAndExit( ) 
+{ 
+  exit( EXIT_SUCCESS ); 
+}
 
 void GenerateModels( ) {
     ModelID current_model_id = 0;
 
     shared_ptr<Simple_equation_model_t> tmp =
-        shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
+      shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
     int ext{ 0 };
 
     tmp->numVertices = 600;
@@ -289,7 +321,7 @@ void GenerateModels( ) {
     renderer.add_model( current_model_id++, tmp );
 
     for ( auto power_to :
-          { 1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f } ) {
+      { 1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f } ) {
         tmp =
             shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
         x = -3.0f;
@@ -308,6 +340,7 @@ void GenerateModels( ) {
         tmp->setup_render_model( );
         renderer.add_model( current_model_id++, tmp );
     }
+
 }
 
 void GenerateEntities( ) {
@@ -318,10 +351,11 @@ void GenerateEntities( ) {
 
     //  Actors
     GLfloat a = 0.0f;
-    for ( int i = 0; i < 1000; i++, a += 0.2f ) {
+    for ( int i = 0; i < 1; i++, a += 0.2f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
             -5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 1 ) } );
     }
+
     a = 0.0f;
     for ( int i = 0; i < 1000; i++, a += 0.2f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
@@ -340,33 +374,42 @@ void GenerateEntities( ) {
 
     //  Selected Entity
     selected = camera;
+    //    selected = scene_graph[0];
 }
 
 void UpdateView( ) {
-    camera_matrix =
-        glm::translate( glm::mat4( ), glm::vec3( camera->state.position_x,
-                                                 camera->state.position_y,
-                                                 camera->state.position_z ) );
-    camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_x,
-                                 glm::vec3( 0.0f, 1.0f, 0.0f ) );
+  model_matrix =
+    glm::translate( glm::mat4( ), glm::vec3( xpos, ypos, 4.0f ) ); 
+
+  camera_matrix =
+    glm::translate( glm::mat4( ), glm::vec3( camera->state.position_x,
+					     camera->state.position_y,
+					     camera->state.position_z ) );
+ camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_x,
+ 			       glm::vec3( 1.0f, 0.0f, 0.0f ) );
+ camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_y,
+ 			       glm::vec3( 0.0f, 1.0f, 0.0f ) );
+ camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_z,
+ 			       glm::vec3( 0.0f, 0.0f, 1.0f ) );
 }
 
 void PostView( ) {
     glUseProgram( program );
     glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] );
+    glUniformMatrix4fv( model_matrix_loc, 1, GL_FALSE, &model_matrix[0][0] );
     glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] );
     glUniform1i( color_loc, color );
     glUseProgram( 0 );
 }
 
 void UpdatePerspective( ) {
-    // GLfloat hResolution = display.screen_width;  //  640.0f;
-    // GLfloat vResolution = display.screen_height; //  800.0f;
-    // GLfloat eyeScreenDist = 0.041f;
-    // GLfloat aspect = hResolution / (2.0f * vResolution);
-    // GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
-    // GLfloat zNear  = 0.3f;
-    // GLfloat zFar   = 1000.0f;
-    // Projection = glm::perspective( fov, aspect, zNear, zFar );
-    MVP = glm::perspective( 45.0f, 4.0f / 3.0f, 1.0f, 100.f );
+  // GLfloat hResolution = display.screen_width;  //  640.0f;
+  // GLfloat vResolution = display.screen_height; //  800.0f;
+  // GLfloat eyeScreenDist = 0.041f;
+  // GLfloat aspect = hResolution / (2.0f * vResolution);
+  // GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
+  // GLfloat zNear  = 0.3f;
+  // GLfloat zFar   = 1000.0f;
+  // Projection = glm::perspective( fov, aspect, zNear, zFar );
+  MVP = glm::perspective( 45.0f, 4.0f / 3.0f, 1.0f, 100.f );
 }

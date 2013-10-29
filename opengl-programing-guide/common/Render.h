@@ -46,13 +46,17 @@ class Renderer {
 
         glm::mat4 model_matrix;
         for ( auto a : actors ) {
-            model_matrix = glm::translate(
-                glm::mat4( ),
-                glm::vec3( a->state.position_x, a->state.position_y,
-                           a->state.position_z ) );
-            glUniformMatrix4fv( model_matrix_loc, 1, GL_FALSE,
-                                &model_matrix[0][0] );
-            models[a->model_id]->render( a->state );
+	  model_matrix = glm::translate( glm::mat4(),
+					 glm::vec3( a->state.position_x, a->state.position_y, a->state.position_z ) );
+	  model_matrix = glm::rotate( model_matrix, a->state.orientation_x,
+				       glm::vec3( 1.0f, 0.0f, 0.0f ) );
+	  model_matrix = glm::rotate( model_matrix, a->state.orientation_y,
+				      glm::vec3(0.0f, 1.0f, 0.0f) );
+	  model_matrix = glm::rotate( model_matrix, a->state.orientation_z,
+				      glm::vec3(0.0f, 0.0f, 1.0f) );
+
+	  glUniformMatrix4fv( model_matrix_loc, 1, GL_FALSE, &model_matrix[0][0] );
+	  models[a->model_id]->render( a->state );
         }
 
         glBindVertexArray( 0 );
