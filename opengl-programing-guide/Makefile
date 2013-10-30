@@ -34,9 +34,8 @@ exj_3: exj_3.cpp common Model.h Actor.h Render.h Camera.h Display.h Entity.h
 exj_4: exj_4.cpp common $(ENGINE_COMMON)
 	$(CXX) $(DEBUG_FLAG) -I. -o exj_4 exj_4.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 
 
-
 oculus: oculus.cpp common
-	$(CXX) $(DEBUG_FLAG) -I$(OCULUS_SDK)/LibOVR/Include -o oculus oculus.cpp $(OCULUS_SDK)/LibOVR/Lib/Linux/Release/x86_64/libovr.a  ./common/shader_utils.o  $(LDLIBS) $(OCULUS_LIBS)
+	$(CXX) $(DEBUG_FLAG) -I$(OCULUS_SDK)/LibOVR/Include -o oculus oculus.cpp $(STD) $(OCULUS_SDK)/LibOVR/Lib/Linux/Release/x86_64/libovr.a  ./common/shader_utils.o  $(LDLIBS) $(OCULUS_LIBS)
 
 glm_tests: glm_tests.cpp
 	$(CXX) -o glm_tests glm_tests.cpp
