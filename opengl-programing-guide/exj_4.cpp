@@ -47,12 +47,12 @@ enum class queue_events {
     STRAFE_RIGHT,
     MOVE_FORWARD,
     MOVE_BACKWARD,
-    ROTATE_LEFT,
-    ROTATE_RIGHT,
+    YAW_LEFT,
+    YAW_RIGHT,
     MOVE_UP,
     MOVE_DOWN,
-      VIEW_UP,
-      VIEW_DOWN,
+      PITCH_UP,
+      PITCH_DOWN,
     COLOR_CHANGE,
     MODEL_CHANGE,
     APPLICATION_QUIT
@@ -187,11 +187,11 @@ void GlutKeyboard( unsigned char key, int x, int y ) {
         break;
     case 'h':
     case 'H':
-        gqueue.push( queue_events::ROTATE_LEFT );
+        gqueue.push( queue_events::YAW_LEFT );
         break;
     case 'l':
     case 'L':
-        gqueue.push( queue_events::ROTATE_RIGHT );
+        gqueue.push( queue_events::YAW_RIGHT );
         break;
     case 'a':
     case 'A':
@@ -214,10 +214,10 @@ void GlutKeyboard( unsigned char key, int x, int y ) {
         gqueue.push( queue_events::MOVE_UP );
         break;
     case '-':
-      gqueue.push( queue_events::VIEW_UP );
+      gqueue.push( queue_events::PITCH_UP );
       break;
     case '+':
-      gqueue.push( queue_events::VIEW_DOWN );
+      gqueue.push( queue_events::PITCH_DOWN );
       break;
     case 'j':
     case 'J':
@@ -250,10 +250,10 @@ void GlutIdle( ) {
         case queue_events::STRAFE_LEFT:
             selected->state.position_x -= 1.0f;
             break;
-        case queue_events::ROTATE_RIGHT:
+        case queue_events::YAW_RIGHT:
             selected->state.orientation_y += 0.5f;
             break;
-        case queue_events::ROTATE_LEFT:
+        case queue_events::YAW_LEFT:
             selected->state.orientation_y -= 0.5f;
             break;
         case queue_events::MOVE_UP:
@@ -262,10 +262,10 @@ void GlutIdle( ) {
         case queue_events::MOVE_DOWN:
             selected->state.position_y -= 0.5f;
             break;
-	case queue_events::VIEW_UP:
+	case queue_events::PITCH_UP:
 	  selected->state.orientation_x += 0.5f;
 	  break;
-	case queue_events::VIEW_DOWN:
+	case queue_events::PITCH_DOWN:
 	  selected->state.orientation_x += -0.5f;
 	  break;
         case queue_events::COLOR_CHANGE:
@@ -281,8 +281,7 @@ void GlutIdle( ) {
     for (auto &i : scene_graph)
       i->state.orientation_z += 0.5f;
 
-    ypos = xpos * xpos;
-    xpos += 1.0f * dir;
+    ypos = xpos * dir;
     if (xpos > 400) {
       dir = -1.0f;
     } else if ( xpos < -400) {
@@ -305,13 +304,13 @@ void GenerateModels( ) {
       shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
     int ext{ 0 };
 
-    tmp->numVertices = 600;
+    tmp->numVertices = 100;
     tmp->vertices.resize( tmp->numVertices * 3 );
     float x = 0.0f, z = 0.0f;
     for ( int i = 0; i < tmp->numVertices; i++, x += 0.01f, z += 0.05f ) {
         tmp->vertices[i * 3] = x;
         tmp->vertices[i * 3 + 1] = powf( x, 1 );
-        tmp->vertices[i * 3 + 2] = z;
+        tmp->vertices[i * 3 + 2] = 0.0f; //z;
         if ( z >= -1.0f )
             z = -10.0f; //(i % 2 ? -8.0f:-12.0f);
     }
@@ -324,11 +323,11 @@ void GenerateModels( ) {
       { 1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f } ) {
         tmp =
             shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
-        x = -3.0f;
+        x = 0.0f;
         z = 0.0f;
         tmp->numVertices = 600;
         tmp->vertices.resize( tmp->numVertices * 3 );
-        for ( int i = 0; i < tmp->numVertices; i++, x += 0.01f, z += 0.05f ) {
+        for ( int i = 0; i < tmp->numVertices; i++, x += 0.1f, z += 0.05f ) {
             tmp->vertices[i * 3] = x;
             tmp->vertices[i * 3 + 1] = powf( x, power_to );
             tmp->vertices[i * 3 + 2] = 0.0f; // z;
@@ -353,9 +352,8 @@ void GenerateEntities( ) {
     GLfloat a = 0.0f;
     for ( int i = 0; i < 1; i++, a += 0.2f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-            -5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 1 ) } );
+            -5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 6 ) } );
     }
-
     a = 0.0f;
     for ( int i = 0; i < 1000; i++, a += 0.2f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
@@ -377,26 +375,24 @@ void GenerateEntities( ) {
     //    selected = scene_graph[0];
 }
 
-void UpdateView( ) {
-  model_matrix =
-    glm::translate( glm::mat4( ), glm::vec3( xpos, ypos, 4.0f ) ); 
-
-  camera_matrix =
-    glm::translate( glm::mat4( ), glm::vec3( camera->state.position_x,
-					     camera->state.position_y,
-					     camera->state.position_z ) );
- camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_x,
- 			       glm::vec3( 1.0f, 0.0f, 0.0f ) );
- camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_y,
- 			       glm::vec3( 0.0f, 1.0f, 0.0f ) );
- camera_matrix = glm::rotate( camera_matrix, camera->state.orientation_z,
- 			       glm::vec3( 0.0f, 0.0f, 1.0f ) );
+void UpdateView( )
+{
+    glm::mat4 r_matrix =
+        glm::rotate( glm::mat4 (), camera->state.orientation_x, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+    r_matrix =
+        glm::rotate( r_matrix, camera->state.orientation_y, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+    r_matrix =
+        glm::rotate( r_matrix, camera->state.orientation_z, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+    glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
+   glm::vec3 c_pos = glm::vec3( camera->state.position_x, camera->state.position_y, camera->state.position_z );
+ camera_matrix = glm::lookAt(
+	c_pos,
+        c_pos + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
 }
 
 void PostView( ) {
     glUseProgram( program );
     glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] );
-    glUniformMatrix4fv( model_matrix_loc, 1, GL_FALSE, &model_matrix[0][0] );
     glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] );
     glUniform1i( color_loc, color );
     glUseProgram( 0 );
@@ -411,5 +407,5 @@ void UpdatePerspective( ) {
   // GLfloat zNear  = 0.3f;
   // GLfloat zFar   = 1000.0f;
   // Projection = glm::perspective( fov, aspect, zNear, zFar );
-  MVP = glm::perspective( 45.0f, 4.0f / 3.0f, 1.0f, 100.f );
+  MVP = glm::perspective( 45.0f, 4.0f / 3.0f, 1.0f, 1000.0f );
 }

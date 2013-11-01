@@ -10,5 +10,4 @@ attribute vec4 vPosition;
 void main (void) 
 {
   gl_Position =  mMVP * mCamera * model_matrix * vPosition;
-
 }
