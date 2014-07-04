@@ -4,6 +4,8 @@ ALL_EXECS	= test1
 OBJ_FILES	=
 EDITOR_MESS	=
 
+CXX=clang++
+
 all: $(DIRS) $(OBJ_FILES) $(ALL_EXECS)
 
 common : force_look

@@ -7,7 +7,7 @@
 
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-
+#include <stdio.h>
 /* glm headers, http://glm.g-truc.net/ 
  *  found in opengl-wiki examples
  */
