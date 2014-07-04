@@ -278,8 +278,10 @@ void GlutIdle( ) {
         }
         gqueue.pop( );
     }
-    for (auto &i : scene_graph)
-      i->state.orientation_z += 0.5f;
+    for ( auto i = 0; i < scene_graph.size( ); i++ )
+    {
+        (*scene_graph[i]).state.orientation_z += ((i%2) == 0)? 0.5f: -0.5f;
+    }
 
     ypos = xpos * dir;
     if (xpos > 400) {
