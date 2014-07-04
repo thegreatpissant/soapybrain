@@ -3,7 +3,6 @@
 
 #include <GL/glew.h>
 #include <vector>
-using namespace std;
 
 enum Attrib_IDs { vPosition = 0 };
 #define BUFFER_OFFSET(offset)  ((void *)(offset))
@@ -13,10 +12,10 @@ class model_t {
  public:
   long numVertices;
   GLint id;
-  string name;
-  vector <float> vertices;
-  vector <GLuint> vaos;
-  vector <GLuint> buffers;
+  std::string name;
+  std::vector <float> vertices;
+  std::vector <GLuint> vaos;
+  std::vector <GLuint> buffers;
   int    renderPrimitive;
   model_t () {
     id = GID++;
@@ -35,7 +34,7 @@ class simple_equation_model_t: public model_t {
     this->vaos.resize(1);
     glGenVertexArrays( this->vaos.size(), &this->vaos[0] );
     if ( this->vaos[0] == 0 ) {
-      cerr << this->name << "id: " << this->id << " - Did not get a valid Vertex Attribute Object" << endl;
+      std::cerr << this->name << "id: " << this->id << " - Did not get a valid Vertex Attribute Object" << std::endl;
     } 
     glBindVertexArray( this->vaos[0] );
     this->buffers.resize(1);

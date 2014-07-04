@@ -8,7 +8,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <math.h>
-using namespace std;
+//using namespace std;
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,9 +21,9 @@ using namespace std;
 //  Models
 struct model_t {
   long   numVertices;
-  vector <float> vertices;
-  vector <GLuint> vaos;
-  vector <GLuint> buffers;
+  std::vector <float> vertices;
+  std::vector <GLuint> vaos;
+  std::vector <GLuint> buffers;
   int    renderPrimitive;
   void Render () {
     glBindVertexArray(vaos[0]);
@@ -85,12 +85,12 @@ void GlutKeyboardFunc (unsigned char key, int x, int y )
   case 'w':
   case 'W':
     depth += 0.10f;
-    cout << "depth= " << depth << endl;
+    std::cout << "depth= " << depth << std::endl;
     break;
   case 's':
   case 'S':
     depth -= 0.10f;
-    cout << "depth= " << depth << endl;
+    std::cout << "depth= " << depth << std::endl;
     break;
   case 'a':
   case 'A':
@@ -186,7 +186,7 @@ int main(int argc, char** argv)
 
   glutCreateWindow(argv[0]);
   if (glewInit()) {
-    cerr << "Unable to initialize GLEW ... exiting" << endl;
+    std::cerr << "Unable to initialize GLEW ... exiting" << std::endl;
     exit(EXIT_FAILURE);
   }
   Init();
@@ -215,10 +215,10 @@ void Init(void)
     std::cout << "Did not find the color loc\n";
   }
   if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
-    std:: cout << "Did not find the mMVP loc\n";
+    std::cout << "Did not find the mMVP loc\n";
   }
   if ( (camera_loc = glGetUniformLocation (program, "mCamera" )) == -1 ) {
-    std:: cout << "Did not find the mCamera loc\n";
+    std::cout << "Did not find the mCamera loc\n";
   }
   glUniform1i ( color_loc, color );
 
@@ -257,7 +257,7 @@ void GenerateModels () {
   ex15_1.vaos.resize(1);
   glGenVertexArrays( ex15_1.vaos.size(), &ex15_1.vaos[0] );
   if ( ex15_1.vaos[0] == 0 ) {
-    cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << endl;
+    std::cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << std::endl;
   } 
   glBindVertexArray( ex15_1.vaos[0] );
   ex15_1.buffers.resize(1);
@@ -273,7 +273,7 @@ void GenerateModels () {
   ex15_2.vaos.resize(1);
   glGenVertexArrays( ex15_2.vaos.size(), &ex15_2.vaos[0] );
   if ( ex15_2.vaos[0] == 0 ) {
-    cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << endl;
+    std::cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << std::endl;
   } 
   glBindVertexArray( ex15_2.vaos[0] );
   ex15_2.buffers.resize(1);
@@ -290,7 +290,7 @@ void DrawGrid () {
 }
 
 void ExitOnGLError ( const char * error_message ) {
-  cout << error_message << endl;
+  std::cout << error_message << std::endl;
 }
 
 void IdleFunction () {

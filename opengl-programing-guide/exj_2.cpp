@@ -3,10 +3,8 @@
  */
 
 #include <iostream>
-#include <vector>
 #include <queue>
 #include <unistd.h>
-using namespace std;
 
 //  OpenGL
 #include <GL/glew.h>
@@ -26,7 +24,7 @@ enum class queue_events {
     COLOR_CHANGE,
  APPLICATION_QUIT
 };
-queue <queue_events> gqueue;
+std::queue <queue_events> gqueue;
 
 //  Constants and Vars  
 //  @@TODO Should move into a variable system
@@ -98,10 +96,10 @@ void Init () {
     std::cout << "Did not find the color loc\n";
   }
   if ( (MVP_loc = glGetUniformLocation (program, "mMVP" )) == -1 ) {
-    std:: cout << "Did not find the mMVP loc\n";
+    std::cout << "Did not find the mMVP loc\n";
   }
   if ( (camera_loc = glGetUniformLocation (program, "mCamera" )) == -1 ) {
-    std:: cout << "Did not find the mCamera loc\n";
+    std::cout << "Did not find the mCamera loc\n";
   }
   glUniform1i ( color_loc, color );
 
@@ -269,7 +267,7 @@ void GenerateModels () {
   ex15_1.vaos.resize(1);
   glGenVertexArrays( ex15_1.vaos.size(), &ex15_1.vaos[0] );
   if ( ex15_1.vaos[0] == 0 ) {
-    cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << endl;
+    std::cerr << "ex15_1: Did not get a valid Vertex Attribute Object" << std::endl;
   } 
   glBindVertexArray( ex15_1.vaos[0] );
   ex15_1.buffers.resize(1);
@@ -285,7 +283,7 @@ void GenerateModels () {
   ex15_2.vaos.resize(1);
   glGenVertexArrays( ex15_2.vaos.size(), &ex15_2.vaos[0] );
   if ( ex15_2.vaos[0] == 0 ) {
-    cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << endl;
+    std::cerr << "ex15_2: Did not get a valid Vertex Attribute Object" << std::endl;
   } 
   glBindVertexArray( ex15_2.vaos[0] );
   ex15_2.buffers.resize(1);
