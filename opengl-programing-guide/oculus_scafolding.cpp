@@ -83,23 +83,29 @@ void odTestPollSensorFusion( ovrHmd &hmd, unsigned int supportedSensorCaps,
         return;
     }
     int queries = 5000;
+    int frameIndex = 0;
     std::cout << "Quering sensor " << queries << " times" << std::endl;
     for ( auto i = 0; i < queries; ++i )
     {
-        ovrSensorState ss = ovrHmd_GetSensorState( hmd, 0.0 );
+        ovrFrameTiming frameTiming = ovrHmd_BeginFrameTiming (hmd, frameIndex);
+        ovrSensorState ss = ovrHmd_GetSensorState( hmd, frameTiming.ScanoutMidpointSeconds );
+        //SetFrameHMDData (frameIndex, ss.Predicted.Pose);
         if ( ss.StatusFlags & ( ovrStatus_OrientationTracked ) )
         {
             ovrPosef pose = ss.Predicted.Pose;
-            //std::cout << "Position (x, y, z): " << pose.Position.x << ", " << pose.Position.y << ", " << pose.Position.z << "\n";
-            std::cout << "Orientation (x, y, z, w): " << pose.Orientation.x << ", "
-                      << pose.Orientation.y << ", " << pose.Orientation.z << ", "
-                      << pose.Orientation.w << "\n";
+            float yaw, eyePitch, eyeRoll;
+            //pose.Orientation.GetEulerAngles< Axis_Y, Axis_X, Axis_Z> (&yaw, &eyePitch, &eyeRoll);
+            yaw = pose.Orientation.y;
+            eyePitch = pose.Orientation.x;
+            eyeRoll = pose.Orientation.z;
+            std::cout << "yaw: " << yaw << " eyePitch: " << eyePitch << " eyeRoll: " << eyeRoll << std::endl;
         }
         else
         {
             std::cerr << "Error getting sensor information.\n";
         }
-        sleep (2);
+        sleep (1);
+        ovrHmd_EndFrameTiming(hmd);
     }
 }
 
@@ -124,7 +130,8 @@ int main( )
         {
             ovrHmd_GetDesc( hmd[i], &hmdDesc[i] );
             odDumpInfo( hmdDesc[i] );
-            odTestPollSensorFusion( hmd[i], hmdDesc[i].SensorCaps, ovrSensorCap_Orientation /* |ovrSensorCap_Position*/ );
+            //odTestPollSensorFusion( hmd[i], hmdDesc[i].SensorCaps, ovrSensorCap_Orientation /* |ovrSensorCap_Position*/ );
+            odTestPollSensorFusion( hmd[i], ovrSensorCap_Orientation,  ovrSensorCap_Orientation /* |ovrSensorCap_Position*/ );
         }
         else
         {
