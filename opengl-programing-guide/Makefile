@@ -5,7 +5,7 @@ TEST_EXECS 	=
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
 #STD		= -std=c++11 
-STD		= -std=c++11 -fsanitize=address 
+STD		= -stdlib=libc++ -std=c++11 -fsanitize=address 
 OCULUS_LIBS	= -ludev -lpthread -lXext -lX11 -lXinerama
 DEBUG_FLAG	+= -g -O3 -Wall
 OCULUS_SDK	= /home/thegreatpissant
