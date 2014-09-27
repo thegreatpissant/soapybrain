@@ -5,7 +5,7 @@ TEST_EXECS 	=
 OBJ_FILES 	= common
 EDITOR_MESS 	=  *~ 
 #STD		= -std=c++11 
-STD		= -stdlib=libc++ -std=c++11 -fsanitize=address 
+STD		= -std=c++11 -fsanitize=address 
 OCULUS_LIBS	= -ludev -lpthread -lXext -lX11 -lXinerama
 DEBUG_FLAG	+= -g -O3 -Wall
 OCULUS_SDK	= /home/thegreatpissant
@@ -17,7 +17,7 @@ common : force_look
 	cd common; $(MAKE) all
 
 triangles: triangles.cpp  common
-	$(CXX) $(DEBUG_FLAG) -I. $(LDLIBS) -o triangles triangles.cpp $(STD) ./common/shader_utils.o $(LDLIBS)
+	$(CXX) $(DEBUG_FLAG) -I. -o triangles triangles.cpp $(STD) ./common/shader_utils.o $(LDLIBS)
 
 ex15_1: ex15_1.cpp common 
 	$(CXX) $(DEBUG_FLAG) -I. -o ex15_1 ex15_1.cpp $(STD) ./common/shader_utils.o $(LDLIBS) 

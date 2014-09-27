@@ -3,7 +3,7 @@
 //  triangles.cpp
 //
 //////////////////////////////////////////////////////////////////////
-#include <string.h>
+#include <string>
 #include <iostream>
 #include <unistd.h>
 using namespace std;
