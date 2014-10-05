@@ -188,8 +188,11 @@ void GlutReshape( int newWidth, int newHeight ) {
     glutPostRedisplay( );
 }
 
+
 void GlutDisplay( void ) {
-    
+    static float bounce = 0.0f;
+    static bool bounce_lr = true;  //  True = left; False = right;
+    const float bounce_distance = 10.0f;
 
     glm::mat4 model = glm::mat4(1.0f);
     model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
@@ -197,7 +200,18 @@ void GlutDisplay( void ) {
     ModelViewMatrix = camera_matrix *  model;
     NormalMatrix = glm::mat3 (glm::vec3( ModelViewMatrix[0]), glm::vec3( ModelViewMatrix[1]), glm::vec3( ModelViewMatrix[2]));
     MVP = Projection * ModelViewMatrix;
-    LightPosition = camera_matrix * glm::vec4(5.0f, 5.0f, 2.0f, 1.0f);
+    if (bounce_lr) {
+        bounce -= 0.1f;
+        if (bounce <  (-1.0f*bounce_distance)) {
+            bounce_lr = false;
+        }
+    } else {
+        bounce += 0.1f;
+        if (bounce > bounce_distance ) {
+            bounce_lr = true;
+        }
+    }
+    LightPosition = camera_matrix * glm::vec4(bounce, 0.0f, -5.0f, 1.0f);
 
 
     glUseProgram( program );
