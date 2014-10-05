@@ -55,30 +55,6 @@ GLuint create_shader_string( const char *filename, GLenum type ) {
     }
     GLuint res = glCreateShader( type );
     std::string source;
-#ifdef OPENGL_ES
-    source += "#version 100\n";
-#else
-    source += "#version 120\n";
-#endif
-/* GLES2 precision specifiers */
-#ifdef GL_ES_VERSION_2_0
-    /*  Define default float precision for fragment shaders: */
-    if ( type == GL_FRAGMENT_SHADER ) {
-        source += "#ifdef GL_FRAGMENT_PRECISION_HIGH\n";
-        source += "precision highp float;           \n";
-        source += "#else                            \n";
-        source += "precision mediump float;         \n";
-        source += "#endif                           \n";
-    }
-/*  Note: OpengGL ES automatically defines this:
-    #define GL_ES
-*/
-#else
-    /* Ignore GLES 2 precision specifiers: */
-    source += "#define lowp    \n";
-    source += "#define mediump \n";
-    source += "#define highp   \n";
-#endif
     source += shader_source;
     const GLchar *c_source = source.c_str( );
     glShaderSource( res, 1, &c_source, NULL );
@@ -112,4 +88,35 @@ GLuint LoadShaders( ShaderInfo *si ) {
         return 0;
     }
     return program;
+}
+
+void asdf () {
+#ifdef false
+
+#ifdef OPENGL_ES
+    source += "#version 100\n";
+#else
+    source += "#version 120\n";
+#endif
+//  GLES2 precision specifiers
+#ifdef GL_ES_VERSION_2_0
+    /*  Define default float precision for fragment shaders: */
+    if ( type == GL_FRAGMENT_SHADER ) {
+        source += "#ifdef GL_FRAGMENT_PRECISION_HIGH\n";
+        source += "precision highp float;           \n";
+        source += "#else                            \n";
+        source += "precision mediump float;         \n";
+        source += "#endif                           \n";
+    }
+/*  Note: OpengGL ES automatically defines this:
+    #define GL_ES
+*/
+#else
+    /* Ignore GLES 2 precision specifiers: */
+    source += "#define lowp    \n";
+    source += "#define mediump \n";
+    source += "#define highp   \n";
+#endif
+
+#endif
 }

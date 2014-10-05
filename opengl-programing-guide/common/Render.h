@@ -25,14 +25,16 @@
 //  Externs <- Remove these
 extern Display display;
 extern GLuint program;
-extern GLint model_matrix_loc;
+//extern GLint model_matrix_loc;
 
 class Renderer {
-  public:
+private:
+    ModelID GID;
+public:
     std::unordered_map<ModelID, shared_ptr<Model>> models;
     std::unordered_map<ShaderID, shared_ptr<Shader>> shaders;
 
-    Renderer( ) {};
+    Renderer( ):GID(0) {};
 
     void render( std::vector<shared_ptr<Actor>> &actors ) {
 
@@ -40,23 +42,23 @@ class Renderer {
         //  Will Chain standard MVW transforms as well as effects
 
         //  Unload the shader and continue
-        glClear( GL_COLOR_BUFFER_BIT );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
         glViewport( 0, 0, display.screen_width, display.screen_height );
         glUseProgram( program );
 
         glm::mat4 model_matrix;
         for ( auto a : actors ) {
-	  model_matrix = glm::rotate( glm::mat4(), a->state.orientation_x,
-				       glm::vec3( 1.0f, 0.0f, 0.0f ) );
-	  model_matrix = glm::rotate( model_matrix, a->state.orientation_y,
-				      glm::vec3(0.0f, 1.0f, 0.0f) );
-	  model_matrix = glm::rotate( model_matrix, a->state.orientation_z,
-				      glm::vec3(0.0f, 0.0f, 1.0f) );
+            //            model_matrix = glm::rotate( glm::mat4(), a->state.orientation_x,
+            //                                        glm::vec3( 1.0f, 0.0f, 0.0f ) );
+            //            model_matrix = glm::rotate( model_matrix, a->state.orientation_y,
+            //                                        glm::vec3(0.0f, 1.0f, 0.0f) );
+            //            model_matrix = glm::rotate( model_matrix, a->state.orientation_z,
+            //                                        glm::vec3(0.0f, 0.0f, 1.0f) );
 
-	  model_matrix = glm::translate( model_matrix,
-					 glm::vec3( a->state.position_x, a->state.position_y, a->state.position_z ) );
-	  glUniformMatrix4fv( model_matrix_loc, 1, GL_FALSE, &model_matrix[0][0] );
-	  models[a->model_id]->render( a->state );
+            //            model_matrix = glm::translate( model_matrix,
+            //                                           glm::vec3( a->state.position_x, a->state.position_y, a->state.position_z ) );
+            //            glUniformMatrix4fv( model_matrix_loc, 1, GL_FALSE, &model_matrix[0][0] );
+            get_model (a->model_id)->render( a->state );
         }
 
         glBindVertexArray( 0 );
@@ -67,11 +69,26 @@ class Renderer {
     }
     ;
 
-    void add_model( ModelID mid, shared_ptr<Model> model ) {
-        models[mid] = model;
+    void add_model( shared_ptr<Model> model ) {
+        std::cout << "Renderer added Model id " << GID << " Name " << model->name << std::endl;
+        models[GID] = model;
+        ++GID;
+    }
+    shared_ptr<Model> get_model (ModelID mid) {
+        if (models.empty())
+        {
+            std::cerr << "No models available" << std::endl;
+            std::exit (EXIT_FAILURE);
+        }
+        if (models.find (mid) == models.end())
+            return models[0];
+        return models[mid];
     }
 
-    void init( ) { glClearColor( 0.0, 0.0, 0.0, 1.0 ); }
+    void init( ) {
+        glEnable(GL_DEPTH_TEST);
+        glClearColor( 0.2, 0.2, 0.2, 1.0 );
+    }
     ;
 };
 

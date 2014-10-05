@@ -1,12 +1,13 @@
 include 	Makefile.inc
 DIRS		= pre3 opengl-wikibook openglbook opengl-programing-guide
+BUILD_TARGETS = opengl-programming-guide
 ALL_EXECS 	= 
 TEST_EXECS 	= 
 OBJ_FILES 	= 
 EDITOR_MESS 	=  *~ 
 
 
-all: $(ALL_EXECS) $(OBJ_FILES) $(DIRS)
+all: $(ALL_EXECS) $(OBJ_FILES) $(BUILD_TARGETS )
 
 opengl-wikibook : force_look
 	cd opengl-wikibook; $(MAKE) all

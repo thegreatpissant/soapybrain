@@ -2,10 +2,18 @@
 #define __MODEL_H__
 
 #include <GL/glew.h>
+
+#include <iostream>
 #include <vector>
-using namespace std;
+#include <string>
+
+using std::vector;
+using std::string;
+using std::cerr;
+using std::endl;
 
 using ModelID = GLint;
+
 
 #include "Actor.h"
 
@@ -13,23 +21,24 @@ enum Attrib_IDs {
     vPosition = 0
 };
 #define BUFFER_OFFSET( offset ) ( ( void * )( offset ) )
-ModelID GID = 0;
 
 class Model {
-  public:
+private:
+public:
     long numVertices;
-    ModelID id;
     string name;
     vector<float> vertices;
     vector<GLuint> vaos;
     vector<GLuint> buffers;
     int renderPrimitive;
-    Model( ) { id = GID++; }
-    virtual void render( EntityState &e ) {}
+    Model( ) { }
+    virtual void render( EntityState &e ) const = 0;
 };
+
+
 class Simple_equation_model_t : public Model {
   public:
-    void render( EntityState &e ) {
+    void render( EntityState &e ) const {
 
         //  What Shaders do we use for this model?
         //  Based on the entity state.
@@ -46,10 +55,12 @@ class Simple_equation_model_t : public Model {
         this->vaos.resize( 1 );
         glGenVertexArrays( this->vaos.size( ), &this->vaos[0] );
         if ( this->vaos[0] == 0 ) {
-            cerr << this->name << "id: " << this->id
+            cerr << this->name
                  << " - Did not get a valid Vertex Attribute Object" << endl;
         }
         glBindVertexArray( this->vaos[0] );
+
+        //  Buffer Data
         this->buffers.resize( 1 );
         glGenBuffers( this->buffers.size( ), &this->buffers[0] );
         glBindBuffer( GL_ARRAY_BUFFER, this->buffers[0] );

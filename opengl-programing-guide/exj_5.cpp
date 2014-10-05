@@ -1,4 +1,5 @@
-/*  exj_4.cpp
+
+/*  exj_5.cpp
  * James A. Feister - thegreatpissant@gmail.com
  * DONE - Break out different model types.
  * DONE - Add a simple render system, yes it is very simple
@@ -9,10 +10,10 @@
  * PROOF - very simple scene graph of entities to render
  * TODO - Move the shaders out of here
  * TODO - Move any other OpenGL stuff out of here.
- * Proposed - Physics engine
- * Proposed - Selection
- * Proposed - Display class, Oculus and traditional
- * Proposed - Fix input system to be more fluent
+ * Proposed exj_5 - Physics engine
+ * Proposed exj_5 - Selection
+ * Proposed exj_5 - Display class, Oculus and traditional
+ * Proposed exj_5 - Fix input system to be more fluent
  */
 
 #include <iostream>
@@ -33,6 +34,7 @@ using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/transform2.hpp>
 
 //  Engine parts
 #include "common/shader_utils.h"
@@ -41,6 +43,7 @@ using namespace std;
 #include "common/Display.h"
 #include "common/Actor.h"
 #include "common/Camera.h"
+#include "common/Model_vbotorus.h"
 
 enum class queue_events {
     STRAFE_LEFT,
@@ -57,6 +60,7 @@ enum class queue_events {
     MODEL_CHANGE,
     APPLICATION_QUIT
 };
+
 queue<queue_events> gqueue;
 Display display;
 Renderer renderer;
@@ -67,12 +71,20 @@ vector<shared_ptr<Actor>> scene_graph;
 //  Constants and Vars
 //  @@TODO Should move into a variable system
 glm::mat4 Projection;
+GLint ProjectionMatrix_loc = 0;
 glm::mat4 MVP;
-glm::mat4 camera_matrix;
-glm::mat4 model_matrix;
 GLint MVP_loc = 0;
-GLint camera_loc = 0;
-GLint model_matrix_loc = 0;
+glm::mat4 camera_matrix;
+glm::mat3 NormalMatrix;
+GLint NormalMatrix_loc = 0;
+glm::mat4 ModelViewMatrix;
+GLint ModelViewMatrix_loc = 0;
+GLint Kd_loc = 0;
+glm::vec3 Kd = glm::vec3(0.9f, 0.5f, 0.3f);
+GLint Ld_loc = 0;
+glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
+GLint LightPosition_loc = 0;
+glm::vec4 LightPosition;
 
 //  Shader programs
 GLuint program, program2;
@@ -80,7 +92,6 @@ GLuint program, program2;
 //  Function Declarations
 void Init( );
 void UpdateView( );
-void PostView( );
 void GlutIdle( );
 void GlutReshape( int newWidth, int newHeight );
 void GlutDisplay( void );
@@ -99,7 +110,6 @@ void GenerateShaders( );
 //  Globalized user vars
 GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -25.0f }, rotate{ 0.0f };
 GLint color = 1;
-GLint color_loc = 0;
 
 float dir = 1.0f;
 float xpos = 2.0f;
@@ -137,34 +147,38 @@ int main( int argc, char **argv ) {
 
 void GenerateShaders( ) {
     //  Shaders
-    ShaderInfo shaders[] = { { GL_VERTEX_SHADER, "./shaders/exj_4_1.v.glsl" },
-                             { GL_FRAGMENT_SHADER, "./shaders/exj_4_1.f.glsl" },
-                             { GL_NONE, NULL } };
+    ShaderInfo shader[] = { { GL_VERTEX_SHADER, "./shaders/diffuse_shading.vert" },
+                            { GL_FRAGMENT_SHADER, "./shaders/diffuse_shading.frag" },
+                            { GL_NONE, NULL } };
 
-    program = LoadShaders( shaders );
+    program = LoadShaders( shader );
     glUseProgram( program );
-    if ( ( color_loc = glGetUniformLocation( program, "color" ) ) == -1 ) {
-        cerr << "Did not find the color loc\n";
+
+    if ( ( MVP_loc = glGetUniformLocation( program, "MVP" ) ) == -1 ) {
+        cerr << "Did not find the MVP loc\n";
     }
 
-    if ( ( MVP_loc = glGetUniformLocation( program, "mMVP" ) ) == -1 ) {
-        cerr << "Did not find the mMVP loc\n";
-    }
-    if ( ( camera_loc = glGetUniformLocation( program, "mCamera" ) ) == -1 ) {
-        cerr << "Did not find the mCamera loc\n";
-    }
-    if ( ( model_matrix_loc =
-           glGetUniformLocation( program, "model_matrix" ) ) == -1 ) {
-        cerr << "Did not find the model_matrix loc\n";
+    if ( ( ModelViewMatrix_loc = glGetUniformLocation( program, "ModelViewMatrix") ) == -1 ) {
+        cerr << "Did not find ModelView Matrix location\n";
     }
 
-    glUniform1i( color_loc, color );
+    if ( ( NormalMatrix_loc = glGetUniformLocation( program, "NormalMatrix") ) == -1 ) {
+        cerr << "Did not Normal Matrix location\n";
+    }
+
+    if ( ( ProjectionMatrix_loc = glGetUniformLocation( program, "ProjectionMatrix") ) == -1 ) {
+        cerr << "Did not find Projection Matrix location\n";
+    }
+
+    Kd_loc = glGetUniformLocation (program, "Kd");
+    Ld_loc = glGetUniformLocation (program, "Ld");
+    LightPosition_loc = glGetUniformLocation (program, "LightPosition");
+
     glUseProgram( 0 );
 }
 
 void InitializeView( ) {
     UpdateView( );
-    PostView( );
 }
 
 void GlutReshape( int newWidth, int newHeight ) {
@@ -174,7 +188,30 @@ void GlutReshape( int newWidth, int newHeight ) {
     glutPostRedisplay( );
 }
 
-void GlutDisplay( void ) { renderer.render( scene_graph ); }
+void GlutDisplay( void ) {
+    
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
+    model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
+    ModelViewMatrix = camera_matrix *  model;
+    NormalMatrix = glm::mat3 (glm::vec3( ModelViewMatrix[0]), glm::vec3( ModelViewMatrix[1]), glm::vec3( ModelViewMatrix[2]));
+    MVP = Projection * ModelViewMatrix;
+    LightPosition = camera_matrix * glm::vec4(5.0f, 5.0f, 2.0f, 1.0f);
+
+
+    glUseProgram( program );
+    glUniformMatrix3fv( NormalMatrix_loc, 1, GL_FALSE, &NormalMatrix[0][0]);
+    glUniformMatrix4fv( ProjectionMatrix_loc, 1, GL_FALSE, &Projection[0][0]);
+    glUniformMatrix4fv( ModelViewMatrix_loc, 1, GL_FALSE, &ModelViewMatrix[0][0]);
+    glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] );
+    glUniform3fv( Kd_loc, 1, &Kd[0]);
+    glUniform3fv( Ld_loc, 1, &Ld[0]);
+    glUniform4fv( LightPosition_loc, 1, &LightPosition[0]);
+    glUseProgram( 0 );
+
+    renderer.render( scene_graph );
+}
 
 void GlutKeyboard( unsigned char key, int x, int y ) {
     switch ( key ) {
@@ -245,10 +282,10 @@ void GlutIdle( ) {
             selected->state.position_z -= 1.0f;
             break;
         case queue_events::STRAFE_RIGHT:
-            selected->state.position_x += 1.0f;
+            selected->state.position_x -= 1.0f;
             break;
         case queue_events::STRAFE_LEFT:
-            selected->state.position_x -= 1.0f;
+            selected->state.position_x += 1.0f;
             break;
         case queue_events::YAW_RIGHT:
             selected->state.orientation_y += 0.5f;
@@ -278,53 +315,33 @@ void GlutIdle( ) {
         }
         gqueue.pop( );
     }
-    for ( auto i = 0; i < scene_graph.size( ); i++ )
-    {
-        (*scene_graph[i]).state.orientation_z += ((i%2) == 0)? 0.5f: -0.5f;
-    }
 
-    ypos = xpos * dir;
-    if (xpos > 400) {
-        dir = -1.0f;
-    } else if ( xpos < -400) {
-        dir = 1.0f;
-    }
     UpdateView( );
-    PostView( );
     glutPostRedisplay( );
 }
 
-void CleanupAndExit( ) 
-{ 
+void CleanupAndExit( )
+{
     exit( EXIT_SUCCESS );
 }
 
 void GenerateModels( ) {
-
-    shared_ptr<Simple_equation_model_t> tmp =
-            shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
     int ext = 0;
-    tmp->numVertices = 100;
-    tmp->vertices.resize( tmp->numVertices * 3 );
-    float x = 0.0f, z = 0.0f;
-    for ( int i = 0; i < tmp->numVertices; i++, x += 0.01f, z += 0.05f ) {
-        tmp->vertices[i * 3] = x;
-        tmp->vertices[i * 3 + 1] = powf( x, 1 );
-        tmp->vertices[i * 3 + 2] = 0.0f; //z;
-        if ( z >= -1.0f )
-            z = -10.0f; //(i % 2 ? -8.0f:-12.0f);
-    }
-    tmp->name = "ex15_" + to_string( ext++);
-    tmp->renderPrimitive = GL_POINTS;
-    tmp->setup_render_model( );
-    renderer.add_model( tmp );
+    shared_ptr<Simple_equation_model_t> tmp;
+    shared_ptr<VBOTorus> tmpt;
 
+    //  Generate Torus
+    tmpt = shared_ptr<VBOTorus> { new VBOTorus (0.7f, 0.3f, 30, 30) };
+    tmpt->name = "vbo_torus";
+    renderer.add_model( tmpt );
+
+    //  Generate Some equation model
     for ( auto power_to :
     { 1.0f, 1.2f, 1.4f, 1.6f, 1.8f, 2.1f, 2.2f, 2.3f, 3.5f, 4.0f } ) {
         tmp =
                 shared_ptr<Simple_equation_model_t>{ new Simple_equation_model_t };
-        x = 0.0f;
-        z = 0.0f;
+        float x = 0.0f;
+        float z = 0.0f;
         tmp->numVertices = 600;
         tmp->vertices.resize( tmp->numVertices * 3 );
         for ( int i = 0; i < tmp->numVertices; i++, x += 0.1f, z += 0.05f ) {
@@ -350,29 +367,12 @@ void GenerateEntities( ) {
 
     //  Actors
     GLfloat a = 0.0f;
-    for ( int i = 0; i < 1; i++, a += 0.2f ) {
+    for ( int i = 0; i < 3; i++, a += 10.0f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  -5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 6 ) } );
+                                                  a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0 ) } );
     }
-    a = 0.0f;
-    for ( int i = 0; i < 1000; i++, a += 0.2f ) {
-        scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  -0.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 3 ) } );
-    }
-    a = 0.0f;
-    for ( int i = 0; i < 1000; i++, a += 0.2f ) {
-        scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  5.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 7 ) } );
-    }
-    a = 0.0f;
-    for ( int i = 0; i < 1000; i++, a += 0.2f ) {
-        scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  10.0f, 0.0f, a, 0.0f, 0.0f, 0.0f, 8 ) } );
-    }
-
     //  Selected Entity
     selected = camera;
-    //    selected = scene_graph[0];
 }
 
 void UpdateView( )
@@ -390,22 +390,6 @@ void UpdateView( )
                 c_pos + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
 }
 
-void PostView( ) {
-    glUseProgram( program );
-    glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] );
-    glUniformMatrix4fv( camera_loc, 1, GL_FALSE, &camera_matrix[0][0] );
-    glUniform1i( color_loc, color );
-    glUseProgram( 0 );
-}
-
 void UpdatePerspective( ) {
-    // GLfloat hResolution = display.screen_width;  //  640.0f;
-    // GLfloat vResolution = display.screen_height; //  800.0f;
-    // GLfloat eyeScreenDist = 0.041f;
-    // GLfloat aspect = hResolution / (2.0f * vResolution);
-    // GLfloat fov = 2.0f*(atan(0.0935f/(2.0f*eyeScreenDist)));
-    // GLfloat zNear  = 0.3f;
-    // GLfloat zFar   = 1000.0f;
-    // Projection = glm::perspective( fov, aspect, zNear, zFar );
-    MVP = glm::perspective( 45.0f, 4.0f / 3.0f, 1.0f, 1000.0f );
+    Projection = glm::perspective( 45.0f, 4.0f / 3.0f, 0.1f, 100.0f );
 }
