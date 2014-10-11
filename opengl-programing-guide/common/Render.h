@@ -24,7 +24,7 @@
 
 //  Externs <- Remove these
 extern Display display;
-extern GLuint program;
+extern ShaderProgram diffuse_shading;
 //extern GLint model_matrix_loc;
 
 class Renderer {
@@ -44,7 +44,7 @@ public:
         //  Unload the shader and continue
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
         glViewport( 0, 0, display.screen_width, display.screen_height );
-        glUseProgram( program );
+        diffuse_shading.use();
 
         glm::mat4 model_matrix;
         for ( auto a : actors ) {
@@ -62,8 +62,7 @@ public:
         }
 
         glBindVertexArray( 0 );
-        glUseProgram( 0 );
-
+        diffuse_shading.unuse();
         glFinish( );
         glutSwapBuffers( );
     }

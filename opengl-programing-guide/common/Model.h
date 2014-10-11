@@ -14,31 +14,35 @@ using std::endl;
 
 using ModelID = GLint;
 
-
 #include "Actor.h"
 
-enum Attrib_IDs {
+enum Attrib_IDs
+{
     vPosition = 0
 };
 #define BUFFER_OFFSET( offset ) ( ( void * )( offset ) )
 
-class Model {
-private:
-public:
+class Model
+{
+  private:
+  public:
     long numVertices;
     string name;
     vector<float> vertices;
     vector<GLuint> vaos;
     vector<GLuint> buffers;
     int renderPrimitive;
-    Model( ) { }
+    Model( )
+    {
+    }
     virtual void render( EntityState &e ) const = 0;
 };
 
-
-class Simple_equation_model_t : public Model {
+class Simple_equation_model_t : public Model
+{
   public:
-    void render( EntityState &e ) const {
+    void render( EntityState &e ) const
+    {
 
         //  What Shaders do we use for this model?
         //  Based on the entity state.
@@ -51,12 +55,13 @@ class Simple_equation_model_t : public Model {
 
         //  Unbind from that shader
     }
-    void setup_render_model( ) {
+    void setup_render_model( )
+    {
         this->vaos.resize( 1 );
         glGenVertexArrays( this->vaos.size( ), &this->vaos[0] );
-        if ( this->vaos[0] == 0 ) {
-            cerr << this->name
-                 << " - Did not get a valid Vertex Attribute Object" << endl;
+        if ( this->vaos[0] == 0 )
+        {
+            cerr << this->name << " - Did not get a valid Vertex Attribute Object" << endl;
         }
         glBindVertexArray( this->vaos[0] );
 
@@ -64,12 +69,11 @@ class Simple_equation_model_t : public Model {
         this->buffers.resize( 1 );
         glGenBuffers( this->buffers.size( ), &this->buffers[0] );
         glBindBuffer( GL_ARRAY_BUFFER, this->buffers[0] );
-        glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * this->vertices.size( ),
-                      &this->vertices[0], GL_STATIC_DRAW );
-        glVertexAttribPointer( vPosition, 3, GL_FLOAT, GL_TRUE, 0,
-                               BUFFER_OFFSET( 0 ) );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( float ) * this->vertices.size( ), &this->vertices[0],
+                      GL_STATIC_DRAW );
+        glVertexAttribPointer( vPosition, 3, GL_FLOAT, GL_TRUE, 0, BUFFER_OFFSET( 0 ) );
         glEnableVertexAttribArray( vPosition );
         glBindVertexArray( 0 );
     }
 };
-#endif //  __MODEL_H__
+#endif  //  __MODEL_H__

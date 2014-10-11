@@ -37,7 +37,7 @@ using namespace std;
 #include <glm/gtx/transform2.hpp>
 
 //  Engine parts
-#include "common/shader_utils.h"
+#include "common/Shader.h"
 #include "common/Render.h"
 #include "common/Model.h"
 #include "common/Display.h"
@@ -68,26 +68,20 @@ Renderer renderer1;
 shared_ptr<Camera> camera;
 shared_ptr<Entity> selected;
 vector<shared_ptr<Actor>> scene_graph;
+
 //  Constants and Vars
 //  @@TODO Should move into a variable system
+Shader vertex_shader(GL_VERTEX_SHADER), fragment_shader(GL_FRAGMENT_SHADER);
+ShaderProgram diffuse_shading;
 glm::mat4 Projection;
-GLint ProjectionMatrix_loc = 0;
 glm::mat4 MVP;
-GLint MVP_loc = 0;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
-GLint NormalMatrix_loc = 0;
 glm::mat4 ModelViewMatrix;
-GLint ModelViewMatrix_loc = 0;
-GLint Kd_loc = 0;
 glm::vec3 Kd = glm::vec3(0.9f, 0.5f, 0.3f);
-GLint Ld_loc = 0;
 glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
-GLint LightPosition_loc = 0;
 glm::vec4 LightPosition;
 
-//  Shader programs
-GLuint program, program2;
 
 //  Function Declarations
 void Init( );
@@ -151,30 +145,28 @@ void GenerateShaders( ) {
                             { GL_FRAGMENT_SHADER, "./shaders/diffuse_shading.frag" },
                             { GL_NONE, NULL } };
 
-    program = LoadShaders( shader );
-    glUseProgram( program );
 
-    if ( ( MVP_loc = glGetUniformLocation( program, "MVP" ) ) == -1 ) {
-        cerr << "Did not find the MVP loc\n";
+    vertex_shader.SourceFile("./shaders/diffuse_shading.vert");
+    fragment_shader.SourceFile("./shaders/diffuse_shading.frag");
+    try {
+        vertex_shader.Compile();
+        fragment_shader.Compile();
+    }
+    catch (ShaderProgramException excp) {
+        cerr << excp.what() << endl;
+        exit (EXIT_FAILURE);
+    }
+    diffuse_shading.addShader(vertex_shader.GetHandle());
+    diffuse_shading.addShader(fragment_shader.GetHandle());
+    try {
+        diffuse_shading.link();
+    }
+    catch (ShaderProgramException excp) {
+        cerr << excp.what () << endl;
+        exit (EXIT_FAILURE);
     }
 
-    if ( ( ModelViewMatrix_loc = glGetUniformLocation( program, "ModelViewMatrix") ) == -1 ) {
-        cerr << "Did not find ModelView Matrix location\n";
-    }
-
-    if ( ( NormalMatrix_loc = glGetUniformLocation( program, "NormalMatrix") ) == -1 ) {
-        cerr << "Did not Normal Matrix location\n";
-    }
-
-    if ( ( ProjectionMatrix_loc = glGetUniformLocation( program, "ProjectionMatrix") ) == -1 ) {
-        cerr << "Did not find Projection Matrix location\n";
-    }
-
-    Kd_loc = glGetUniformLocation (program, "Kd");
-    Ld_loc = glGetUniformLocation (program, "Ld");
-    LightPosition_loc = glGetUniformLocation (program, "LightPosition");
-
-    glUseProgram( 0 );
+    diffuse_shading.unuse();
 }
 
 void InitializeView( ) {
@@ -213,16 +205,15 @@ void GlutDisplay( void ) {
     }
     LightPosition = camera_matrix * glm::vec4(bounce, 0.0f, -5.0f, 1.0f);
 
-
-    glUseProgram( program );
-    glUniformMatrix3fv( NormalMatrix_loc, 1, GL_FALSE, &NormalMatrix[0][0]);
-    glUniformMatrix4fv( ProjectionMatrix_loc, 1, GL_FALSE, &Projection[0][0]);
-    glUniformMatrix4fv( ModelViewMatrix_loc, 1, GL_FALSE, &ModelViewMatrix[0][0]);
-    glUniformMatrix4fv( MVP_loc, 1, GL_FALSE, &MVP[0][0] );
-    glUniform3fv( Kd_loc, 1, &Kd[0]);
-    glUniform3fv( Ld_loc, 1, &Ld[0]);
-    glUniform4fv( LightPosition_loc, 1, &LightPosition[0]);
-    glUseProgram( 0 );
+    diffuse_shading.use();
+    diffuse_shading.setUniform("NormalMatrix", NormalMatrix);
+    diffuse_shading.setUniform("ProjectionMatrix", Projection);
+    diffuse_shading.setUniform("ModelViewMatrix", ModelViewMatrix);
+    diffuse_shading.setUniform("MVP", MVP );
+    diffuse_shading.setUniform("Kd", Kd);
+    diffuse_shading.setUniform("Ld", Ld);
+    diffuse_shading.setUniform("LightPosition", LightPosition);
+    diffuse_shading.unuse();
 
     renderer.render( scene_graph );
 }
@@ -345,7 +336,7 @@ void GenerateModels( ) {
     shared_ptr<VBOTorus> tmpt;
 
     //  Generate Torus
-    tmpt = shared_ptr<VBOTorus> { new VBOTorus (0.7f, 0.3f, 30, 30) };
+    tmpt = shared_ptr<VBOTorus> { new VBOTorus (0.7f, 0.3f, 50, 50) };
     tmpt->name = "vbo_torus";
     renderer.add_model( tmpt );
 
@@ -405,5 +396,5 @@ void UpdateView( )
 }
 
 void UpdatePerspective( ) {
-    Projection = glm::perspective( 45.0f, 4.0f / 3.0f, 0.1f, 100.0f );
+    Projection = glm::perspective( 75.0f, 4.0f / 3.0f, 0.1f, 100.0f );
 }
