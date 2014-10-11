@@ -34,7 +34,7 @@ TabWidth:        8
 UseTab:          Never
 BreakBeforeBraces: Allman
 IndentFunctionDeclarationAfterType: false
-SpacesInParentheses: true
+SpacesInParentheses: false
 SpaceInEmptyParentheses: true
 SpacesInCStyleCastParentheses: false
 SpaceAfterControlStatementKeyword: true
