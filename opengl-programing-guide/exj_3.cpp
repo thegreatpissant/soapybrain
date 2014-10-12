@@ -22,7 +22,7 @@ using namespace std;
 #include <glm/gtc/type_ptr.hpp>
 
 //  Engine parts
-#include "common/shader_utils.h"
+#include "Shader.h"
 #include "Render.h"
 #include "Model.h"
 #include "Display.h"
@@ -112,13 +112,13 @@ int main ( int argc, char ** argv) {
 void GenerateShaders () {
   //  Shaders
   ShaderInfo shaders [] = {
-    { GL_VERTEX_SHADER,   "./shaders/ex15_1.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
+    { GL_VERTEX_SHADER,   "../shaders/ex15_1.v.glsl" },
+    { GL_FRAGMENT_SHADER, "../shaders/ex15_1.f.glsl" },
     { GL_NONE, NULL }
   };
   ShaderInfo shaders2 [] = {
-    { GL_VERTEX_SHADER,   "./shaders/exj_3_1.v.glsl"},
-    { GL_FRAGMENT_SHADER, "./shaders/exj_3_1.f.glsl"},
+    { GL_VERTEX_SHADER,   "../shaders/exj_3_1.v.glsl"},
+    { GL_FRAGMENT_SHADER, "../shaders/exj_3_1.f.glsl"},
     { GL_NONE, NULL }
   };
 
