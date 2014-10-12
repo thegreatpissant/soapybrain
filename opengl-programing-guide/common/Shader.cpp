@@ -16,9 +16,6 @@ using std::string;
 
 #include <algorithm>
 using std::for_each;
-//  Helper function definitions.
-string get_shader_log( GLuint object );
-
 /*
  * Shader Class
  */
@@ -59,7 +56,7 @@ throw (ShaderProgramException)
     GLint compile_ok = GL_FALSE;
     glGetShaderiv (object, GL_COMPILE_STATUS, &compile_ok);
     if (compile_ok == GL_FALSE ) {
-        string msg = string("Failed to compile shader.") + get_shader_log(object);
+        string msg = string("Failed to compile shader.") + shader_log(object);
         glDeleteShader (object);
         throw (ShaderProgramException(msg));
     }
@@ -141,7 +138,7 @@ std::string Shader::Dump()
 /**
  * Display compilation errors from the OpenGL shader compiler
  */
-string get_shader_log( GLuint object ) {
+string shader_log( GLuint object ) {
     GLint log_length = 0;
     if ( glIsShader( object ) )
         glGetShaderiv( object, GL_INFO_LOG_LENGTH, &log_length );
@@ -232,7 +229,7 @@ throw (ShaderProgramException)
     GLint link_ok;
     glGetProgramiv ( handle, GL_LINK_STATUS, &link_ok);
     if (!link_ok) {
-        string msg  = string ("glLinkProgram: ") + get_shader_log( handle );
+        string msg  = string ("glLinkProgram: ") + shader_log( handle );
         throw (ShaderProgramException(msg));
     }
     this->linked = true;

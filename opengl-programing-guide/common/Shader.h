@@ -22,7 +22,7 @@ typedef struct shaderinfo
 } ShaderInfo;
 
 GLuint LoadShaders(ShaderInfo *si);
-
+string shader_log (GLuint object);
 //  ------------------------------------------------------- //
 //  The following shader class is inspired from the
 //  OpenGL 4.0 Shading Language Cookbook, David Wolff

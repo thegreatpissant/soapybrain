@@ -38,7 +38,7 @@ string file_read_string( const char *filename ) {
 
 /**
  * Display compilation errors from the OpenGL shader compiler
- */
+*/
 string get_shader_log( GLuint object ) {
     GLint log_length = 0;
     if ( glIsShader( object ) )

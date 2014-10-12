@@ -16,7 +16,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 //  Engine parts
-#include "common/shader_utils.h"
+#include "Shader.h"
 #include "Model.h"
 
 enum class queue_events {
@@ -85,8 +85,8 @@ void Init () {
 
   //  Shaders
   ShaderInfo shaders [] = {
-    { GL_VERTEX_SHADER, "./shaders/ex15_1.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
+    { GL_VERTEX_SHADER, "../shaders/ex15_1.v.glsl" },
+    { GL_FRAGMENT_SHADER, "../shaders/ex15_1.f.glsl" },
     { GL_NONE, NULL }
   };
   GLuint program = LoadShaders(shaders);

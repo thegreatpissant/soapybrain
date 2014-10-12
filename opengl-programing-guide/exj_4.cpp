@@ -35,7 +35,7 @@ using namespace std;
 #include <glm/gtc/type_ptr.hpp>
 
 //  Engine parts
-#include "common/shader_utils.h"
+#include "common/Shader.h"
 #include "common/Render.h"
 #include "common/Model.h"
 #include "common/Display.h"
@@ -137,8 +137,8 @@ int main( int argc, char **argv ) {
 
 void GenerateShaders( ) {
     //  Shaders
-    ShaderInfo shaders[] = { { GL_VERTEX_SHADER, "./shaders/exj_4_1.v.glsl" },
-                             { GL_FRAGMENT_SHADER, "./shaders/exj_4_1.f.glsl" },
+    ShaderInfo shaders[] = { { GL_VERTEX_SHADER, "../shaders/exj_4_1.v.glsl" },
+                             { GL_FRAGMENT_SHADER, "../shaders/exj_4_1.f.glsl" },
                              { GL_NONE, NULL } };
 
     program = LoadShaders( shaders );
