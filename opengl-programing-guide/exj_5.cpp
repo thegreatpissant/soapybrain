@@ -141,13 +141,8 @@ int main( int argc, char **argv ) {
 
 void GenerateShaders( ) {
     //  Shaders
-    ShaderInfo shader[] = { { GL_VERTEX_SHADER, "./shaders/diffuse_shading.vert" },
-                            { GL_FRAGMENT_SHADER, "./shaders/diffuse_shading.frag" },
-                            { GL_NONE, NULL } };
-
-
-    vertex_shader.SourceFile("./shaders/diffuse_shading.vert");
-    fragment_shader.SourceFile("./shaders/diffuse_shading.frag");
+    vertex_shader.SourceFile("../shaders/diffuse_shading.vert");
+    fragment_shader.SourceFile("../shaders/diffuse_shading.frag");
     try {
         vertex_shader.Compile();
         fragment_shader.Compile();
