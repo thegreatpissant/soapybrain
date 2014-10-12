@@ -16,7 +16,7 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#include "common/shader_utils.h"
+#include "common/Shader.h"
 
 //  Models
 struct model_t {
@@ -205,8 +205,8 @@ void Init(void)
 
   //  Shaders
   ShaderInfo  shaders[] = {
-    { GL_VERTEX_SHADER, "./shaders/ex15_1.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/ex15_1.f.glsl" },
+    { GL_VERTEX_SHADER, "../shaders/ex15_1.v.glsl" },
+    { GL_FRAGMENT_SHADER, "../shaders/ex15_1.f.glsl" },
     { GL_NONE, NULL }
   };
   GLuint program = LoadShaders(shaders);
