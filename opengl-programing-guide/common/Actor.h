@@ -3,14 +3,20 @@
 
 #include "Entity.h"
 #include "Model.h"
+#include "Shader.h"
 
 class Actor : public Entity {
+private:
+    ShaderProgram shader_program;
   public:
     ModelID model_id;
     Actor( ) : Entity( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f ), model_id{ 0 } {};
     Actor( float px, float py, float pz, float ox, float oy, float oz,
            ModelID mid = 0 )
         : Entity( px, py, pz, ox, oy, oz ), model_id{ mid } {};
+    void SetShader (ShaderProgram &nshader_program);
+    ShaderProgram GetShader ();
 };
 
 #endif
+
