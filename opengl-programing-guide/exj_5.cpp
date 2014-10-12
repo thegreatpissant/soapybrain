@@ -208,9 +208,12 @@ void GlutDisplay( void ) {
     diffuse_shading.setUniform("Kd", Kd);
     diffuse_shading.setUniform("Ld", Ld);
     diffuse_shading.setUniform("LightPosition", LightPosition);
-    diffuse_shading.unuse();
 
     renderer.render( scene_graph );
+    diffuse_shading.unuse();
+
+    glFinish( );
+    glutSwapBuffers( );
 }
 
 void GlutKeyboard( unsigned char key, int x, int y ) {
@@ -367,9 +370,9 @@ void GenerateEntities( ) {
 
     //  Actors
     GLfloat a = 0.0f;
-    for ( int i = 0; i < 3; i++, a += 10.0f ) {
+    for ( int i = 0; i < 1; i++, a += 10.0f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0 ) } );
+                                                  a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, i ) } );
     }
     //  Selected Entity
     selected = camera;
