@@ -12,7 +12,7 @@ using namespace std;
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "common/shader_utils.h"
+#include "common/Shader.h"
 //#include "LoadShaders.h"
 enum VAO_IDs { Triangles, NumVAOs };
 enum Buffer_IDs { ArrayBuffer, NumBuffers };
@@ -124,8 +124,8 @@ void init(void)
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
   ShaderInfo  shaders[] = {
-    { GL_VERTEX_SHADER, "./shaders/triangles.v.glsl" },
-    { GL_FRAGMENT_SHADER, "./shaders/triangles.f.glsl" },
+    { GL_VERTEX_SHADER, "../shaders/triangles.v.glsl" },
+    { GL_FRAGMENT_SHADER, "../shaders/triangles.f.glsl" },
     { GL_NONE, NULL }
   };
 

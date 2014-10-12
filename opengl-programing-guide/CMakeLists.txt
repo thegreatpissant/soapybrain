@@ -41,10 +41,12 @@ add_definitions(-std=c++11)
 
 #   Set up the Executables
 add_executable (exj_5 exj_5.cpp ${RES_FILES})
+add_executable (triangles triangles.cpp ${RES_FILES})
 add_executable (glm_tests glm_tests.cpp)
 
 #   Set up the libs for our executables
 target_link_libraries (exj_5 ${EXTRA_LIBS})
+target_link_libraries (triangles ${EXTRA_LIBS})
 
 
 
