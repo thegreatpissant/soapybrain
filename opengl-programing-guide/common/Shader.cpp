@@ -283,32 +283,32 @@ void ShaderProgram::setUniform (const char *name, float x, float y, float z)
 
 void ShaderProgram::setUniform(const char *name, const glm::vec3 & v )
 {
-    glUniform3fv (uniformLocations[string(name)], 1, &v[0]);
+    glUniform3fv (uniformLocations.at(string(name)), 1, &v[0]);
 }
 
 void ShaderProgram::setUniform(const char * name, const glm::vec4 &v )
 {
-    glUniform4fv (uniformLocations[string(name)], 1, &v[0]);
+    glUniform4fv (uniformLocations.at(string(name)), 1, &v[0]);
 }
 
 void ShaderProgram::setUniform(const char * name, const glm::mat4 &m )
 {
-    glUniformMatrix4fv (uniformLocations[string(name)], 1, GL_FALSE, &m[0][0]);
+    glUniformMatrix4fv (uniformLocations.at(string(name)), 1, GL_FALSE, &m[0][0]);
 }
 
 void ShaderProgram::setUniform(const char * name, const glm::mat3 &m )
 {
-    glUniformMatrix3fv (uniformLocations[string(name)], 1, GL_FALSE, &m[0][0]);
+    glUniformMatrix3fv (uniformLocations.at(string(name)), 1, GL_FALSE, &m[0][0]);
 }
 
 void ShaderProgram::setUniform(const char * name, float val)
 {
-    glUniform1f (uniformLocations[string(name)], val);
+    glUniform1f (uniformLocations.at(string(name)), val);
 }
 
 void ShaderProgram::setUniform(const char *name, int val)
 {
-    glUniform1i (uniformLocations[string(name)], val);
+    glUniform1i (uniformLocations.at(string(name)), val);
 }
 
 void ShaderProgram::setUniform(const char *name, bool val)
@@ -366,7 +366,7 @@ void ShaderProgram::scrape_uniforms ()
         GLsizei uni_name_length = 0;
         glGetActiveUniformName( getHandle(), i, uni_max_length, &uni_name_length, uni_name );
         string tmp_uniform_name = string (uni_name); //, uni_name_length);
-        uniformLocations[tmp_uniform_name] = i;
+        uniformLocations.insert(std::make_pair(tmp_uniform_name,i));
     }
     //  Cleanup
     delete uni_name;

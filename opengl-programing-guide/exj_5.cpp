@@ -72,14 +72,22 @@ vector<shared_ptr<Actor>> scene_graph;
 //  Constants and Vars
 //  @@TODO Should move into a variable system
 Shader vertex_shader(GL_VERTEX_SHADER), fragment_shader(GL_FRAGMENT_SHADER);
+Shader ads_vertex_shader(GL_VERTEX_SHADER), ads_fragment_shader(GL_FRAGMENT_SHADER);
 ShaderProgram diffuse_shading;
+ShaderProgram ads_shading;
+ShaderProgram * global_shader;
 glm::mat4 Projection;
 glm::mat4 MVP;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
 glm::mat4 ModelViewMatrix;
-glm::vec3 Kd = glm::vec3(0.9f, 0.5f, 0.3f);
-glm::vec3 Ld = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 Ka = glm::vec3(0.3f, 0.5f, 0.3f);
+glm::vec3 Kd = glm::vec3(0.4f, 0.1f, 0.3f);
+glm::vec3 Ks = glm::vec3(0.1f, 0.4f, 0.2f);
+float Shine = 0.5f;
+glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 Ld = glm::vec3(0.3f, 0.5f, 0.1f);
+glm::vec3 Ls = glm::vec3(0.7f, 0.2f, 2.8f);
 glm::vec4 LightPosition;
 
 
@@ -141,27 +149,39 @@ int main( int argc, char **argv ) {
 
 void GenerateShaders( ) {
     //  Shaders
-    vertex_shader.SourceFile("../shaders/diffuse_shading.vert");
-    fragment_shader.SourceFile("../shaders/diffuse_shading.frag");
     try {
+        vertex_shader.SourceFile("../shaders/diffuse_shading.vert");
+        fragment_shader.SourceFile("../shaders/diffuse_shading.frag");
         vertex_shader.Compile();
         fragment_shader.Compile();
-    }
-    catch (ShaderProgramException excp) {
-        cerr << excp.what() << endl;
-        exit (EXIT_FAILURE);
-    }
-    diffuse_shading.addShader(vertex_shader.GetHandle());
-    diffuse_shading.addShader(fragment_shader.GetHandle());
-    try {
+        diffuse_shading.addShader(vertex_shader.GetHandle());
+        diffuse_shading.addShader(fragment_shader.GetHandle());
         diffuse_shading.link();
+        diffuse_shading.unuse();
     }
     catch (ShaderProgramException excp) {
         cerr << excp.what () << endl;
         exit (EXIT_FAILURE);
     }
 
-    diffuse_shading.unuse();
+    try {
+        ads_vertex_shader.SourceFile("../shaders/ads_shading.vert");
+        ads_fragment_shader.SourceFile("../shaders/ads_shading.frag");
+        ads_vertex_shader.Compile();
+        ads_fragment_shader.Compile();
+        ads_shading.addShader(ads_vertex_shader.GetHandle());
+        ads_shading.addShader(ads_fragment_shader.GetHandle());
+        ads_shading.link();
+        ads_shading.unuse();
+        ads_shading.printActiveUniforms();
+    }
+    catch (ShaderProgramException excp) {
+        cerr << excp.what() << endl;
+        exit (EXIT_FAILURE);
+    }
+
+//    global_shader = &diffuse_shading;
+    global_shader = &ads_shading;
 }
 
 void InitializeView( ) {
@@ -200,17 +220,22 @@ void GlutDisplay( void ) {
     }
     LightPosition = camera_matrix * glm::vec4(bounce, 0.0f, -5.0f, 1.0f);
 
-    diffuse_shading.use();
-    diffuse_shading.setUniform("NormalMatrix", NormalMatrix);
-    diffuse_shading.setUniform("ProjectionMatrix", Projection);
-    diffuse_shading.setUniform("ModelViewMatrix", ModelViewMatrix);
-    diffuse_shading.setUniform("MVP", MVP );
-    diffuse_shading.setUniform("Kd", Kd);
-    diffuse_shading.setUniform("Ld", Ld);
-    diffuse_shading.setUniform("LightPosition", LightPosition);
+    global_shader->use();
+    global_shader->setUniform("NormalMatrix", NormalMatrix);
+    //global_shader->setUniform("ProjectionMatrix", Projection);
+    global_shader->setUniform("ModelViewMatrix", ModelViewMatrix);
+    global_shader->setUniform("MVP", MVP );
+    global_shader->setUniform("Material.Ka", Ka);
+    global_shader->setUniform("Material.Kd", Kd);
+    global_shader->setUniform("Material.Ks", Ks);
+    global_shader->setUniform("Light.La", La);
+    global_shader->setUniform("Light.Ld", Ld);
+    global_shader->setUniform("Light.Ls", Ls);
+    global_shader->setUniform("Light.Position", LightPosition);
+    global_shader->setUniform("Material.Shininess", Shine);
 
     renderer.render( scene_graph );
-    diffuse_shading.unuse();
+    global_shader->unuse();
 
     glFinish( );
     glutSwapBuffers( );
