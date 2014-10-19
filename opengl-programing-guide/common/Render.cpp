@@ -11,6 +11,7 @@ void Renderer::render( std::vector<shared_ptr<Actor>> &actors ) {
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
 
+
     for ( auto a : actors ) {
         get_model (a->model_id)->render( a->state );
     }

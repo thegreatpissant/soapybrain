@@ -7,17 +7,44 @@
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 
+#include <glm/glm.hpp>
+
 struct EntityState {
-    float position_x, position_y, position_z;
-    float orientation_x, orientation_y, orientation_z;
+    glm::vec3 position;
+    glm::vec3 orientation;
 
     EntityState( float px, float py, float pz, float ox, float oy, float oz )
-        : position_x( px ), position_y{ py }, position_z{ pz },
-          orientation_x{ ox }, orientation_y{ oy }, orientation_z{ oz } {}
+        : position ( glm::vec3( px, py, pz)), orientation( glm::vec3(ox, oy, oz)) {}
+
+    EntityState( glm::vec3 pos , glm::vec3 orien): position (pos), orientation(orien) {};
 
     EntityState( )
-        : position_x( 0.0f ), position_y{ 0.0f }, position_z{ 0.0f },
-          orientation_x{ 0.0f }, orientation_y{ 0.0f }, orientation_z{ 0.0f } {}
+        : position (glm::vec3(0.0f, 0.0f, 0.0f)), orientation(glm::vec3(0.0f, 0.0f, 0.0f)) {};
+
+    void setPosition (glm::vec3 pos)
+    {
+        position = pos;
+    }
+    void setOrientation (glm::vec3 orien)
+    {
+        orientation = orien;
+    }
+    glm::vec3 getPosition () const
+    {
+        return this->position;
+    }
+    glm::vec3 getOrientation () const
+    {
+        return this->orientation;
+    }
+    void move( glm::vec3 pos)
+    {
+        this->position += pos;
+    }
+    void orient (glm::vec3 orien)
+    {
+        this->orient(orien);
+    }
 };
 
 class Entity {
@@ -25,13 +52,15 @@ class Entity {
     EntityState state;
 
     Entity( float px, float py, float pz, float ox, float oy, float oz ) {
-        this->state.position_x = px;
-        this->state.position_y = py;
-        this->state.position_z = pz;
-        this->state.orientation_x = ox;
-        this->state.orientation_y = oy;
-        this->state.orientation_z = oz;
+        this->state.setPosition(glm::vec3(px, py, pz));
+        this->state.setOrientation(glm::vec3(ox, oy, oz));
     }
+    Entity ( glm::vec3 pos, glm::vec3 orien)
+    {
+        this->state.setPosition(pos);
+        this->state.setOrientation(orien);
+    }
+
     Entity( ) {}
 };
 

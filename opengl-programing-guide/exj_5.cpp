@@ -303,39 +303,46 @@ void GlutKeyboard( unsigned char key, int x, int y ) {
     }
 }
 
+const glm::vec3 back_movement(0.0f, 0.0f, 1.0f);
+const glm::vec3 forward_movement(0.0f, 0.0f, -1.0f);
+const glm::vec3 left_movement( -1.0f, 0.0f, 0.0f);
+const glm::vec3 right_movement( 1.0f, 0.0f, 0.0f);
+const glm::vec3 up_movement(0.0f, 1.0f, 0.0f);
+const glm::vec3 down_movement(0.0f, -1.0f, 0.0f);
+
 void GlutIdle( ) {
     //  Pump the events loop
     while ( !gqueue.empty( ) ) {
         switch ( gqueue.front( ) ) {
         case queue_events::MOVE_FORWARD:
-            selected->state.position_z += 1.0f;
+            selected->state.move (forward_movement);
             break;
         case queue_events::MOVE_BACKWARD:
-            selected->state.position_z -= 1.0f;
+            selected->state.move (back_movement);
             break;
         case queue_events::STRAFE_RIGHT:
-            selected->state.position_x -= 1.0f;
+            selected->state.move (right_movement);
             break;
         case queue_events::STRAFE_LEFT:
-            selected->state.position_x += 1.0f;
+            selected->state.move(left_movement);
             break;
         case queue_events::YAW_RIGHT:
-            selected->state.orientation_y += 0.5f;
+            selected->state.orient(up_movement);
             break;
         case queue_events::YAW_LEFT:
-            selected->state.orientation_y -= 0.5f;
+            selected->state.orient(down_movement);
             break;
         case queue_events::MOVE_UP:
-            selected->state.position_y += 0.5f;
+            selected->state.move(up_movement);
             break;
         case queue_events::MOVE_DOWN:
-            selected->state.position_y -= 0.5f;
+            selected->state.move(down_movement);
             break;
         case queue_events::PITCH_UP:
-            selected->state.orientation_x += 0.5f;
+            selected->state.orient(right_movement);
             break;
         case queue_events::PITCH_DOWN:
-            selected->state.orientation_x += -0.5f;
+            selected->state.orient(left_movement);
             break;
         case queue_events::COLOR_CHANGE:
             color = ( color >= 4 ? 1 : color + 1 );
@@ -405,14 +412,13 @@ void GenerateEntities( ) {
 void UpdateView( )
 {
     glm::mat4 r_matrix =
-            glm::rotate( glm::mat4 (), camera->state.orientation_x, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+            glm::rotate( glm::mat4 (), camera->state.getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
     r_matrix =
-            glm::rotate( r_matrix, camera->state.orientation_y, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+            glm::rotate( r_matrix, camera->state.getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
     r_matrix =
-            glm::rotate( r_matrix, camera->state.orientation_z, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+            glm::rotate( r_matrix, camera->state.getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
     glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
-    glm::vec3 c_pos = glm::vec3( camera->state.position_x, camera->state.position_y, camera->state.position_z );
     camera_matrix = glm::lookAt(
-                c_pos,
-                c_pos + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+                camera->state.getPosition(),
+                camera->state.getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
 }
