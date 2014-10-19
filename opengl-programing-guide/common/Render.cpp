@@ -38,3 +38,14 @@ void Renderer::init( ) {
     glClearColor( 0.2, 0.2, 0.2, 1.0 );
 }
 
+shared_ptr<Camera> Renderer::setCamera ( shared_ptr<Camera> new_camera )
+{
+    this->camera = new_camera;
+    return this->camera;
+}
+
+shared_ptr<Display> Renderer::setDisplay(shared_ptr<Display> new_display)
+{
+    this->display = new_display;
+    return this->display;
+}

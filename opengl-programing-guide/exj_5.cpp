@@ -62,7 +62,7 @@ enum class queue_events {
 };
 
 queue<queue_events> gqueue;
-Display display;
+shared_ptr<Display> display { new Display };
 Renderer renderer;
 Renderer renderer1;
 shared_ptr<Camera> camera;
@@ -76,7 +76,6 @@ Shader ads_vertex_shader(GL_VERTEX_SHADER), ads_fragment_shader(GL_FRAGMENT_SHAD
 ShaderProgram diffuse_shading;
 ShaderProgram ads_shading;
 ShaderProgram * global_shader;
-glm::mat4 Projection;
 glm::mat4 MVP;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
@@ -98,7 +97,6 @@ void GlutIdle( );
 void GlutReshape( int newWidth, int newHeight );
 void GlutDisplay( void );
 void GlutKeyboard( unsigned char key, int x, int y );
-void UpdatePerspective( );
 void CleanupAndExit( );
 //  Models
 void GenerateModels( );
@@ -121,7 +119,7 @@ float ypos = 0.0f;
 int main( int argc, char **argv ) {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
-    glutInitWindowSize( display.getWidth(), display.getHeight() );
+    glutInitWindowSize( display->getWidth(), display->getHeight() );
 
     glutCreateWindow( argv[0] );
     if ( glewInit( ) ) {
@@ -130,12 +128,20 @@ int main( int argc, char **argv ) {
     }
 
     //  Initialize common systems
+
+    //  Camera
+    camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f,
+                                             0.0f ) };
+    renderer.setCamera(camera);
+    renderer.setDisplay(display);
     renderer.init( );
 
     //  Load our Application Items
     GenerateModels( );
-    GenerateEntities( );
     GenerateShaders( );
+
+    //  This scene specific items
+    GenerateEntities( );
 
     //  Boiler Plate
     glutIdleFunc( GlutIdle );
@@ -189,9 +195,7 @@ void InitializeView( ) {
 }
 
 void GlutReshape( int newWidth, int newHeight ) {
-    display.Reshape(newWidth, newHeight);
-    UpdatePerspective( );
-    glutPostRedisplay( );
+    display->Reshape(newWidth, newHeight);
 }
 
 
@@ -205,7 +209,8 @@ void GlutDisplay( void ) {
     model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
     ModelViewMatrix = camera_matrix *  model;
     NormalMatrix = glm::mat3 (glm::vec3( ModelViewMatrix[0]), glm::vec3( ModelViewMatrix[1]), glm::vec3( ModelViewMatrix[2]));
-    MVP = Projection * ModelViewMatrix;
+    MVP = display->getPerspective() * ModelViewMatrix;
+
     if (bounce_lr) {
         bounce -= 0.1f;
         if (bounce <  (-1.0f*bounce_distance)) {
@@ -387,12 +392,7 @@ void GenerateModels( ) {
 }
 
 void GenerateEntities( ) {
-
-    //  Camera
-    camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f,
-                                             0.0f ) };
-
-    //  Actors
+   //  Actors
     GLfloat a = 0.0f;
     for ( int i = 0; i < 1; i++, a += 10.0f ) {
         scene_graph.push_back( shared_ptr<Actor>{ new Actor(
@@ -415,8 +415,4 @@ void UpdateView( )
     camera_matrix = glm::lookAt(
                 c_pos,
                 c_pos + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-}
-
-void UpdatePerspective( ) {
-    Projection = glm::perspective( 75.0f, 4.0f / 3.0f, 0.1f, 100.0f );
 }

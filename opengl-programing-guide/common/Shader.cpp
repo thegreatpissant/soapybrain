@@ -369,5 +369,5 @@ void ShaderProgram::scrape_uniforms ()
         uniformLocations.insert(std::make_pair(tmp_uniform_name,i));
     }
     //  Cleanup
-    delete uni_name;
+    delete[] uni_name;
 }
