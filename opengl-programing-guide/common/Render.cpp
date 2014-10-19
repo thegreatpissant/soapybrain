@@ -2,19 +2,15 @@
 
 void Renderer::render( std::vector<shared_ptr<Actor>> &actors ) {
 
-    //  Select appropriate shaders for this model
-    //  Will Chain standard MVW transforms as well as effects
-
-    //  Unload the shader and continue
-
     static const GLfloat one = 1.0f;
     static const glm::vec3 clear_color = glm::vec3(0.3, 0.3, 0.3);
 
     glClearBufferfv (GL_COLOR, 0, &clear_color[0]);
     glClearBufferfv (GL_DEPTH, 0, &one);
 
-//    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    glViewport( 0, 0, display.screen_width, display.screen_height );
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
+
     for ( auto a : actors ) {
         get_model (a->model_id)->render( a->state );
     }

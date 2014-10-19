@@ -121,7 +121,7 @@ float ypos = 0.0f;
 int main( int argc, char **argv ) {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
-    glutInitWindowSize( display.screen_width, display.screen_height );
+    glutInitWindowSize( display.getWidth(), display.getHeight() );
 
     glutCreateWindow( argv[0] );
     if ( glewInit( ) ) {
@@ -189,8 +189,7 @@ void InitializeView( ) {
 }
 
 void GlutReshape( int newWidth, int newHeight ) {
-    display.screen_width = newWidth;
-    display.screen_height = newHeight;
+    display.Reshape(newWidth, newHeight);
     UpdatePerspective( );
     glutPostRedisplay( );
 }
