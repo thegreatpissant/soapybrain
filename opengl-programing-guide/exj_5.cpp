@@ -200,9 +200,6 @@ void GlutReshape( int newWidth, int newHeight ) {
 
 
 void GlutDisplay( void ) {
-    static float bounce = 0.0f;
-    static bool bounce_lr = true;  //  True = left; False = right;
-    const float bounce_distance = 10.0f;
 
     glm::mat4 model = glm::mat4(1.0f);
     model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
@@ -211,6 +208,10 @@ void GlutDisplay( void ) {
     NormalMatrix = glm::mat3 (glm::vec3( ModelViewMatrix[0]), glm::vec3( ModelViewMatrix[1]), glm::vec3( ModelViewMatrix[2]));
     MVP = display->getPerspective() * ModelViewMatrix;
 
+    //	Light Movement
+    static float bounce = 0.0f;
+    static bool bounce_lr = true;  //  True = left; False = right;
+    const float bounce_distance = 10.0f;
     if (bounce_lr) {
         bounce -= 0.1f;
         if (bounce <  (-1.0f*bounce_distance)) {
@@ -224,6 +225,7 @@ void GlutDisplay( void ) {
     }
     LightPosition = camera_matrix * glm::vec4(bounce, 0.0f, -5.0f, 1.0f);
 
+    //  Set values in the shader
     global_shader->use();
     global_shader->setUniform("NormalMatrix", NormalMatrix);
     //global_shader->setUniform("ProjectionMatrix", Projection);
