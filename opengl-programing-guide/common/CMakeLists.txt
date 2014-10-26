@@ -27,10 +27,10 @@ endif(NOT GLEW_FOUND)
 add_definitions(-std=c++11)
 
 #  Make sure all of these are in the project as source files
-set (EXTRA_INCLUDE ${EXTRA_INCLUDE} Model.h Display.h Entity.h Camera.h)
+set (EXTRA_INCLUDE ${EXTRA_INCLUDE} Model.h Display.h Camera.h)
 
 #  Define the library and its dependencies
-add_library(EngineCommon Actor.h Actor.cpp Render.h Render.cpp Shader.cpp Display.h Display.cpp shader_utils.cpp Model_vbotorus.cpp ${EXTRA_INCLUDE})
+add_library(EngineCommon Actor.h Actor.cpp Render.h Render.cpp Shader.cpp Display.h Display.cpp Entity.h Entity.cpp shader_utils.cpp Model_vbotorus.cpp ${EXTRA_INCLUDE})
 target_link_libraries(EngineCommon ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES})
 
 
