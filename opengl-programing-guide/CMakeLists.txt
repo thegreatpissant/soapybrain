@@ -38,6 +38,7 @@ add_subdirectory (common)
 
 #   Set up OCULUS stuff
 set (OCULUS_SDK_DIR "$ENV{HOME}/src/OculusSDKv3.2")
+#set (OCULUS_SDK_DIR "$ENV{HOME}/src/ovr_sdk_linux_0.4.3")
 set (OCULUS_LIBS ${OCULUS_LIBS} "${OCULUS_SDK_DIR}/LibOVR/Lib/Linux/Debug/x86_64/libovr.a")
 set (OCULUS_LIBS ${OCULUS_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${UDEV_LIBARIES} ${X11_LIBRARIES})
 set (OCULUS_INCLUDES ${OCLUS_INCLUDES} "${OCULUS_SDK_DIR}/LibOVR/Src")
