@@ -5,6 +5,8 @@
 Display::Display()  : screen_width{ 640 }, screen_height{ 480 }
 {
     CalculateReshape();
+    mRenderer = shared_ptr<Renderer> {new Renderer()};
+    init();
 }
 
 void Display::Reshape (int newWidth, int newHeight)
@@ -24,6 +26,30 @@ void Display::CalculateReshape()
     Perspective = glm::perspective( 75.0f, (float)screen_width/screen_height, 0.1f, 100.0f);
 }
 
+shared_ptr<Camera> Display::setCamera(shared_ptr<Camera> mc)
+{
+    shared_ptr<Camera> oc = mCamera;
+    mCamera = mc;
+    return oc;
+}
+
+shared_ptr<Renderer> Display::setRenderer(shared_ptr<Renderer> mr)
+{
+    shared_ptr<Renderer> orr = mRenderer;
+    mRenderer = mr;
+    return orr;
+}
+
+shared_ptr<Renderer> Display::getRenderer()
+{
+    return mRenderer;
+}
+
+void Display::init()
+{
+   mRenderer->init();
+}
+
 int Display::getHeight() const
 {
     return screen_height;
@@ -32,4 +58,9 @@ int Display::getHeight() const
 int Display::getWidth() const
 {
     return screen_width;
+}
+
+void Display::Render(vector<shared_ptr<Actor> > scenegraph)
+{
+    mRenderer->Render(scenegraph);
 }

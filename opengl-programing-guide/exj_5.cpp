@@ -63,8 +63,7 @@ enum class queue_events {
 
 queue<queue_events> gqueue;
 shared_ptr<Display> display { new Display };
-Renderer renderer;
-Renderer renderer1;
+shared_ptr<Renderer> renderer;
 shared_ptr<Camera> camera;
 shared_ptr<Entity> selected;
 vector<shared_ptr<Actor>> scene_graph;
@@ -92,24 +91,20 @@ glm::vec4 LightPosition;
 
 //  Function Declarations
 void Init( );
-void UpdateView( );
 void GlutIdle( );
 void GlutReshape( int newWidth, int newHeight );
-void GlutDisplay( void );
+void GlutDisplay( );
 void GlutKeyboard( unsigned char key, int x, int y );
 void CleanupAndExit( );
 //  Models
 void GenerateModels( );
 //  Entities
 void GenerateEntities( );
-//  View items
-void InitializeView( );
 //  Shaders
 void GenerateShaders( );
 
 //  Globalized user vars
-GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -25.0f }, rotate{ 0.0f };
-GLint color = 1;
+GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -15.0f }, rotate{ 0.0f };
 
 float dir = 1.0f;
 float xpos = 2.0f;
@@ -132,9 +127,8 @@ int main( int argc, char **argv ) {
     //  Camera
     camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f,
                                              0.0f ) };
-    renderer.setCamera(camera);
-    renderer.setDisplay(display);
-    renderer.init( );
+    renderer = display->getRenderer();
+    display->setCamera (camera);
 
     //  Load our Application Items
     GenerateModels( );
@@ -190,17 +184,24 @@ void GenerateShaders( ) {
     global_shader = &ads_shading;
 }
 
-void InitializeView( ) {
-    UpdateView( );
-}
-
-void GlutReshape( int newWidth, int newHeight ) {
+void GlutReshape( int newWidth, int newHeight )
+{
     display->Reshape(newWidth, newHeight);
 }
 
 
-void GlutDisplay( void ) {
-
+void GlutDisplay( )
+{
+    glm::mat4 r_matrix =
+            glm::rotate( glm::mat4 (), camera->state.getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
+    r_matrix =
+            glm::rotate( r_matrix, camera->state.getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
+    r_matrix =
+            glm::rotate( r_matrix, camera->state.getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
+    glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
+    camera_matrix = glm::lookAt(
+                camera->state.getPosition(),
+                camera->state.getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
     glm::mat4 model = glm::mat4(1.0f);
     model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
     model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
@@ -240,14 +241,15 @@ void GlutDisplay( void ) {
     global_shader->setUniform("Light.Position", LightPosition);
     global_shader->setUniform("Material.Shininess", Shine);
 
-    renderer.render( scene_graph );
+    display->Render( scene_graph );
     global_shader->unuse();
 
     glFinish( );
     glutSwapBuffers( );
 }
 
-void GlutKeyboard( unsigned char key, int x, int y ) {
+void GlutKeyboard( unsigned char key, int x, int y )
+{
     switch ( key ) {
     default:
         break;
@@ -307,12 +309,13 @@ void GlutKeyboard( unsigned char key, int x, int y ) {
 
 const glm::vec3 back_movement(0.0f, 0.0f, 1.0f);
 const glm::vec3 forward_movement(0.0f, 0.0f, -1.0f);
-const glm::vec3 left_movement( -1.0f, 0.0f, 0.0f);
-const glm::vec3 right_movement( 1.0f, 0.0f, 0.0f);
+const glm::vec3 left_movement( -0.3f, 0.0f, 0.0f);
+const glm::vec3 right_movement( 0.3f, 0.0f, 0.0f);
 const glm::vec3 up_movement(0.0f, 1.0f, 0.0f);
 const glm::vec3 down_movement(0.0f, -1.0f, 0.0f);
 
-void GlutIdle( ) {
+void GlutIdle( )
+{
     //  Pump the events loop
     while ( !gqueue.empty( ) ) {
         switch ( gqueue.front( ) ) {
@@ -347,7 +350,7 @@ void GlutIdle( ) {
             selected->state.orient(left_movement);
             break;
         case queue_events::COLOR_CHANGE:
-            color = ( color >= 4 ? 1 : color + 1 );
+//            color = ( color >= 4 ? 1 : color + 1 );
             break;
         case queue_events::MODEL_CHANGE:
             break;
@@ -357,7 +360,6 @@ void GlutIdle( ) {
         gqueue.pop( );
     }
 
-    UpdateView( );
     glutPostRedisplay( );
 }
 
@@ -374,7 +376,7 @@ void GenerateModels( ) {
     //  Generate Torus
     tmpt = shared_ptr<VBOTorus> { new VBOTorus (0.7f, 0.3f, 50, 50) };
     tmpt->name = "vbo_torus";
-    renderer.add_model( tmpt );
+    renderer->add_model( tmpt );
 
     //  Generate Some equation model
     for ( auto power_to :
@@ -395,7 +397,7 @@ void GenerateModels( ) {
         tmp->name = "ex15_" + to_string( ext++ );
         tmp->renderPrimitive = GL_POINTS;
         tmp->setup_render_model( );
-        renderer.add_model( tmp );
+        renderer->add_model( tmp );
     }
 
 }
@@ -409,18 +411,4 @@ void GenerateEntities( ) {
     }
     //  Selected Entity
     selected = camera;
-}
-
-void UpdateView( )
-{
-    glm::mat4 r_matrix =
-            glm::rotate( glm::mat4 (), camera->state.getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
-    r_matrix =
-            glm::rotate( r_matrix, camera->state.getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    r_matrix =
-            glm::rotate( r_matrix, camera->state.getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
-    glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
-    camera_matrix = glm::lookAt(
-                camera->state.getPosition(),
-                camera->state.getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
 }

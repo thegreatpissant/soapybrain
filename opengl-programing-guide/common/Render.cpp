@@ -1,6 +1,6 @@
 #include "Render.h"
 
-void Renderer::render( std::vector<shared_ptr<Actor>> &actors ) {
+void Renderer::Render( std::vector<shared_ptr<Actor>> &actors ) {
 
     static const GLfloat one = 1.0f;
     static const glm::vec3 clear_color = glm::vec3(0.3, 0.3, 0.3);
@@ -36,17 +36,4 @@ shared_ptr<Model> Renderer::get_model (ModelID mid) {
 
 void Renderer::init( ) {
     glEnable(GL_DEPTH_TEST);
-    glClearColor( 0.2, 0.2, 0.2, 1.0 );
-}
-
-shared_ptr<Camera> Renderer::setCamera ( shared_ptr<Camera> new_camera )
-{
-    this->camera = new_camera;
-    return this->camera;
-}
-
-shared_ptr<Display> Renderer::setDisplay(shared_ptr<Display> new_display)
-{
-    this->display = new_display;
-    return this->display;
 }
