@@ -1,10 +1,10 @@
-#version 330
+#version 130
 
-layout(location = 0) in vec4 vPosition;
+//layout(location = 0) in vec4 vPosition;
 
 uniform mat4 MVP;
 
-//in vec4 vPosition;
+in vec4 vPosition;
 
 void main (void)
 {
