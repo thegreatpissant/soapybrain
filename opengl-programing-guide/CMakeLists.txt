@@ -36,7 +36,7 @@ include_directories ("${PROJECT_SOURCE_DIR}/common")
 #   Suck in the EngineCommon lib
 add_subdirectory (common)
 
-#   Set up OCULUS stuff
+#   Set up OCULUS Locations and Variables
 set (OCULUS_SDK_DIR "$ENV{HOME}/src/OculusSDKv3.2")
 #set (OCULUS_SDK_DIR "$ENV{HOME}/src/ovr_sdk_linux_0.4.3")
 set (OCULUS_LIBS ${OCULUS_LIBS} "${OCULUS_SDK_DIR}/LibOVR/Lib/Linux/Debug/x86_64/libovr.a")
@@ -58,12 +58,19 @@ add_executable (exj_2 exj_2.cpp ${RES_FILES})
 add_executable (triangles triangles.cpp ${RES_FILES})
 add_executable (ex15_1 ex15_1.cpp ${RES_FILES})
 add_executable (glm_tests glm_tests.cpp)
-add_executable (oculus_scafolding oculus_scafolding.cpp)
 
-#   Oculus Stuff
+#   Oculus applications
+add_executable (oculus_scafolding oculus_scafolding.cpp)
+add_executable (ex_oculus ex_oculus.cpp)
+
+#   Oculus Includes
 target_include_directories ( oculus_scafolding PUBLIC ${OCULUS_INCLUDES})
+target_include_directories ( ex_oculus PUBLIC ${OCULUS_INCLUDES})
+
+#   Oculus Linking flags
 #   Until we get these to link as part of our cmake modules
 SET_TARGET_PROPERTIES(oculus_scafolding PROPERTIES LINK_FLAGS "-ludev -lXrandr")
+SET_TARGET_PROPERTIES(ex_oculus PROPERTIES LINK_FLAGS "-ludev -lXrandr")
 
 #   Set up the libs for our executables
 target_link_libraries (exj_5 ${EXTRA_LIBS})
@@ -71,6 +78,8 @@ target_link_libraries (exj_3 ${EXTRA_LIBS})
 target_link_libraries (exj_2 ${EXTRA_LIBS})
 target_link_libraries (triangles ${EXTRA_LIBS})
 target_link_libraries (ex15_1 ${EXTRA_LIBS})
-#   Oculus stuff
+
+#   Oculus linking
 target_link_libraries (oculus_scafolding ${OCULUS_LIBS} ${EXTRA_LIBS} )
+target_link_libraries (ex_oculus ${OCULUS_LIBS} ${EXTRA_LIBS} )
 
