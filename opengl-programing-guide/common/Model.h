@@ -35,13 +35,13 @@ class Model
     Model( )
     {
     }
-    virtual void render( EntityState &e ) const = 0;
+    virtual void render( ) const = 0;
 };
 
 class Simple_equation_model_t : public Model
 {
   public:
-    void render( EntityState &e ) const
+    void render( ) const
     {
 
         //  What Shaders do we use for this model?

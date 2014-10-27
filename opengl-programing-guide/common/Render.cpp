@@ -13,7 +13,7 @@ void Renderer::Render( std::vector<shared_ptr<Actor>> &actors ) {
 
 
     for ( auto a : actors ) {
-        get_model (a->model_id)->render( a->state );
+        get_model (a->model_id)->render( );
     }
     glBindVertexArray( 0 );
 }

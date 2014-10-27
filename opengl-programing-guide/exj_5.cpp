@@ -193,15 +193,15 @@ void GlutReshape( int newWidth, int newHeight )
 void GlutDisplay( )
 {
     glm::mat4 r_matrix =
-            glm::rotate( glm::mat4 (), camera->state.getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
+            glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
     r_matrix =
-            glm::rotate( r_matrix, camera->state.getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
+            glm::rotate( r_matrix, camera->getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
     r_matrix =
-            glm::rotate( r_matrix, camera->state.getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
+            glm::rotate( r_matrix, camera->getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
     glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
     camera_matrix = glm::lookAt(
-                camera->state.getPosition(),
-                camera->state.getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+                camera->getPosition(),
+                camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
     glm::mat4 model = glm::mat4(1.0f);
     model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
     model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
@@ -320,34 +320,34 @@ void GlutIdle( )
     while ( !gqueue.empty( ) ) {
         switch ( gqueue.front( ) ) {
         case queue_events::MOVE_FORWARD:
-            selected->state.move (forward_movement);
+            selected->move (forward_movement);
             break;
         case queue_events::MOVE_BACKWARD:
-            selected->state.move (back_movement);
+            selected->move (back_movement);
             break;
         case queue_events::STRAFE_RIGHT:
-            selected->state.move (right_movement);
+            selected->move (right_movement);
             break;
         case queue_events::STRAFE_LEFT:
-            selected->state.move(left_movement);
+            selected->move(left_movement);
             break;
         case queue_events::YAW_RIGHT:
-            selected->state.orient(up_movement);
+            selected->orient(up_movement);
             break;
         case queue_events::YAW_LEFT:
-            selected->state.orient(down_movement);
+            selected->orient(down_movement);
             break;
         case queue_events::MOVE_UP:
-            selected->state.move(up_movement);
+            selected->move(up_movement);
             break;
         case queue_events::MOVE_DOWN:
-            selected->state.move(down_movement);
+            selected->move(down_movement);
             break;
         case queue_events::PITCH_UP:
-            selected->state.orient(right_movement);
+            selected->orient(right_movement);
             break;
         case queue_events::PITCH_DOWN:
-            selected->state.orient(left_movement);
+            selected->orient(left_movement);
             break;
         case queue_events::COLOR_CHANGE:
 //            color = ( color >= 4 ? 1 : color + 1 );

@@ -9,33 +9,23 @@
 
 #include <glm/glm.hpp>
 
-struct EntityState {
+class Entity {
+private:
     glm::vec3 position;
     glm::vec3 orientation;
 
-    EntityState( float px, float py, float pz, float ox, float oy, float oz )
-        : position ( glm::vec3( px, py, pz)), orientation( glm::vec3(ox, oy, oz)) {};
+public:
 
-    EntityState( glm::vec3 pos , glm::vec3 orien): position (pos), orientation(orien) {};
+    Entity( float px, float py, float pz, float ox, float oy, float oz );
+    Entity( glm::vec3 pos , glm::vec3 orien);
 
-    EntityState( )
-        : position (glm::vec3(0.0f, 0.0f, 0.0f)), orientation(glm::vec3(0.0f, 0.0f, 0.0f)) {};
-
+    Entity( );
     void setPosition (glm::vec3 pos);
     void setOrientation (glm::vec3 orien);
     glm::vec3 getPosition () const;
     glm::vec3 getOrientation () const;
     void move( glm::vec3 pos);
     void orient (glm::vec3 orien);
-};
-
-class Entity {
-public:
-    EntityState state;
-
-    Entity( float px, float py, float pz, float ox, float oy, float oz );
-    Entity ( glm::vec3 pos, glm::vec3 orien);
-    Entity( );
 
     virtual void Update ();
 };

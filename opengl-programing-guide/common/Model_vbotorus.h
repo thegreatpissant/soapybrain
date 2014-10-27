@@ -13,7 +13,7 @@ private:
 
 public:
     VBOTorus(float, float, int, int);
-    void render ( EntityState &e) const;
+    void render ( ) const;
 
 	int getVertexArrayHandle();
 };

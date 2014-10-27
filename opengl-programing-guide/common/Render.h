@@ -34,7 +34,7 @@ public:
     Renderer( ):GID(0) {};
     ~Renderer() {};
     void                init( );
-    void                Render( vector<shared_ptr<Actor>> &actors );
+    void                Render(std::vector<shared_ptr<Actor> > &actors );
     void                add_model( shared_ptr<Model> model );
     shared_ptr<Model>   get_model (ModelID mid);
 };
