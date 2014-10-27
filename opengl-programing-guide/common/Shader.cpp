@@ -175,7 +175,7 @@ void ShaderProgram::addShader(GLuint shader_handle)
     shader_handles.push_back(shader_handle);
 }
 
-void ShaderProgram::addShader(Shader shader)
+void ShaderProgram::addShader(Shader &shader)
 {
     shader_handles.push_back(shader.GetHandle());
 }

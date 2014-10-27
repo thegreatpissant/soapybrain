@@ -107,7 +107,7 @@ class ShaderProgram
     void bindFragDataLocation(GLuint location, const char *name);
 
     void addShader(GLuint shader_handle);
-    void addShader(Shader shader);
+    void addShader(Shader &shader);
     void compileShader(const char *filename, ShaderType shader_type) throw(ShaderProgramException);
     void link( ) throw(ShaderProgramException);
     void setUniform(const char *name, float x, float y, float z);
