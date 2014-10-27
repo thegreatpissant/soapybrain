@@ -22,7 +22,7 @@ void Entity::move( glm::vec3 pos)
 }
 void Entity::orient (glm::vec3 orien)
 {
-    this->orient(orien);
+    this->orientation += orien;
 }
 
 Entity::Entity( float px, float py, float pz, float ox, float oy, float oz ) {
