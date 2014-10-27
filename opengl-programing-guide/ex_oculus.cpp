@@ -121,7 +121,6 @@ int main( int argc, char **argv ) {
         else
         {
             std::cerr << " Could not enumerate device #" << i << std::endl;
-
         }
     }
     if (hmd_handle == -1)
@@ -372,13 +371,12 @@ void GlutIdle( )
 
 void CleanupAndExit( )
 {
-    for ( auto i = 0; i < num_ovr_devices; ++i )
-    {
-        ovrHmd_Destroy( hmd[i] );
-    }
-    ovr_Shutdown( );
+  //  Oculus Stuff
+  ovrHmd_Destroy( hmd[hmd_handle] );
+  ovr_Shutdown( );
+  //  Oculus Stuff End
 
-    exit( EXIT_SUCCESS );
+  exit( EXIT_SUCCESS );
 }
 
 void GenerateModels( ) {
