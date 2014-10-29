@@ -2,11 +2,11 @@
 cmake_minimum_required (VERSION 2.6)
 
 #   Define the project name
-project (opengl-programing-guide)
+project (opengl-programming-guide)
 
 #   The version number.
-set (opengl-programing-guide_VERSION_MAJOR 1)
-set (opengl-programing-guide_VERSION_MINOR 0)
+set (opengl-programming-guide_VERSION_MAJOR 1)
+set (opengl-programming-guide_VERSION_MINOR 0)
 
 #   Look for our dependencies
 find_package(OpenGL REQUIRED)
