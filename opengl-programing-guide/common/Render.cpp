@@ -2,20 +2,18 @@
 
 void Renderer::Render( std::vector<shared_ptr<Actor>> &actors ) {
 
-    static const GLfloat one = 1.0f;
-    static const glm::vec3 clear_color = glm::vec3(0.3, 0.3, 0.3);
-
-    glClearBufferfv (GL_COLOR, 0, &clear_color[0]);
-    glClearBufferfv (GL_DEPTH, 0, &one);
-
-    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
 
 
-    for ( auto a : actors ) {
+    static float rot = 1.0f;
+    for ( shared_ptr<Actor> a : actors ) {
+        glm::mat4 model = glm::mat4(1.0f);
+        model *= glm::translate(glm::mat4(1.0f), a->getPosition());
+        model *= glm::rotate( glm::mat4(1.0f), a->getOrientation().x + rot, glm::vec3(0.0f, 1.0f, 0.0));
+        a->getShader()->setUniform("M", model);
         get_model (a->model_id)->render( );
     }
-    glBindVertexArray( 0 );
+    rot += 0.2f;
+
 }
 
 void Renderer::add_model( shared_ptr<Model> model ) {

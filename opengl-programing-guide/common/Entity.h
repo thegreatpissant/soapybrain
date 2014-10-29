@@ -7,12 +7,21 @@
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 
+//  StdLib
+#include <memory>
+using std::shared_ptr;
+
+//  3rd Party
 #include <glm/glm.hpp>
+
+//  Common
+#include "Shader.h"
 
 class Entity {
 private:
     glm::vec3 position;
     glm::vec3 orientation;
+    shared_ptr<ShaderProgram> mShader;
 
 public:
 
@@ -22,6 +31,8 @@ public:
     Entity( );
     void setPosition (glm::vec3 pos);
     void setOrientation (glm::vec3 orien);
+    void setShader (shared_ptr<ShaderProgram> shader);
+    shared_ptr<ShaderProgram> getShader ();
     glm::vec3 getPosition () const;
     glm::vec3 getOrientation () const;
     void move( glm::vec3 pos);
