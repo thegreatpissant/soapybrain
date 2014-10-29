@@ -56,7 +56,7 @@ throw (ShaderProgramException)
     GLint compile_ok = GL_FALSE;
     glGetShaderiv (object, GL_COMPILE_STATUS, &compile_ok);
     if (compile_ok == GL_FALSE ) {
-        string msg = string("Failed to compile shader.") + shader_log(object);
+        string msg = string("Failed to compile shader.") + this->source + " " + shader_log(object);
         glDeleteShader (object);
         throw (ShaderProgramException(msg));
     }
