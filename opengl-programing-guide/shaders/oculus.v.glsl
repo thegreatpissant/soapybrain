@@ -1,12 +1,12 @@
-#version 130
+#version 330
 
-//layout(location = 0) in vec4 vPosition;
+in vec4 in_position;
+in vec2 in_tex_coord;
 
-uniform mat4 MVP;
-
-in vec4 vPosition;
+out vec2 vs_tex_coord;
 
 void main (void)
 {
-  gl_Position =  MVP * vPosition;
+    gl_Position = in_position;
+    vs_tex_coord = in_tex_coord;
 }

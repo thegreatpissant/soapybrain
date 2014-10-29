@@ -59,10 +59,10 @@ shared_ptr<Entity> selected;
 vector<shared_ptr<Actor>> scene_graph;
 
 //  Constants and Vars
-Shader oculus_vertex_shader(GL_VERTEX_SHADER), oculus_fragment_shader(GL_FRAGMENT_SHADER);
-ShaderProgram oculus_shader;
+Shader default_vertex_shader(GL_VERTEX_SHADER), default_fragment_shader(GL_FRAGMENT_SHADER);
+ShaderProgram default_shader;
 ShaderProgram * global_shader;
-glm::mat4 MVP;
+glm::mat4 VP;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
 glm::mat4 ModelViewMatrix;
@@ -88,12 +88,20 @@ float dir = 1.0f;
 float xpos = 2.0f;
 float ypos = 0.0f;
 
-//  Oculus Stufffffff
+//  Oculus Global Stuff
+Shader oculus_vertex_shader(GL_VERTEX_SHADER), oculus_fragment_shader(GL_FRAGMENT_SHADER);
+ShaderProgram oculus_shader;
 ovrHmdDesc *hmdDesc;
 ovrHmd *hmd;
 int hmd_handle = -1;
 int num_ovr_devices = 0;
+void GenerateOculusRenderReqs ();
+//  Texture items
+GLsizei TexWidth=640, TexHeight=480;
+GLuint framebuffer, texture;
+GLuint renderbuffer;
 
+//  Oculus Global Stuff end
 // MAIN //
 int main( int argc, char **argv ) {
 
@@ -158,6 +166,7 @@ int main( int argc, char **argv ) {
     //  Load our Application Items
     GenerateModels( );
     GenerateShaders( );
+    GenerateOculusRenderReqs( );
 
     //  This scene specific items
     GenerateEntities( );
@@ -175,7 +184,21 @@ int main( int argc, char **argv ) {
 void GenerateShaders( ) {
     //  Shaders
 
-
+    try {
+        default_vertex_shader.SourceFile("../shaders/default.vert");
+        default_fragment_shader.SourceFile ("../shaders/default.frag");
+        default_vertex_shader.Compile();
+        default_fragment_shader.Compile();
+        default_shader.addShader(default_vertex_shader);
+        default_shader.addShader(default_fragment_shader);
+        default_shader.link();
+        default_shader.unuse();
+        default_shader.printActiveUniforms();
+    }
+    catch (ShaderProgramException excp) {
+        cerr << excp.what() << endl;
+        exit (EXIT_FAILURE);
+    }
     try {
         oculus_vertex_shader.SourceFile("../shaders/oculus.v.glsl");
         oculus_fragment_shader.SourceFile ("../shaders/oculus.f.glsl");
@@ -192,7 +215,7 @@ void GenerateShaders( ) {
         exit (EXIT_FAILURE);
     }
 
-    global_shader = &oculus_shader;
+    global_shader = &default_shader;
 }
 
 void GlutReshape( int newWidth, int newHeight )
@@ -214,41 +237,89 @@ void GlutDisplay( )
         yaw = pose.Orientation.y;
         eyePitch = pose.Orientation.x;
         eyeRoll = pose.Orientation.z;
-//        std::cout << "yaw: " << yaw << " eyePitch: " << eyePitch << " eyeRoll: " << eyeRoll << std::endl;
+        //        std::cout << "yaw: " << yaw << " eyePitch: " << eyePitch << " eyeRoll: " << eyeRoll << std::endl;
     }
     //  OCULUS STUFF END
 
+    //  Render to texture
+    //  Attach the texture and depth buffer to the framebuffer
+    glGenFramebuffers (1, &framebuffer);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbuffer);
+    glEnable(GL_DEPTH_TEST);
+
+    glViewport ( 0, 0, display->getWidth(), display->getHeight());
     glm::mat4 r_matrix =
-//            glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
-            glm::rotate( glm::mat4 (), -eyePitch, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+            glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
+    //            glm::rotate( glm::mat4 (), -eyePitch, glm::vec3( 1.0f, 0.0f, 0.0f ) );
     r_matrix =
-//            glm::rotate( r_matrix, camera->getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
-            glm::rotate( r_matrix, yaw, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+            glm::rotate( r_matrix, camera->getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
+    //            glm::rotate( r_matrix, yaw, glm::vec3( 0.0f, 1.0f, 0.0f ) );
     r_matrix =
-//            glm::rotate( r_matrix, camera->getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
-            glm::rotate( r_matrix, -eyeRoll, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+            glm::rotate( r_matrix, camera->getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
+    //            glm::rotate( r_matrix, -eyeRoll, glm::vec3( 0.0f, 0.0f, 1.0f ) );
     glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
     camera_matrix = glm::lookAt(
                 camera->getPosition(),
                 camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
     glm::mat4 model = glm::mat4(1.0f);
-    model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
-    model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
-    ModelViewMatrix = camera_matrix *  model;
-    MVP = display->getPerspective() * ModelViewMatrix;
+    VP = display->getPerspective() * camera_matrix;
 
     //  Set values in the shader
     global_shader->use();
-    global_shader->setUniform("MVP", MVP );
+    global_shader->setUniform("VP", VP );
+    global_shader->setUniform("M", model);
 
     global_shader->setUniform("color", color);
 
     display->Render( scene_graph );
 
+
+    glBindTexture (GL_TEXTURE_2D, texture);
+
+    //  Render to texture cont...
+    glGenerateMipmap(GL_TEXTURE_2D);
+
     global_shader->unuse();
+    oculus_shader.use();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, display->getWidth(), display->getHeight());
+    glClearColor (0.0f, 0.0f, 1.0f, 1.0f);
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_TEXTURE_2D);
+
+    static const GLfloat quad_data [] =
+    {
+        -1.0f, -1.0f, 0.0f, 1.0f,
+        1.0f, -1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 0.0f, 1.0f,
+        -1.0f, 1.0f, 0.0f, 1.0f,
+
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f
+    };
+
+    GLuint buf;
+    glGenBuffers(1, &buf);
+    glBindBuffer(GL_ARRAY_BUFFER, buf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_data), &quad_data[0], GL_STATIC_DRAW);
+    GLuint vao;
+    glGenVertexArrays(1,&vao);
+    glBindVertexArray(vao);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+    glEnableVertexAttribArray (0);
+    glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(16*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glFinish( );
     glutSwapBuffers( );
+
+    oculus_shader.unuse();
 
     //  OCULUS STUFF
     ovrHmd_EndFrameTiming(hmd[hmd_handle]);
@@ -416,12 +487,28 @@ void GenerateModels( ) {
 }
 
 void GenerateEntities( ) {
-   //  Actors
+    //  Actors
     GLfloat a = 0.0f;
-    for ( int i = 0; i < 1; i++, a += 10.0f ) {
-        scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, i ) } );
+    for ( int i = 0; i < 10; i++, a += 5.0f ) {
+        shared_ptr<Actor> actor = shared_ptr<Actor>{ new Actor(a, 0.0f, /*a*/0.0f, a, 0.0f, 0.0f, 0 ) };
+        actor->setShader(shared_ptr<ShaderProgram>(global_shader));
+        scene_graph.push_back(actor);
     }
     //  Selected Entity
     selected = camera;
+}
+
+
+void GenerateOculusRenderReqs ()
+{
+    //  Create an empty texture
+    glGenTextures (1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, TexWidth, TexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+    //  Create a depth buffer for our framebuffer
+    glGenRenderbuffers(1, &framebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
+    glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, display->getWidth()/2, display->getHeight()/2);
+
 }
