@@ -4,7 +4,7 @@ My OpenGL projects
   A solid project idea will get spun out.
 ** openglbook
    An online tutorial I was going through
-** opengl-programing-guide
+** opengl-programming-guide
    The updated defacto std to learing opengl.  This is turning into
    more then just the book examples.  Some other items for developing
    parts to a game or rendering engine are creeping in.
@@ -19,3 +19,12 @@ My OpenGL projects
   - glm
   - freeglut
   - video card supporting at least opengl 2.0
+* Building
+  All current work is happening in the opengl-programming-guide directory
+  > cd opengl-programming-guide
+  > mkdir build
+  > cd build
+  > cmake ../
+  > make 
+  Then run the programs
+ 
