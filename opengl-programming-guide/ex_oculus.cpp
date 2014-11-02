@@ -276,18 +276,20 @@ void GlutDisplay( )
 
 
     glBindTexture (GL_TEXTURE_2D, texture);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     //  Render to texture cont...
     glGenerateMipmap(GL_TEXTURE_2D);
 
     global_shader->unuse();
+//    glEnable(GL_TEXTURE_2D);
     oculus_shader.use();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, display->getWidth(), display->getHeight());
-    glClearColor (0.0f, 0.0f, 1.0f, 1.0f);
+    glViewport(display->getWidth() / 4, display->getHeight()/4, (display->getWidth()/2), (display->getHeight()/2));
+    glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_TEXTURE_2D);
 
     static const GLfloat quad_data [] =
     {
@@ -296,9 +298,9 @@ void GlutDisplay( )
         1.0f, 1.0f, 0.0f, 1.0f,
         -1.0f, 1.0f, 0.0f, 1.0f,
 
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        1.0f, 0.0f,
+        0.0f, 2.0f,
+        2.0f, 2.0f,
+        2.0f, 0.0f,
         0.0f, 0.0f
     };
 
@@ -502,11 +504,11 @@ void GenerateOculusRenderReqs ()
     //  Create an empty texture
     glGenTextures (1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, TexWidth, TexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, display->getWidth(), display->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     //  Create a depth buffer for our framebuffer
-    glGenRenderbuffers(1, &framebuffer);
+    glGenRenderbuffers(1, &renderbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-    glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, display->getWidth()/2, display->getHeight()/2);
+    glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, display->getWidth(), display->getHeight());
 
 }
