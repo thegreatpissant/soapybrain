@@ -48,6 +48,7 @@ enum class queue_events {
     PITCH_DOWN,
     COLOR_CHANGE,
     MODEL_CHANGE,
+    FULL_SCREEN,
     APPLICATION_QUIT
 };
 
@@ -95,11 +96,19 @@ ovrHmdDesc *hmdDesc;
 ovrHmd *hmd;
 int hmd_handle = -1;
 int num_ovr_devices = 0;
+// Function
 void GenerateOculusRenderReqs ();
+void GenerateOculusDisplayValues ();
 //  Texture items
 GLsizei TexWidth=640, TexHeight=480;
-GLuint framebuffer, texture;
+GLuint framebuffer, texture, oculusTexture;
 GLuint renderbuffer;
+ovrSizei renderTargetSize;
+
+//  Initialized in GenerateOculusDisplayValues
+ovrEyeRenderDesc eyeRenderDesc[2];
+ovrSizei recommendTex0Size;
+ovrSizei recommendTex1Size;
 
 //  Oculus Global Stuff end
 // MAIN //
@@ -110,8 +119,9 @@ int main( int argc, char **argv ) {
     int num_ovr_devices = ovrHmd_Detect( );
     if ( num_ovr_devices > 0 )
     {
-        hmdDesc = new ovrHmdDesc[num_ovr_devices];
         hmd = new ovrHmd[num_ovr_devices];
+        hmdDesc = new ovrHmdDesc[num_ovr_devices];
+
     }
     else
     {
@@ -123,6 +133,7 @@ int main( int argc, char **argv ) {
         hmd[i] = ovrHmd_Create( i );
         if ( hmd[i] )
         {
+            ovrHmd_GetDesc(hmd[i], &hmdDesc[i]);
             hmd_handle = i;
             break;
         }
@@ -142,10 +153,14 @@ int main( int argc, char **argv ) {
         std::cerr << "Required Sensor Capabilities not available.\n";
         exit (EXIT_FAILURE);
     }
+
+    GenerateOculusDisplayValues ();
+
     //  OCULUS STUFF END //
 
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
+    display->Reshape( renderTargetSize.w, renderTargetSize.h);
     glutInitWindowSize( display->getWidth(), display->getHeight() );
 
     glutCreateWindow( argv[0] );
@@ -244,38 +259,61 @@ void GlutDisplay( )
     //  Attach the texture and depth buffer to the framebuffer
     glGenFramebuffers (1, &framebuffer);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, oculusTexture, 0);
     glFramebufferRenderbuffer( GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbuffer);
     glEnable(GL_DEPTH_TEST);
+    //  Set render state
+    static const GLfloat one = 1.0f;
+    static const glm::vec3 clear_color = glm::vec3(0.3, 0.3, 0.3);
 
-    glViewport ( 0, 0, display->getWidth(), display->getHeight());
-    glm::mat4 r_matrix =
-            glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
-    //            glm::rotate( glm::mat4 (), -eyePitch, glm::vec3( 1.0f, 0.0f, 0.0f ) );
-    r_matrix =
-            glm::rotate( r_matrix, camera->getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    //            glm::rotate( r_matrix, yaw, glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    r_matrix =
-            glm::rotate( r_matrix, camera->getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
-    //            glm::rotate( r_matrix, -eyeRoll, glm::vec3( 0.0f, 0.0f, 1.0f ) );
-    glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
-    camera_matrix = glm::lookAt(
-                camera->getPosition(),
-                camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    glm::mat4 model = glm::mat4(1.0f);
-    VP = display->getPerspective() * camera_matrix;
+    glClearBufferfv (GL_COLOR, 0, &clear_color[0]);
+    glClearBufferfv (GL_DEPTH, 0, &one);
 
-    //  Set values in the shader
-    global_shader->use();
-    global_shader->setUniform("VP", VP );
-    global_shader->setUniform("M", model);
+    for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)
+    {
+        ovrEyeType  eye     = hmdDesc->EyeRenderOrder[eyeIndex];
+//        ovrPosef    eyePose = ovrHmd_BeginEyeRender(*hmd, eye);
+//        ovrQuatf       orientation = Quatf(eyePose.Orientation);
+//        ovrMatrix4f    proj        = ovrMatrix4f_Projection(hmdDesc->DefaultEyeFov[eye], 0.01f, 10000.0f, true);
 
-    global_shader->setUniform("color", color);
+//        ovrMatrix4f
+//                view = ovrMatrix4f(orientation.Inverted()) * Matrix4f::Translation(-EyePos);
 
-    display->Render( scene_graph );
+        int vpw = display->getWidth()/2;
+        if (eye == 0 )
+            glViewport(0,0, vpw, display->getHeight());
+        if (eye == 1 )
+            glViewport ( vpw, 0, vpw, display->getHeight());
 
+        glm::mat4 r_matrix =
+                glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        //            glm::rotate( glm::mat4 (), -eyePitch, glm::vec3( 1.0f, 0.0f, 0.0f ) );
+        r_matrix =
+                glm::rotate( r_matrix, camera->getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        //            glm::rotate( r_matrix, yaw, glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        r_matrix =
+                glm::rotate( r_matrix, camera->getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        //            glm::rotate( r_matrix, -eyeRoll, glm::vec3( 0.0f, 0.0f, 1.0f ) );
+        glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
+        camera_matrix = glm::lookAt(
+                    camera->getPosition(),
+                    camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        glm::mat4 model = glm::mat4(1.0f);
+        VP = display->getPerspective() * camera_matrix;
 
-    glBindTexture (GL_TEXTURE_2D, texture);
+        //  Set values in the shader
+        global_shader->use();
+        global_shader->setUniform("VP", VP );
+        global_shader->setUniform("M", model);
+
+        global_shader->setUniform("color", color);
+
+        display->Render( scene_graph );
+//        ovrHmd_EndEyeRender(*hmd,eye,eyePose, );
+
+    }
+
+    glBindTexture (GL_TEXTURE_2D, oculusTexture);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -286,7 +324,7 @@ void GlutDisplay( )
 //    glEnable(GL_TEXTURE_2D);
     oculus_shader.use();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(display->getWidth() / 4, display->getHeight()/4, (display->getWidth()/2), (display->getHeight()/2));
+    glViewport(0, 0, display->getWidth(), display->getHeight());
     glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -298,9 +336,9 @@ void GlutDisplay( )
         1.0f, 1.0f, 0.0f, 1.0f,
         -1.0f, 1.0f, 0.0f, 1.0f,
 
-        0.0f, 2.0f,
-        2.0f, 2.0f,
-        2.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f,
         0.0f, 0.0f
     };
 
@@ -316,7 +354,6 @@ void GlutDisplay( )
     glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(16*sizeof(float)));
     glEnableVertexAttribArray(1);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
     glFinish( );
     glutSwapBuffers( );
 
@@ -383,6 +420,10 @@ void GlutKeyboard( unsigned char key, int x, int y )
     case 'M':
         gqueue.push( queue_events::MODEL_CHANGE );
         break;
+    case 'f':
+    case 'F':
+        gqueue.push( queue_events::FULL_SCREEN );
+        break;
     }
 }
 
@@ -432,6 +473,9 @@ void GlutIdle( )
             color = ( color >= 4 ? 1 : color + 1 );
             break;
         case queue_events::MODEL_CHANGE:
+            break;
+        case queue_events::FULL_SCREEN:
+            glutFullScreenToggle();
             break;
         case queue_events::APPLICATION_QUIT:
             CleanupAndExit( );
@@ -498,17 +542,47 @@ void GenerateEntities( ) {
     selected = camera;
 }
 
+void GenerateOculusDisplayValues ()
+{
+    //  Get our eye render information
 
+    eyeRenderDesc[0] = ovrHmd_GetRenderDesc(*hmd, ovrEye_Left, hmdDesc->DefaultEyeFov[0]);
+    eyeRenderDesc[1] = ovrHmd_GetRenderDesc(*hmd, ovrEye_Right, hmdDesc->DefaultEyeFov[1]);
+
+    //  Generate Textures
+    recommendTex0Size = ovrHmd_GetFovTextureSize( *hmd, ovrEye_Left, hmdDesc->DefaultEyeFov[0], 1.0f);
+    recommendTex1Size = ovrHmd_GetFovTextureSize( *hmd, ovrEye_Right, hmdDesc->DefaultEyeFov[1], 1.0f);
+
+    renderTargetSize.w = recommendTex0Size.w + recommendTex1Size.w;
+    renderTargetSize.h = max (recommendTex0Size.h, recommendTex1Size.h);
+}
 void GenerateOculusRenderReqs ()
 {
-    //  Create an empty texture
-    glGenTextures (1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, display->getWidth(), display->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glGenTextures (1, &oculusTexture);
+    glBindTexture (GL_TEXTURE_2D, oculusTexture);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, renderTargetSize.w, renderTargetSize.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+
+
+//    int eyeNum = 0;
+//    ovrDistortionMesh meshData;
+//    ovrHmd_CreateDistortionMesh( hmd, eyeRenderDesc[eyeNum].Eye, eyeRenderDesc[eyeNum].Fov, distrotionCaps, &meshData);
+
+//    ovrHmd_GetRenderScaleAndOffset (eyeRenderDesc[eyeNum].Fov,
+//                                    textureSize, viewports[eyeNum],
+//                                    (ovrVector2f*) DistortionData.UVScaleOffset[eyeNum]);
+//    //  Create an empty texture
+//    glGenTextures (1, &texture);
+//    glBindTexture(GL_TEXTURE_2D, texture);
+//    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, display->getWidth(), display->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     //  Create a depth buffer for our framebuffer
     glGenRenderbuffers(1, &renderbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
-    glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, display->getWidth(), display->getHeight());
+    glRenderbufferStorage (GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, renderTargetSize.w, renderTargetSize.h);
 
 }

@@ -62,13 +62,6 @@ int Display::getWidth() const
 
 void Display::Render(vector<shared_ptr<Actor> > scenegraph)
 {
-    //  Set render state
-    static const GLfloat one = 1.0f;
-    static const glm::vec3 clear_color = glm::vec3(0.3, 0.3, 0.3);
-
-    glClearBufferfv (GL_COLOR, 0, &clear_color[0]);
-    glClearBufferfv (GL_DEPTH, 0, &one);
-
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CCW);
 
