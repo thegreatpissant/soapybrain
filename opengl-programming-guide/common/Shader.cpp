@@ -248,6 +248,7 @@ void ShaderProgram::unuse ()
 
 void ShaderProgram::Delete()
 {
+    unuse();
     glDeleteProgram(getHandle());
 }
 

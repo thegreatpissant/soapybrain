@@ -61,8 +61,8 @@ vector<shared_ptr<Actor>> scene_graph;
 
 //  Constants and Vars
 Shader default_vertex_shader(GL_VERTEX_SHADER), default_fragment_shader(GL_FRAGMENT_SHADER);
-ShaderProgram default_shader;
-ShaderProgram * global_shader;
+shared_ptr<ShaderProgram> default_shader;
+shared_ptr<ShaderProgram> global_shader;
 glm::mat4 VP;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
@@ -91,7 +91,7 @@ float ypos = 0.0f;
 
 //  Oculus Global Stuff
 Shader oculus_vertex_shader(GL_VERTEX_SHADER), oculus_fragment_shader(GL_FRAGMENT_SHADER);
-ShaderProgram oculus_shader;
+shared_ptr<ShaderProgram> oculus_shader;
 ovrHmdDesc *hmdDesc;
 ovrHmd *hmd;
 int hmd_handle = -1;
@@ -203,11 +203,12 @@ void GenerateShaders( ) {
         default_fragment_shader.SourceFile ("../shaders/default.frag");
         default_vertex_shader.Compile();
         default_fragment_shader.Compile();
-        default_shader.addShader(default_vertex_shader);
-        default_shader.addShader(default_fragment_shader);
-        default_shader.link();
-        default_shader.unuse();
-        default_shader.printActiveUniforms();
+        default_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        default_shader->addShader(default_vertex_shader);
+        default_shader->addShader(default_fragment_shader);
+        default_shader->link();
+        default_shader->unuse();
+        default_shader->printActiveUniforms();
     }
     catch (ShaderProgramException excp) {
         cerr << excp.what() << endl;
@@ -218,18 +219,19 @@ void GenerateShaders( ) {
         oculus_fragment_shader.SourceFile ("../shaders/oculus.f.glsl");
         oculus_vertex_shader.Compile();
         oculus_fragment_shader.Compile();
-        oculus_shader.addShader(oculus_vertex_shader);
-        oculus_shader.addShader(oculus_fragment_shader);
-        oculus_shader.link();
-        oculus_shader.unuse();
-        oculus_shader.printActiveUniforms();
+        oculus_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        oculus_shader->addShader(oculus_vertex_shader);
+        oculus_shader->addShader(oculus_fragment_shader);
+        oculus_shader->link();
+        oculus_shader->unuse();
+        oculus_shader->printActiveUniforms();
     }
     catch (ShaderProgramException excp) {
         cerr << excp.what() << endl;
         exit (EXIT_FAILURE);
     }
 
-    global_shader = &default_shader;
+    global_shader = default_shader;
 }
 
 void GlutReshape( int newWidth, int newHeight )
@@ -322,7 +324,7 @@ void GlutDisplay( )
 
     global_shader->unuse();
 //    glEnable(GL_TEXTURE_2D);
-    oculus_shader.use();
+    oculus_shader->use();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, display->getWidth(), display->getHeight());
     glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
@@ -357,7 +359,7 @@ void GlutDisplay( )
     glFinish( );
     glutSwapBuffers( );
 
-    oculus_shader.unuse();
+    oculus_shader->unuse();
 
     //  OCULUS STUFF
     ovrHmd_EndFrameTiming(hmd[hmd_handle]);
@@ -488,12 +490,13 @@ void GlutIdle( )
 
 void CleanupAndExit( )
 {
-  //  Oculus Stuff
-  ovrHmd_Destroy( hmd[hmd_handle] );
-  ovr_Shutdown( );
-  //  Oculus Stuff End
+    scene_graph.clear();
+    //  Oculus Stuff
+    ovrHmd_Destroy( hmd[hmd_handle] );
+    ovr_Shutdown( );
+    //  Oculus Stuff End
 
-  exit( EXIT_SUCCESS );
+    exit( EXIT_SUCCESS );
 }
 
 void GenerateModels( ) {

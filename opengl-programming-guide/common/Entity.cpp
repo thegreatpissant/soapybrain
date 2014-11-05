@@ -1,5 +1,9 @@
 #include "Entity.h"
 
+Entity::~Entity () {
+    mShader = nullptr;
+}
+
 void Entity::setPosition (glm::vec3 pos)
 {
     position = pos;

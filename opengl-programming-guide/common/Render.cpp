@@ -32,6 +32,10 @@ shared_ptr<Model> Renderer::get_model (ModelID mid) {
     return models[mid];
 }
 
+Renderer::~Renderer()
+{
+}
+
 void Renderer::init( ) {
     glEnable(GL_DEPTH_TEST);
 }

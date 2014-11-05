@@ -32,7 +32,7 @@ public:
     unordered_map<ShaderID, shared_ptr<Shader>> shaders;
 
     Renderer( ):GID(0) {};
-    ~Renderer() {};
+    ~Renderer();
     void                init( );
     void                Render(std::vector<shared_ptr<Actor> > &actors );
     void                add_model( shared_ptr<Model> model );

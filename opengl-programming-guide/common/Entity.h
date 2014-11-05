@@ -39,6 +39,7 @@ public:
     void orient (glm::vec3 orien);
 
     virtual void Update ();
+    ~Entity();
 };
 
 #endif
