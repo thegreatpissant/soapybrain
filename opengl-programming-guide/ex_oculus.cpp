@@ -107,8 +107,9 @@ ovrSizei renderTargetSize;
 
 //  Initialized in GenerateOculusDisplayValues
 ovrEyeRenderDesc eyeRenderDesc[2];
-ovrSizei recommendTex0Size;
-ovrSizei recommendTex1Size;
+ovrSizei recommendTexSize[2];
+ovrVector2i windowPosition;
+ovrSizei screenResolution;
 
 //  Oculus Global Stuff end
 // MAIN //
@@ -160,8 +161,10 @@ int main( int argc, char **argv ) {
 
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
-    display->Reshape( renderTargetSize.w, renderTargetSize.h);
+    display->Reshape( screenResolution.w, screenResolution.h);
     glutInitWindowSize( display->getWidth(), display->getHeight() );
+    glutInitWindowPosition(windowPosition.x, windowPosition.y);
+
 
     glutCreateWindow( argv[0] );
     if ( glewInit( ) ) {
@@ -236,7 +239,8 @@ void GenerateShaders( ) {
 
 void GlutReshape( int newWidth, int newHeight )
 {
-    display->Reshape(newWidth, newHeight);
+//    display->Reshape(newWidth, newHeight);
+    glutReshapeWindow(display->getWidth(), display->getHeight());
 }
 
 
@@ -266,7 +270,7 @@ void GlutDisplay( )
     glEnable(GL_DEPTH_TEST);
     //  Set render state
     static const GLfloat one = 1.0f;
-    static const glm::vec3 clear_color = glm::vec3(0.3, 0.3, 0.3);
+    static const glm::vec3 clear_color = glm::vec3(0.0, 0.0, 0.0);
 
     glClearBufferfv (GL_COLOR, 0, &clear_color[0]);
     glClearBufferfv (GL_DEPTH, 0, &one);
@@ -281,11 +285,11 @@ void GlutDisplay( )
 //        ovrMatrix4f
 //                view = ovrMatrix4f(orientation.Inverted()) * Matrix4f::Translation(-EyePos);
 
-        int vpw = display->getWidth()/2;
+        int vpw = recommendTexSize[eye].w;
         if (eye == 0 )
-            glViewport(0,0, vpw, display->getHeight());
+            glViewport(0,0, vpw, recommendTexSize[eye].h);
         if (eye == 1 )
-            glViewport ( vpw, 0, vpw, display->getHeight());
+            glViewport ( vpw, 0, vpw, recommendTexSize[eye].h);
 
         glm::mat4 r_matrix =
                 glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
@@ -538,7 +542,7 @@ void GenerateEntities( ) {
     GLfloat a = 0.0f;
     for ( int i = 0; i < 10; i++, a += 5.0f ) {
         shared_ptr<Actor> actor = shared_ptr<Actor>{ new Actor(a, 0.0f, /*a*/0.0f, a, 0.0f, 0.0f, 0 ) };
-        actor->setShader(shared_ptr<ShaderProgram>(global_shader));
+        actor->setShader(global_shader);
         scene_graph.push_back(actor);
     }
     //  Selected Entity
@@ -553,11 +557,14 @@ void GenerateOculusDisplayValues ()
     eyeRenderDesc[1] = ovrHmd_GetRenderDesc(*hmd, ovrEye_Right, hmdDesc->DefaultEyeFov[1]);
 
     //  Generate Textures
-    recommendTex0Size = ovrHmd_GetFovTextureSize( *hmd, ovrEye_Left, hmdDesc->DefaultEyeFov[0], 1.0f);
-    recommendTex1Size = ovrHmd_GetFovTextureSize( *hmd, ovrEye_Right, hmdDesc->DefaultEyeFov[1], 1.0f);
+    recommendTexSize[0] = ovrHmd_GetFovTextureSize( *hmd, ovrEye_Left, hmdDesc->DefaultEyeFov[0], 1.0f);
+    recommendTexSize[1] = ovrHmd_GetFovTextureSize( *hmd, ovrEye_Right, hmdDesc->DefaultEyeFov[1], 1.0f);
 
-    renderTargetSize.w = recommendTex0Size.w + recommendTex1Size.w;
-    renderTargetSize.h = max (recommendTex0Size.h, recommendTex1Size.h);
+    renderTargetSize.w = recommendTexSize[0].w + recommendTexSize[1].w;
+    renderTargetSize.h = max (recommendTexSize[0].h, recommendTexSize[1].h);
+
+    windowPosition = hmdDesc->WindowsPos;
+    screenResolution = hmdDesc->Resolution;
 }
 void GenerateOculusRenderReqs ()
 {

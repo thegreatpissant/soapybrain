@@ -24,7 +24,7 @@ if(NOT GLEW_FOUND)
 endif(NOT GLEW_FOUND)
 
 #  Use the C++11 std
-add_definitions(-std=c++11)
+add_definitions(-g -std=c++11)
 
 #  Make sure all of these are in the project as source files
 set (EXTRA_INCLUDE ${EXTRA_INCLUDE} Model.h Display.h Camera.h)
