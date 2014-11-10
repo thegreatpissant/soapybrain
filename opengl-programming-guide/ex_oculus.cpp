@@ -110,6 +110,27 @@ ovrEyeRenderDesc eyeRenderDesc[2];
 ovrSizei recommendTexSize[2];
 ovrVector2i windowPosition;
 ovrSizei screenResolution;
+ovrDistortionMesh meshData;
+ovrVector2f uvScaleOffset[2];
+struct DistortionVertex {
+    float Pos_x;
+    float Pos_y;
+    float TexR_x;
+    float TexR_y;
+    float TexG_x;
+    float TexG_y;
+    float TexB_x;
+    float TexB_y;
+    unsigned int ColR;
+    unsigned int ColG;
+    unsigned int ColB;
+    unsigned int ColA;
+};
+DistortionVertex * v[2];
+GLuint distortionBUF;
+GLuint distortionVAO;
+GLint locs[5];
+
 
 //  Oculus Global Stuff end
 // MAIN //
@@ -319,6 +340,9 @@ void GlutDisplay( )
 
     }
 
+    global_shader->unuse();
+    oculus_shader->use();
+
     glBindTexture (GL_TEXTURE_2D, oculusTexture);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -326,40 +350,22 @@ void GlutDisplay( )
     //  Render to texture cont...
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    global_shader->unuse();
-//    glEnable(GL_TEXTURE_2D);
-    oculus_shader->use();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, display->getWidth(), display->getHeight());
     glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    oculus_shader->setUniform("EyeToSourceUVScale", uvScaleOffset[0].x, uvScaleOffset[0].y);
+    oculus_shader->setUniform("EyeToSourceUVOffset", uvScaleOffset[1].x, uvScaleOffset[1].y);
 
-    static const GLfloat quad_data [] =
+    glViewport(0, 0, recommendTexSize[0].w, recommendTexSize[0].h);
+
+    glBindVertexArray(distortionVAO);
+    glBindBuffer ( GL_ELEMENT_ARRAY_BUFFER, distortionBUF);
+    for (int i = 0; i < 5; i++)
     {
-        -1.0f, -1.0f, 0.0f, 1.0f,
-        1.0f, -1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 0.0f, 1.0f,
-        -1.0f, 1.0f, 0.0f, 1.0f,
-
-        0.0f, 1.0f,
-        1.0f, 1.0f,
-        1.0f, 0.0f,
-        0.0f, 0.0f
-    };
-
-    GLuint buf;
-    glGenBuffers(1, &buf);
-    glBindBuffer(GL_ARRAY_BUFFER, buf);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad_data), &quad_data[0], GL_STATIC_DRAW);
-    GLuint vao;
-    glGenVertexArrays(1,&vao);
-    glBindVertexArray(vao);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-    glEnableVertexAttribArray (0);
-    glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(16*sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glEnableVertexAttribArray(locs[i]);
+    }
+    glDrawElements(GL_TRIANGLES, meshData.IndexCount, GL_UNSIGNED_SHORT, NULL);
     glFinish( );
     glutSwapBuffers( );
 
@@ -574,21 +580,79 @@ void GenerateOculusRenderReqs ()
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, renderTargetSize.w, renderTargetSize.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
+    ovrRecti viewports[2];
+    ovrVector2i eyevp;
+    eyevp.x = 0;
+    eyevp.y = 0;
+    viewports[0].Pos = eyevp;
+    viewports[0].Size = recommendTexSize[0];
+    eyevp.x = recommendTexSize[0].w;
+    viewports[1].Pos = eyevp;
+    viewports[1].Size = recommendTexSize[1];
 
+    for ( int eyeNum = 0; eyeNum < 2; eyeNum++)
+    {
+        // Allocate & generate distortion mesh vertices.
+        ovrHmd_CreateDistortionMesh(*hmd, eyeRenderDesc[eyeNum].Eye, eyeRenderDesc[eyeNum].Fov,
+                                    hmdDesc->DistortionCaps, &meshData);
+        ovrHmd_GetRenderScaleAndOffset(eyeRenderDesc[eyeNum].Fov,
+                                       recommendTexSize[eyeNum], viewports[eyeNum],
+                                       /*(ovrVector2f*)*/ &uvScaleOffset[eyeNum]);
+        // Now parse the vertex data and create a render ready vertex buffer from it
+        DistortionVertex * pVBVerts = new DistortionVertex[meshData.VertexCount];
+        v[eyeNum] = pVBVerts;
+        ovrDistortionVertex * ov  = meshData.pVertexData;
+        for ( unsigned vertNum = 0; vertNum < meshData.VertexCount; vertNum++ )
+        {
+            v[eyeNum]->Pos_x= ov->Pos.x;
+            v[eyeNum]->Pos_y = ov->Pos.y;
+            v[eyeNum]->TexR_x = (*(ovrVector2f*)&ov->TexR).x;
+            v[eyeNum]->TexR_y = (*(ovrVector2f*)&ov->TexR).y;
+            v[eyeNum]->TexG_x = (*(ovrVector2f*)&ov->TexG).x;
+            v[eyeNum]->TexG_y = (*(ovrVector2f*)&ov->TexG).y;
+            v[eyeNum]->TexB_x = (*(ovrVector2f*)&ov->TexB).x;
+            v[eyeNum]->TexB_y = (*(ovrVector2f*)&ov->TexB).y;
+            v[eyeNum]->ColR = v[eyeNum]->ColG = v[eyeNum]->ColB = (unsigned int)( ov->VignetteFactor * 255.99f );
+            v[eyeNum]->ColA = (unsigned int)( ov->TimeWarpFactor * 255.99f );
+            v[eyeNum]++; ov++;
+        }
 
-//    int eyeNum = 0;
-//    ovrDistortionMesh meshData;
-//    ovrHmd_CreateDistortionMesh( hmd, eyeRenderDesc[eyeNum].Eye, eyeRenderDesc[eyeNum].Fov, distrotionCaps, &meshData);
+        glGenVertexArrays(1,&distortionVAO);
+        glBindVertexArray(distortionVAO);
 
-//    ovrHmd_GetRenderScaleAndOffset (eyeRenderDesc[eyeNum].Fov,
-//                                    textureSize, viewports[eyeNum],
-//                                    (ovrVector2f*) DistortionData.UVScaleOffset[eyeNum]);
-//    //  Create an empty texture
-//    glGenTextures (1, &texture);
-//    glBindTexture(GL_TEXTURE_2D, texture);
-//    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, display->getWidth(), display->getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glGenBuffers(1, &distortionBUF);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, distortionBUF);
+
+        GLint prog = oculus_shader->getHandle();
+
+        locs[0] = glGetAttribLocation(prog, "Position");
+        locs[1] = glGetAttribLocation(prog, "Color");
+        locs[2] = glGetAttribLocation(prog, "TexCoord0");
+        locs[3] = glGetAttribLocation(prog, "TexCoord1");
+        locs[4] = glGetAttribLocation(prog, "TexCoord2");
+
+        glVertexAttribPointer(locs[0], 2, GL_FLOAT, false, sizeof(DistortionVertex), reinterpret_cast<char*>(0)+offsetof(DistortionVertex, Pos_x));
+        glVertexAttribPointer(locs[1], 4, GL_UNSIGNED_BYTE, true, sizeof(DistortionVertex), reinterpret_cast<char*>(0)+offsetof(DistortionVertex, ColR));
+        glVertexAttribPointer(locs[2], 2, GL_FLOAT, false, sizeof(DistortionVertex), reinterpret_cast<char*>(0)+offsetof(DistortionVertex, TexR_x));
+        glVertexAttribPointer(locs[3], 2, GL_FLOAT, false, sizeof(DistortionVertex), reinterpret_cast<char*>(0)+offsetof(DistortionVertex, TexG_x));
+        glVertexAttribPointer(locs[4], 2, GL_FLOAT, false, sizeof(DistortionVertex), reinterpret_cast<char*>(0)+offsetof(DistortionVertex, TexB_x));
+        for (int i = 0; i < 5; i++)
+        {
+            glEnableVertexAttribArray(locs[i]);
+        }
+        glBindVertexArray ( 0 );
+
+//        //Register this mesh with the renderer
+//        DistortionData.MeshVBs[eyeNum] = *pRender->CreateBuffer();
+//        DistortionData.MeshVBs[eyeNum]->Data ( Buffer_Vertex, pVBVerts,
+//                                               sizeof(DistortionVertex) * meshData.VertexCount );
+//        DistortionData.MeshIBs[eyeNum] = *pRender->CreateBuffer();
+//        DistortionData.MeshIBs[eyeNum]->Data ( Buffer_Index, meshData.pIndexData,
+//                                               sizeof(unsigned short) * meshData.IndexCount );
+//        delete [] pVBVerts;
+        ovrHmd_DestroyDistortionMesh( &meshData );
+    }
+
 
     //  Create a depth buffer for our framebuffer
     glGenRenderbuffers(1, &renderbuffer);
