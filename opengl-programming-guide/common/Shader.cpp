@@ -167,7 +167,7 @@ ShaderProgram::ShaderProgram (): linked(false), uniform_count(0)
 }
 ShaderProgram::~ShaderProgram()
 {
-    Delete ();
+    cleanup ();
 }
 
 void ShaderProgram::addShader(GLuint shader_handle)
@@ -246,7 +246,7 @@ void ShaderProgram::unuse ()
     glUseProgram (0);
 }
 
-void ShaderProgram::Delete()
+void ShaderProgram::cleanup()
 {
     unuse();
     glDeleteProgram(getHandle());
@@ -277,9 +277,11 @@ void ShaderProgram::bindFragDataLocation  (GLuint location, const char * name)
 
 }
 
-void ShaderProgram::setUniform (const char *name, float x, float y, float z)
+void ShaderProgram::setUniform (const char *name, float x, float y)
 {
-
+    float v2[2];
+    v2[0] = x; v2[1] = y;
+    glUniform2fv (uniformLocations.at(string(name)), 1, &v2[0]);
 }
 
 void ShaderProgram::setUniform(const char *name, const glm::vec3 & v )

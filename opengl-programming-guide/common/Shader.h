@@ -110,7 +110,7 @@ class ShaderProgram
     void addShader(Shader &shader);
     void compileShader(const char *filename, ShaderType shader_type) throw(ShaderProgramException);
     void link( ) throw(ShaderProgramException);
-    void setUniform(const char *name, float x, float y, float z);
+    void setUniform(const char *name, float x, float y);
     void setUniform(const char *name, const glm::vec3 &v);
     void setUniform(const char *name, const glm::vec4 &v);
     void setUniform(const char *name, const glm::mat4 &m);
@@ -120,7 +120,7 @@ class ShaderProgram
     void setUniform(const char *name, bool val);
     void use( ) throw(ShaderProgramException);
     void unuse ();
-    void Delete ( );
+    void cleanup ( );
 
     int getHandle( );
     void scrape( );
