@@ -62,15 +62,18 @@ add_executable (glm_tests glm_tests.cpp)
 #   Oculus applications
 add_executable (oculus_scafolding oculus_scafolding.cpp)
 add_executable (ex_oculus ex_oculus.cpp)
+add_executable (ex_texture_render ex_texture_render.cpp)
 
 #   Oculus Includes
 target_include_directories ( oculus_scafolding PUBLIC ${OCULUS_INCLUDES})
 target_include_directories ( ex_oculus PUBLIC ${OCULUS_INCLUDES})
+target_include_directories ( ex_texture_render PUBLIC ${OCULUS_INCLUDES})
 
 #   Oculus Linking flags
 #   Until we get these to link as part of our cmake modules
 SET_TARGET_PROPERTIES(oculus_scafolding PROPERTIES LINK_FLAGS "-ludev -lXrandr")
 SET_TARGET_PROPERTIES(ex_oculus PROPERTIES LINK_FLAGS "-ludev -lXrandr")
+SET_TARGET_PROPERTIES(ex_texture_render PROPERTIES LINK_FLAGS "-ludev -lXrandr")
 
 #   Set up the libs for our executables
 target_link_libraries (exj_5 ${EXTRA_LIBS})
@@ -82,4 +85,5 @@ target_link_libraries (ex15_1 ${EXTRA_LIBS})
 #   Oculus linking
 target_link_libraries (oculus_scafolding ${OCULUS_LIBS} ${EXTRA_LIBS} )
 target_link_libraries (ex_oculus ${OCULUS_LIBS} ${EXTRA_LIBS} )
+target_link_libraries (ex_texture_render ${OCULUS_LIBS} ${EXTRA_LIBS} )
 
