@@ -218,8 +218,8 @@ void GenerateShaders( ) {
         exit (EXIT_FAILURE);
     }
     try {
-        oculus_vertex_shader.SourceFile("../shaders/oculus.v.glsl");
-        oculus_fragment_shader.SourceFile ("../shaders/oculus.f.glsl");
+        oculus_vertex_shader.SourceFile("../shaders/texture_render.v.glsl");
+        oculus_fragment_shader.SourceFile ("../shaders/texture_render.f.glsl");
         oculus_vertex_shader.Compile();
         oculus_fragment_shader.Compile();
         oculus_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
