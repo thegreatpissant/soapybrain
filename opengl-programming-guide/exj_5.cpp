@@ -37,13 +37,13 @@ using namespace std;
 #include <glm/gtx/transform2.hpp>
 
 //  Engine parts
-#include "common/Shader.h"
-#include "common/Render.h"
-#include "common/Model.h"
-#include "common/Display.h"
-#include "common/Actor.h"
-#include "common/Camera.h"
-#include "common/Model_vbotorus.h"
+#include "Shader.h"
+#include "Render.h"
+#include "Model.h"
+#include "Display.h"
+#include "Actor.h"
+#include "Camera.h"
+#include "Model_vbotorus.h"
 
 enum class queue_events {
     STRAFE_LEFT,

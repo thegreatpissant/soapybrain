@@ -1,9 +1,3 @@
-#   Minimum cmake version required
-cmake_minimum_required (VERSION 2.6)
-
-#   Define the project name
-project (opengl-programming-guide)
-
 #   The version number.
 set (opengl-programming-guide_VERSION_MAJOR 1)
 set (opengl-programming-guide_VERSION_MINOR 0)
@@ -31,10 +25,10 @@ file (GLOB RES_FILES shaders/*.frag shaders/*.vert shaders/*.glsl)
 
 #   Ensure We include Everything we need
 include_directories ("${PROJECT_BINARY_DIR}")
-include_directories ("${PROJECT_SOURCE_DIR}/common")
+include_directories ("${PROJECT_SOURCE_DIR}/src")
 
 #   Suck in the EngineCommon lib
-add_subdirectory (common)
+#add_subdirectory (${PROJECT_SOURCE_DIR}/src)
 
 #   Set up OCULUS Locations and Variables
 set (OCULUS_SDK_DIR "$ENV{HOME}/src/OculusSDKv3.2")
@@ -53,11 +47,6 @@ add_definitions(-std=c++11)
 
 #   Set up the Executables
 add_executable (exj_5 exj_5.cpp ${RES_FILES})
-add_executable (exj_3 exj_3.cpp ${RES_FILES})
-add_executable (exj_2 exj_2.cpp ${RES_FILES})
-add_executable (triangles triangles.cpp ${RES_FILES})
-add_executable (ex15_1 ex15_1.cpp ${RES_FILES})
-add_executable (glm_tests glm_tests.cpp)
 
 #   Oculus applications
 add_executable (oculus_scafolding oculus_scafolding.cpp)
@@ -77,10 +66,6 @@ SET_TARGET_PROPERTIES(ex_texture_render PROPERTIES LINK_FLAGS "-ludev -lXrandr")
 
 #   Set up the libs for our executables
 target_link_libraries (exj_5 ${EXTRA_LIBS})
-target_link_libraries (exj_3 ${EXTRA_LIBS})
-target_link_libraries (exj_2 ${EXTRA_LIBS})
-target_link_libraries (triangles ${EXTRA_LIBS})
-target_link_libraries (ex15_1 ${EXTRA_LIBS})
 
 #   Oculus linking
 target_link_libraries (oculus_scafolding ${OCULUS_LIBS} ${EXTRA_LIBS} )
