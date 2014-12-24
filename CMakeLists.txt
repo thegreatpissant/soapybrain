@@ -10,6 +10,10 @@ set (VERSION_MINOR 3)
 set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
 set (OCULUS_SUPPORT off CACHE BOOL OFF)
+set (EXAMPLES_BUILD off CACHE BOOL OFF)
 
 add_subdirectory ("src")
+
+IF (EXAMPLES_BUILD)
 add_subdirectory ("soapybrain-examples")
+ENDIF (EXAMPLES_BUILD)
