@@ -24,15 +24,13 @@ if(NOT GLEW_FOUND)
 endif(NOT GLEW_FOUND)
 
 #  Use the C++11 std
-add_definitions(-g -std=c++11)
+add_definitions(-std=c++11)
 
 # Set headers and source
 set (${PROJECT_NAME}_headers ./Actor.h ./Camera.h ./Display.h ./Entity.h ./Model.h ./Model_vbotorus.h ./Render.h ./Shader.h )
 set (${PROJECT_NAME}_sources ./Actor.cpp ./Display.cpp ./Entity.cpp ./Model_vbotorus.cpp ./Render.cpp ./Shader.cpp shader_utils.cpp)
 
 #  Define the library and its dependencies
-add_library(EngineCommon ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
+add_library(soapybrain ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
 
-target_link_libraries(EngineCommon ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES})
-
-
+target_link_libraries(soapybrain ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES})

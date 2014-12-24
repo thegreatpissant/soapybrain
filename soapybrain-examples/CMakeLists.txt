@@ -1,6 +1,12 @@
-#   The version number.
-set (opengl-programming-guide_VERSION_MAJOR 1)
-set (opengl-programming-guide_VERSION_MINOR 0)
+set (project soapybrain-examples)
+
+set (VERSION_MAJOR 0)
+set (VERSION_MINOR 3)
+set (VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
+
+
+#  Bring in our own modules
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
 
 #   Look for our dependencies
 find_package(OpenGL REQUIRED)
@@ -8,27 +14,10 @@ find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(Threads)
 find_package(X11)
-
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
 find_package(UDev)
-
-#   !!EXAMPLE ONLY!!
-#   configure a header file to pass some of the cmake settings
-#   to the source code
-# configure_file (
-	#"${PROJECT_SOURCE_DIR}/exj_x.h.in"
-	#"${PROJECT_SOURCE_DIR}/exj_x.h"
-#)
 
 #   Add the shader files to the project space
 file (GLOB RES_FILES shaders/*.frag shaders/*.vert shaders/*.glsl)
-
-#   Ensure We include Everything we need
-include_directories ("${PROJECT_BINARY_DIR}")
-include_directories ("${PROJECT_SOURCE_DIR}/src")
-
-#   Suck in the EngineCommon lib
-#add_subdirectory (${PROJECT_SOURCE_DIR}/src)
 
 #   Set up OCULUS Locations and Variables
 set (OCULUS_SDK_DIR "$ENV{HOME}/src/OculusSDKv3.2")
@@ -38,7 +27,7 @@ set (OCULUS_LIBS ${OCULUS_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${UDEV_LIBARIES} ${X11
 set (OCULUS_INCLUDES ${OCLUS_INCLUDES} "${OCULUS_SDK_DIR}/LibOVR/Src")
 
 #   Define our dependence on the Enginecommon lib
-set (EXTRA_LIBS ${EXTRA_LIBS} EngineCommon)
+set (EXTRA_LIBS ${EXTRA_LIBS} soapybrain)
 #   Define our dependence on OpenGL GLEW and GLUT
 set (EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARY})
 
@@ -52,6 +41,8 @@ add_executable (exj_5 exj_5.cpp ${RES_FILES})
 add_executable (oculus_scafolding oculus_scafolding.cpp)
 add_executable (ex_oculus ex_oculus.cpp)
 add_executable (ex_texture_render ex_texture_render.cpp)
+
+include_directories (../src)
 
 #   Oculus Includes
 target_include_directories ( oculus_scafolding PUBLIC ${OCULUS_INCLUDES})

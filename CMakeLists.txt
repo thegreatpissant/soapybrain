@@ -10,7 +10,7 @@ set (VERSION_MINOR 3)
 set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
 add_subdirectory ("src")
-add_subdirectory ("opengl-programming-guide")
+add_subdirectory ("soapybrain-examples")
 
 #   !!EXAMPLE ONLY!!
 #   configure a header file to pass some of the cmake settings
