@@ -1,3 +1,5 @@
+project(libsoapybrain)
+
 #   Look for GLUT
 find_package(GLUT REQUIRED)
 include_directories(${GLUT_INCLUDE_DIRS})
@@ -31,6 +33,6 @@ set (${PROJECT_NAME}_headers ./Actor.h ./Camera.h ./Display.h ./Entity.h ./Model
 set (${PROJECT_NAME}_sources ./Actor.cpp ./Display.cpp ./Entity.cpp ./Model_vbotorus.cpp ./Render.cpp ./Shader.cpp shader_utils.cpp)
 
 #  Define the library and its dependencies
-add_library(soapybrain ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources})
 
-target_link_libraries(soapybrain ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES})

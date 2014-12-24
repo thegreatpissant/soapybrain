@@ -27,7 +27,7 @@ set (OCULUS_LIBS ${OCULUS_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${UDEV_LIBARIES} ${X11
 set (OCULUS_INCLUDES ${OCLUS_INCLUDES} "${OCULUS_SDK_DIR}/LibOVR/Src")
 
 #   Define our dependence on the Enginecommon lib
-set (EXTRA_LIBS ${EXTRA_LIBS} soapybrain)
+set (EXTRA_LIBS ${EXTRA_LIBS} libsoapybrain)
 #   Define our dependence on OpenGL GLEW and GLUT
 set (EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARY})
 
