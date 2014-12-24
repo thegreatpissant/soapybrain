@@ -5,8 +5,9 @@ cmake_minimum_required (VERSION 2.6)
 project (soapybrain)
 
 #   The version number.
-set (soapybrain_VERSION_MAJOR 1)
-set (soapybrain_VERSION_MINOR 0)
+set (VERSION_MAJOR 0)
+set (VERSION_MINOR 3)
+set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
 add_subdirectory ("src")
 add_subdirectory ("opengl-programming-guide")
