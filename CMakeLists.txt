@@ -9,15 +9,7 @@ set (VERSION_MAJOR 0)
 set (VERSION_MINOR 3)
 set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
+set (OCULUS_SUPPORT off CACHE BOOL OFF)
+
 add_subdirectory ("src")
 add_subdirectory ("soapybrain-examples")
-
-#   !!EXAMPLE ONLY!!
-#   configure a header file to pass some of the cmake settings
-#   to the source code
-# configure_file (
-	#"${PROJECT_SOURCE_DIR}/exj_x.h.in"
-	#"${PROJECT_SOURCE_DIR}/exj_x.h"
-#)
-
-
