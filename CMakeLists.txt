@@ -17,3 +17,6 @@ add_subdirectory ("src")
 IF (EXAMPLES_BUILD)
 add_subdirectory ("soapybrain-examples")
 ENDIF (EXAMPLES_BUILD)
+
+#  Export our include location for including projects
+set (SOAPYBRAIN_INCLUDES "${PROJECT_SRC_DIR}/src" PARENT_SCOPE)
