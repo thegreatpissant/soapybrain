@@ -58,6 +58,7 @@ enum class queue_events {
     PITCH_DOWN,
     COLOR_CHANGE,
     MODEL_CHANGE,
+    RENDER_PRIMITIVE_CHANGE,
     APPLICATION_QUIT
 };
 
@@ -72,10 +73,10 @@ vector<shared_ptr<Actor>> scene_graph;
 //  @@TODO Should move into a variable system
 Shader vertex_shader(GL_VERTEX_SHADER), fragment_shader(GL_FRAGMENT_SHADER);
 Shader ads_vertex_shader(GL_VERTEX_SHADER), ads_fragment_shader(GL_FRAGMENT_SHADER);
-ShaderProgram diffuse_shading;
-ShaderProgram ads_shading;
-ShaderProgram * global_shader;
-glm::mat4 MVP;
+shared_ptr<ShaderProgram> diffuse_shader;
+shared_ptr<ShaderProgram> ads_shader;
+shared_ptr<ShaderProgram> global_shader;
+glm::mat4 VP;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
 glm::mat4 ModelViewMatrix;
@@ -87,6 +88,9 @@ glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 Ld = glm::vec3(0.3f, 0.5f, 0.1f);
 glm::vec3 Ls = glm::vec3(0.7f, 0.2f, 2.8f);
 glm::vec4 LightPosition;
+GLint global_render_primitive = 0;
+GLint max_primitives = 3;
+GLint global_model_id = 0;
 
 
 //  Function Declarations
@@ -102,6 +106,8 @@ void GenerateModels( );
 void GenerateEntities( );
 //  Shaders
 void GenerateShaders( );
+//  Render Primitives
+GLint UnmapRenderPrimitive ( int rp );
 
 //  Globalized user vars
 GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -15.0f }, rotate{ 0.0f };
@@ -154,10 +160,11 @@ void GenerateShaders( ) {
         fragment_shader.SourceFile("../shaders/diffuse_shading.frag");
         vertex_shader.Compile();
         fragment_shader.Compile();
-        diffuse_shading.addShader(vertex_shader.GetHandle());
-        diffuse_shading.addShader(fragment_shader.GetHandle());
-        diffuse_shading.link();
-        diffuse_shading.unuse();
+	diffuse_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        diffuse_shader->addShader(vertex_shader.GetHandle());
+        diffuse_shader->addShader(fragment_shader.GetHandle());
+        diffuse_shader->link();
+        diffuse_shader->unuse();
     }
     catch (ShaderProgramException excp) {
         cerr << excp.what () << endl;
@@ -169,29 +176,34 @@ void GenerateShaders( ) {
         ads_fragment_shader.SourceFile("../shaders/ads_shading.frag");
         ads_vertex_shader.Compile();
         ads_fragment_shader.Compile();
-        ads_shading.addShader(ads_vertex_shader.GetHandle());
-        ads_shading.addShader(ads_fragment_shader.GetHandle());
-        ads_shading.link();
-        ads_shading.unuse();
-        ads_shading.printActiveUniforms();
+	ads_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        ads_shader->addShader(ads_vertex_shader.GetHandle());
+        ads_shader->addShader(ads_fragment_shader.GetHandle());
+        ads_shader->link();
+        ads_shader->unuse();
+        ads_shader->printActiveUniforms();
     }
     catch (ShaderProgramException excp) {
         cerr << excp.what() << endl;
         exit (EXIT_FAILURE);
     }
 
-//    global_shader = &diffuse_shading;
-    global_shader = &ads_shading;
+    //    global_shader = diffuse_shader;
+    global_shader = ads_shader;
 }
 
 void GlutReshape( int newWidth, int newHeight )
 {
     display->Reshape(newWidth, newHeight);
+    glViewport(0,0, display->getWidth(), display->getHeight());
 }
 
 
 void GlutDisplay( )
 {
+    glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glm::mat4 r_matrix =
             glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
     r_matrix =
@@ -203,11 +215,14 @@ void GlutDisplay( )
                 camera->getPosition(),
                 camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
     glm::mat4 model = glm::mat4(1.0f);
-    model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
-    model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
-    ModelViewMatrix = camera_matrix *  model;
+    VP = display->getPerspective() * camera_matrix;
+
+    //    model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
+    //    model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
+    //    ModelViewMatrix = camera_matrix *  model; 
+    ModelViewMatrix = camera_matrix;
     NormalMatrix = glm::mat3 (glm::vec3( ModelViewMatrix[0]), glm::vec3( ModelViewMatrix[1]), glm::vec3( ModelViewMatrix[2]));
-    MVP = display->getPerspective() * ModelViewMatrix;
+    //    MVP = display->getPerspective() * ModelViewMatrix;
 
     //	Light Movement
     static float bounce = 0.0f;
@@ -228,10 +243,11 @@ void GlutDisplay( )
 
     //  Set values in the shader
     global_shader->use();
+    global_shader->setUniform("VP", VP);
+    global_shader->setUniform("M", model);
     global_shader->setUniform("NormalMatrix", NormalMatrix);
     //global_shader->setUniform("ProjectionMatrix", Projection);
     global_shader->setUniform("ModelViewMatrix", ModelViewMatrix);
-    global_shader->setUniform("MVP", MVP );
     global_shader->setUniform("Material.Ka", Ka);
     global_shader->setUniform("Material.Kd", Kd);
     global_shader->setUniform("Material.Ks", Ks);
@@ -304,6 +320,10 @@ void GlutKeyboard( unsigned char key, int x, int y )
     case 'M':
         gqueue.push( queue_events::MODEL_CHANGE );
         break;
+    case 'r':
+    case 'R':
+        gqueue.push( queue_events::RENDER_PRIMITIVE_CHANGE );
+        break;
     }
 }
 
@@ -352,8 +372,19 @@ void GlutIdle( )
         case queue_events::COLOR_CHANGE:
 //            color = ( color >= 4 ? 1 : color + 1 );
             break;
-        case queue_events::MODEL_CHANGE:
+        case queue_events::RENDER_PRIMITIVE_CHANGE:
+            global_render_primitive += 1;
+            global_render_primitive %= max_primitives;
+            for ( int i = 0; i < renderer->models.size(); i++)
+                renderer->models[i]->renderPrimitive = UnmapRenderPrimitive(global_render_primitive);
             break;
+        case queue_events::MODEL_CHANGE:
+            global_model_id += 1;
+            global_model_id %= renderer->models.size();
+            for (int i = 0; i < scene_graph.size(); i++)
+                scene_graph[i]->model_id = global_model_id;
+            break;
+
         case queue_events::APPLICATION_QUIT:
             CleanupAndExit( );
         }
@@ -376,6 +407,7 @@ void GenerateModels( ) {
     //  Generate Torus
     tmpt = shared_ptr<VBOTorus> { new VBOTorus (0.7f, 0.3f, 50, 50) };
     tmpt->name = "vbo_torus";
+    tmpt->renderPrimitive = UnmapRenderPrimitive(global_render_primitive);
     renderer->add_model( tmpt );
 
     //  Generate Some equation model
@@ -395,7 +427,7 @@ void GenerateModels( ) {
                 z = 0.0f;
         }
         tmp->name = "ex15_" + to_string( ext++ );
-        tmp->renderPrimitive = GL_POINTS;
+        tmp->renderPrimitive = UnmapRenderPrimitive(global_render_primitive);;
         tmp->setup_render_model( );
         renderer->add_model( tmp );
     }
@@ -405,10 +437,24 @@ void GenerateModels( ) {
 void GenerateEntities( ) {
    //  Actors
     GLfloat a = 0.0f;
-    for ( int i = 0; i < 1; i++, a += 10.0f ) {
-        scene_graph.push_back( shared_ptr<Actor>{ new Actor(
-                                                  a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, i ) } );
+    for ( int i = 0; i < 3; i++, a += 10.0f ) {
+        shared_ptr<Actor> actor = shared_ptr<Actor>{ new Actor(a, 0.0f, /*a*/0.0f, a, 0.0f, 0.0f, global_model_id ) };
+        actor->setShader(global_shader);
+        scene_graph.push_back(actor);
     }
     //  Selected Entity
     selected = camera;
+}
+
+int UnmapRenderPrimitive (int rp)
+{
+    switch (rp) {
+    case 0:
+        return GL_POINTS;
+    case 1:
+        return GL_LINES;
+    case 2:
+        return GL_TRIANGLES;
+    }
+    return GL_POINTS;
 }

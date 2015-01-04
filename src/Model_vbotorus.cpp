@@ -68,8 +68,7 @@ VBOTorus::VBOTorus(float outerRadius, float innerRadius, int nsides, int nrings)
 
 void VBOTorus::render() const {
     glBindVertexArray(this->vaos[0]);
-    glDrawElements(GL_LINES, 6 * faces, GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
-//    glDrawElements(GL_TRIANGLES, 6 * faces, GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
+    glDrawElements(renderPrimitive, 6 * faces, GL_UNSIGNED_INT, ((GLubyte *)NULL + (0)));
 }
 
 void VBOTorus::generateVerts(float * verts, float * norms, float * tex,

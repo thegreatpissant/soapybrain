@@ -25,13 +25,14 @@ enum Attrib_IDs
 class Model
 {
   private:
+
   public:
     long numVertices;
     string name;
     vector<float> vertices;
     vector<GLuint> vaos;
     vector<GLuint> buffers;
-    int renderPrimitive;
+    GLint renderPrimitive;
     Model( )
     {
     }

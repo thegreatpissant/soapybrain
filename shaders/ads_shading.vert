@@ -25,6 +25,8 @@ uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
 uniform mat4 ProjectionMatrix;
 uniform mat4 MVP;
+uniform mat4 VP;
+uniform mat4 M;
 
 void main()
 {
@@ -43,5 +45,7 @@ void main()
                pow( max( dot(r,v), 0.0 ), Material.Shininess );
 
     LightIntensity = ambient + diffuse + spec;
-    gl_Position = MVP * vec4(VertexPosition,1.0);
+//    gl_Position = MVP * vec4(VertexPosition,1.0);
+      gl_Position = VP * M * vec4(VertexPosition,1.0);
+      
 }
