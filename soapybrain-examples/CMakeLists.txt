@@ -14,7 +14,6 @@ find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(Threads)
 find_package(X11)
-find_package(UDev)
 
 #   Add the shader files to the project space
 file (GLOB RES_FILES shaders/*.frag shaders/*.vert shaders/*.glsl)
@@ -36,6 +35,8 @@ target_link_libraries (exj_5 ${EXTRA_LIBS})
 
 #  Oculus Examples
 IF (OCULUS_SUPPORT)
+# Oculus Package dependencies
+find_package(UDev)
 #   Set up OCULUS Locations and Variables
 set (OCULUS_SDK_DIR "$ENV{HOME}/src/OculusSDKv3.2")
 #set (OCULUS_SDK_DIR "$ENV{HOME}/src/ovr_sdk_linux_0.4.3")
