@@ -8,11 +8,11 @@ Originally my opengl experiments.  It is now a work on its own.
   - freeglut
   - video card supporting at least opengl 2.0
 * Building
-  All current work is happening in the opengl-programming-guide directory
-  > cd opengl-programming-guide
+  You may use the BuildProject.sh script or do the following
   > mkdir build
   > cd build
-  > cmake ../
+  > ln -s ../shaders ./  # this is for the examples to work correctly
+  > cmake-gui ../
   > make 
-  Then run the programs
+  if you enabled the examples they are in the ./build/soapybrain-examples dir. 
  
