@@ -31,4 +31,4 @@ add_subdirectory ("soapybrain-examples")
 ENDIF (EXAMPLES_BUILD)
 
 #  Export our include location for including projects
-set (SOAPYBRAIN_INCLUDES "${PROJECT_SOURCE_DIR}/src" PROJECT_SCOPE)
+set (SOAPYBRAIN_INCLUDES "${PROJECT_SOURCE_DIR}/src" PARENT_SCOPE)
