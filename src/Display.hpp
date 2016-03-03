@@ -8,8 +8,8 @@ using std::vector;
 using std::shared_ptr;
 
 //	Engine Includes
-#include "Camera.h"
-#include "Render.h"
+#include "Camera.hpp"
+#include "Render.hpp"
 
 //  Third Part
 #include <glm/glm.hpp>

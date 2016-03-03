@@ -1,7 +1,7 @@
 #ifndef VBOTORUS_H
 #define VBOTORUS_H
 
-#include "Model.h"
+#include "Model.hpp"
 
 class VBOTorus : public Model
 {

@@ -1,11 +1,11 @@
-#include "Render.h"
+#include "Render.hpp"
 
-void Renderer::Render( std::vector<shared_ptr<Actor>> &actors ) {
+void Renderer::Render( std::vector<std::shared_ptr<Actor>> &actors ) {
 
 
 
     static float rot = 1.0f;
-    for ( shared_ptr<Actor> a : actors ) {
+    for ( std::shared_ptr<Actor> a : actors ) {
         glm::mat4 model = glm::mat4(1.0f);
         model *= glm::translate(glm::mat4(1.0f), a->getPosition());
         model *= glm::rotate( glm::mat4(1.0f), a->getOrientation().x + rot, glm::vec3(0.0f, 1.0f, 0.0));
@@ -16,12 +16,12 @@ void Renderer::Render( std::vector<shared_ptr<Actor>> &actors ) {
 
 }
 
-void Renderer::add_model( shared_ptr<Model> model ) {
+void Renderer::add_model( std::shared_ptr<Model> model ) {
     std::cout << "Renderer added Model id " << GID << " Name " << model->name << std::endl;
     models[GID] = model;
     ++GID;
 }
-shared_ptr<Model> Renderer::get_model (ModelID mid) {
+std::shared_ptr<Model> Renderer::get_model (ModelID mid) {
     if (models.empty())
     {
         std::cerr << "No models available" << std::endl;
@@ -37,5 +37,5 @@ Renderer::~Renderer()
 }
 
 void Renderer::init( ) {
-    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_DEPTH_TEST);
 }

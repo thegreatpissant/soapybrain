@@ -9,6 +9,20 @@ set (VERSION_MAJOR 0)
 set (VERSION_MINOR 3)
 set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
+if ( NOT UNIX )
+    MESSAGE ( WARNING "Has been tested only on linux" )
+endif (NOT UNIX )
+
+file (GLOB RES_FILES shaders/*.frag shaders/*.vert shaders/*.glsl)
+
+#  Export our include location for including projects
+# TODO : Depricate SOAPYBRAIN_INCLUDES in broception
+set (SOAPYBRAIN_INCLUDES "${PROJECT_SOURCE_DIR}/src" )
+set (SOAPYBRAIN_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src" )
+set (SOAPYBRAIN_SHADER_DIR "${PROJECT_SOURCE_DIR}/shaders/")
+
+#   Add the shader files to the project space
+
 #   Setup OCULUS SDK
 set (OCULUS_SUPPORT off CACHE BOOL OFF)
 FIND_PATH(
@@ -23,12 +37,9 @@ FIND_PATH(
     "$ENV{HOME}/src/sixenseSDK_linux_OSX"
 )
 
-set (EXAMPLES_BUILD off CACHE BOOL OFF)
 add_subdirectory ("src")
 
+set (EXAMPLES_BUILD off CACHE BOOL OFF)
 IF (EXAMPLES_BUILD)
 add_subdirectory ("soapybrain-examples")
 ENDIF (EXAMPLES_BUILD)
-
-#  Export our include location for including projects
-set (SOAPYBRAIN_INCLUDES "${PROJECT_SOURCE_DIR}/src" PARENT_SCOPE)

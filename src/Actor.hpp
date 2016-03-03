@@ -1,9 +1,9 @@
 #ifndef __ACTOR_H__
 #define __ACTOR_H__
 
-#include "Entity.h"
-#include "Model.h"
-#include "Shader.h"
+#include "Entity.hpp"
+#include "Model.hpp"
+#include "Shader.hpp"
 
 class Actor : public Entity {
 private:

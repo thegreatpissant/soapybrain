@@ -19,9 +19,8 @@
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <memory>
 #include <cstdlib>
-
+#include <memory>
 using namespace std;
 
 //  OpenGL
@@ -37,13 +36,13 @@ using namespace std;
 #include <glm/gtx/transform2.hpp>
 
 //  Engine parts
-#include "Shader.h"
-#include "Render.h"
-#include "Model.h"
-#include "Display.h"
-#include "Actor.h"
-#include "Camera.h"
-#include "Model_vbotorus.h"
+#include "Shader.hpp"
+#include "Render.hpp"
+#include "Model.hpp"
+#include "Display.hpp"
+#include "Actor.hpp"
+#include "Camera.hpp"
+#include "Model_vbotorus.hpp"
 
 enum class queue_events {
     STRAFE_LEFT,
@@ -61,8 +60,8 @@ enum class queue_events {
     RENDER_PRIMITIVE_CHANGE,
     APPLICATION_QUIT
 };
-
 queue<queue_events> gqueue;
+
 shared_ptr<Display> display { new Display };
 shared_ptr<Renderer> renderer;
 shared_ptr<Camera> camera;
@@ -92,7 +91,6 @@ GLint global_render_primitive = 0;
 GLint max_primitives = 3;
 GLint global_model_id = 0;
 
-
 //  Function Declarations
 void Init( );
 void GlutIdle( );
@@ -116,10 +114,12 @@ float dir = 1.0f;
 float xpos = 2.0f;
 float ypos = 0.0f;
 
+
 // MAIN //
 int main( int argc, char **argv ) {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
+    display = shared_ptr<Display> {new Display() };
     glutInitWindowSize( display->getWidth(), display->getHeight() );
 
     glutCreateWindow( argv[0] );
@@ -131,8 +131,7 @@ int main( int argc, char **argv ) {
     //  Initialize common systems
 
     //  Camera
-    camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f,
-                                             0.0f ) };
+    camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f, 0.0f ) };
     renderer = display->getRenderer();
     display->setCamera (camera);
 
@@ -155,9 +154,10 @@ int main( int argc, char **argv ) {
 
 void GenerateShaders( ) {
     //  Shaders
+    string shader_dir(__SOAPYBRAIN_SHADER_DIR__);
     try {
-        vertex_shader.SourceFile("../shaders/diffuse_shading.vert");
-        fragment_shader.SourceFile("../shaders/diffuse_shading.frag");
+        vertex_shader.SourceFile(  shader_dir + string("diffuse_shading.vert"));
+        fragment_shader.SourceFile( shader_dir + string("diffuse_shading.frag"));
         vertex_shader.Compile();
         fragment_shader.Compile();
 	diffuse_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
@@ -172,8 +172,8 @@ void GenerateShaders( ) {
     }
 
     try {
-        ads_vertex_shader.SourceFile("../shaders/ads_shading.vert");
-        ads_fragment_shader.SourceFile("../shaders/ads_shading.frag");
+        ads_vertex_shader.SourceFile( shader_dir + string("ads_shading.vert"));
+        ads_fragment_shader.SourceFile( shader_dir + string ("ads_shading.frag"));
         ads_vertex_shader.Compile();
         ads_fragment_shader.Compile();
 	ads_shader = shared_ptr<ShaderProgram> { new ShaderProgram };

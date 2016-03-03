@@ -1,7 +1,7 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-#include "Entity.h"
+#include "Entity.hpp"
 
 #include <glm/glm.hpp>
 

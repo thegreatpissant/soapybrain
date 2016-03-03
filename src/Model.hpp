@@ -14,7 +14,7 @@ using std::endl;
 
 using ModelID = GLint;
 
-#include "Actor.h"
+#include "Actor.hpp"
 
 enum Attrib_IDs
 {

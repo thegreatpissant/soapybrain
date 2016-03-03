@@ -8,30 +8,52 @@ set (VERSION ${VERSION_MAJOR}.${VERSION_MINOR})
 #  Bring in our own modules
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules")
 
-#   Look for our dependencies
+set (EXTRA_LIBS)
+set (EXTRA_INCLUDES)
+
+#   Look for OpenGL
 find_package(OpenGL REQUIRED)
+if(NOT OPENGL_FOUND)
+    message(ERROR " OPENGL not found!")
+endif(NOT OPENGL_FOUND)
+set ( EXTRA_INCLUDES ${EXTRA_INCLUDES} ${OPENGL_INCLUDE_DIR} )
+set ( EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES} )
+
+#   Look for GLEW
 find_package(GLEW REQUIRED)
+if(NOT GLEW_FOUND)
+        message(ERROR " GLEW not found!")
+endif(NOT GLEW_FOUND)
+set ( EXTRA_INCLUDES ${EXTRA_INCLUDES} ${GLEW_INCLUDE_DIRS} )
+set ( EXTRA_LIBS ${EXTRA_LIBS} ${GLEW_LIBRARIES} )
+
+#   Look for GLUT
 find_package(GLUT REQUIRED)
+add_definitions(${GLUT_DEFINITIONS})
+if(NOT GLUT_FOUND)
+    message(ERROR " GLUT not found!")
+endif(NOT GLUT_FOUND)
+set ( EXTRA_INCLUDES ${EXTRA_INCLUDES} ${GLUT_INCLUDE_DIRS} )
+set ( EXTRA_LIBS ${EXTRA_LIBS} ${GLUT_LIBRARY} )
+
 find_package(Threads)
 find_package(X11)
 
-#   Add the shader files to the project space
-file (GLOB RES_FILES shaders/*.frag shaders/*.vert shaders/*.glsl)
-
-#   Define our dependence on the libsoapybrain 
-set (EXTRA_LIBS ${EXTRA_LIBS} libsoapybrain)
-#   Define our dependence on OpenGL GLEW and GLUT
-set (EXTRA_LIBS ${EXTRA_LIBS} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARY})
-
 #   Use the C++11 std
-add_definitions(-std=c++11)
+add_definitions( -std=c++11 )
 
-include_directories (../src)
+#   Define our dependence on the Soapybrain lib
+set (EXTRA_LIBS Soapybrain ${EXTRA_LIBS} )
+set (EXTRA_INCLUDES ${EXTRA_INCLUDES} ${SOAPYBRAIN_INCLUDES} )
+
+#   Pass in our shader dir
+#   TODO Copy the shaders localy to the build directory.
+add_definitions( -D__SOAPYBRAIN_SHADER_DIR__=\"${SOAPYBRAIN_SHADER_DIR}\" )
 
 #   Standard examples
-add_executable (exj_5 exj_5.cpp ${RES_FILES})
-target_link_libraries (exj_5 ${EXTRA_LIBS})
-
+add_executable (exj_5 exj_5.cpp ${RES_FILES} )
+target_link_libraries (exj_5 LINK_PUBLIC ${EXTRA_LIBS} )
+target_include_directories (exj_5 PUBLIC ${EXTRA_INCLUDES} )
 
 #  Oculus Examples
 IF (OCULUS_SUPPORT)

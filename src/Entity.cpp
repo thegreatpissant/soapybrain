@@ -1,4 +1,4 @@
-#include "Entity.h"
+#include "Entity.hpp"
 
 Entity::~Entity () {
     mShader = nullptr;
@@ -13,12 +13,12 @@ void Entity::setOrientation (glm::vec3 orien)
     orientation = orien;
 }
 
-void Entity::setShader(shared_ptr<ShaderProgram> shader)
+void Entity::setShader(std::shared_ptr<ShaderProgram> shader)
 {
     mShader = shader;
 }
 
-shared_ptr<ShaderProgram> Entity::getShader()
+std::shared_ptr<ShaderProgram> Entity::getShader()
 {
     return mShader;
 }
