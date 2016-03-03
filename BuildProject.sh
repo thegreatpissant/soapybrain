@@ -8,6 +8,9 @@ echo ' or eventually'
 echo '-  Leap motion support'
 echo '-  Razor support'
 
+if [ -d build ]; then
+  rm -fr build
+fi
 mkdir build
 cd build
 ln -s ../shaders ./
