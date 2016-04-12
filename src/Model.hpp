@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 
+#include <memory>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -11,10 +12,12 @@ using std::vector;
 using std::string;
 using std::cerr;
 using std::endl;
+using std::shared_ptr;
 
 using ModelID = GLint;
+using ShaderID = GLint;
 
-#include "Actor.hpp"
+#include "Shader.hpp"
 
 enum Attrib_IDs
 {
@@ -24,8 +27,6 @@ enum Attrib_IDs
 
 class Model
 {
-  private:
-
   public:
     long numVertices;
     string name;
@@ -33,6 +34,7 @@ class Model
     vector<GLuint> vaos;
     vector<GLuint> buffers;
     GLint renderPrimitive;
+    ShaderID shader;
     Model( )
     {
     }

@@ -9,7 +9,6 @@ using std::shared_ptr;
 
 //	Engine Includes
 #include "Camera.hpp"
-#include "Render.hpp"
 
 //  Third Part
 #include <glm/glm.hpp>
@@ -23,8 +22,6 @@ private:
 
     //	Set
     shared_ptr<Camera> mCamera;
-    //	Initialized
-    shared_ptr<Renderer> mRenderer;
 
     //	Calculated
     glm::mat4 Perspective;
@@ -35,11 +32,6 @@ private:
     Display( );
     void init ();
     void Reshape ( int newWidth, int newHeight);
-    void Render(vector<shared_ptr<Actor>> scenegraph);
-
-    shared_ptr<Camera> setCamera(shared_ptr<Camera> mc );
-    shared_ptr<Renderer> setRenderer(shared_ptr<Renderer> mr);
-    shared_ptr<Renderer> getRenderer();
 
     int getWidth () const;
     int getHeight () const;

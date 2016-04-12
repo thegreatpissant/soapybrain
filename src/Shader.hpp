@@ -92,6 +92,7 @@ class ShaderProgram
     vector<GLuint> shader_handles;
     GLint uniform_count;
     map<string, int> uniformLocations;
+    string name;
 
     int getUniformLocation(const char *name);
 
@@ -121,6 +122,9 @@ class ShaderProgram
     void use( ) throw(ShaderProgramException);
     void unuse ();
     void cleanup ( );
+
+    void setName(string name);
+    string getName();
 
     int getHandle( );
     void scrape( );

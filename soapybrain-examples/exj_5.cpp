@@ -74,7 +74,7 @@ Shader vertex_shader(GL_VERTEX_SHADER), fragment_shader(GL_FRAGMENT_SHADER);
 Shader ads_vertex_shader(GL_VERTEX_SHADER), ads_fragment_shader(GL_FRAGMENT_SHADER);
 shared_ptr<ShaderProgram> diffuse_shader;
 shared_ptr<ShaderProgram> ads_shader;
-shared_ptr<ShaderProgram> global_shader;
+ShaderID global_shader;
 glm::mat4 VP;
 glm::mat4 camera_matrix;
 glm::mat3 NormalMatrix;
@@ -130,14 +130,16 @@ int main( int argc, char **argv ) {
 
     //  Initialize common systems
 
-    //  Camera
     camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f, 0.0f ) };
-    renderer = display->getRenderer();
-    display->setCamera (camera);
+    //  Renderer
+    renderer = shared_ptr<Renderer> {new Renderer()};
+    renderer->set_display(display);
+    renderer->init();
 
     //  Load our Application Items
-    GenerateModels( );
+    //  For now order counts
     GenerateShaders( );
+    GenerateModels( );
 
     //  This scene specific items
     GenerateEntities( );
@@ -160,7 +162,8 @@ void GenerateShaders( ) {
         fragment_shader.SourceFile( shader_dir + string("diffuse_shading.frag"));
         vertex_shader.Compile();
         fragment_shader.Compile();
-	diffuse_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        diffuse_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        diffuse_shader->setName("Diffuse Shader");
         diffuse_shader->addShader(vertex_shader.GetHandle());
         diffuse_shader->addShader(fragment_shader.GetHandle());
         diffuse_shader->link();
@@ -170,6 +173,7 @@ void GenerateShaders( ) {
         cerr << excp.what () << endl;
         exit (EXIT_FAILURE);
     }
+    ShaderID difsid = renderer->add_shader(diffuse_shader);
 
     try {
         ads_vertex_shader.SourceFile( shader_dir + string("ads_shading.vert"));
@@ -177,6 +181,7 @@ void GenerateShaders( ) {
         ads_vertex_shader.Compile();
         ads_fragment_shader.Compile();
 	ads_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        ads_shader->setName("Ads Shader");
         ads_shader->addShader(ads_vertex_shader.GetHandle());
         ads_shader->addShader(ads_fragment_shader.GetHandle());
         ads_shader->link();
@@ -187,9 +192,10 @@ void GenerateShaders( ) {
         cerr << excp.what() << endl;
         exit (EXIT_FAILURE);
     }
+    ShaderID adsid = renderer->add_shader(ads_shader);
 
     //    global_shader = diffuse_shader;
-    global_shader = ads_shader;
+    global_shader = difsid;
 }
 
 void GlutReshape( int newWidth, int newHeight )
@@ -201,29 +207,6 @@ void GlutReshape( int newWidth, int newHeight )
 
 void GlutDisplay( )
 {
-    glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
-    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glm::mat4 r_matrix =
-            glm::rotate( glm::mat4 (), camera->getOrientation()[0], glm::vec3( 1.0f, 0.0f, 0.0f ) );
-    r_matrix =
-            glm::rotate( r_matrix, camera->getOrientation()[1], glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    r_matrix =
-            glm::rotate( r_matrix, camera->getOrientation()[2], glm::vec3( 0.0f, 0.0f, 1.0f ) );
-    glm::vec4 cr = r_matrix * glm::vec4( 0.0f, 0.0f, 1.0f, 1.0f );
-    camera_matrix = glm::lookAt(
-                camera->getPosition(),
-                camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
-    glm::mat4 model = glm::mat4(1.0f);
-    VP = display->getPerspective() * camera_matrix;
-
-    //    model *= glm::rotate(-35.0f, glm::vec3(1.0f,0.0f,0.0f));
-    //    model *= glm::rotate(35.0f, glm::vec3(0.0f,1.0f,0.0f));
-    //    ModelViewMatrix = camera_matrix *  model; 
-    ModelViewMatrix = camera_matrix;
-    NormalMatrix = glm::mat3 (glm::vec3( ModelViewMatrix[0]), glm::vec3( ModelViewMatrix[1]), glm::vec3( ModelViewMatrix[2]));
-    //    MVP = display->getPerspective() * ModelViewMatrix;
-
     //	Light Movement
     static float bounce = 0.0f;
     static bool bounce_lr = true;  //  True = left; False = right;
@@ -242,25 +225,7 @@ void GlutDisplay( )
     LightPosition = camera_matrix * glm::vec4(bounce, 0.0f, -5.0f, 1.0f);
 
     //  Set values in the shader
-    global_shader->use();
-    global_shader->setUniform("VP", VP);
-    global_shader->setUniform("M", model);
-    global_shader->setUniform("NormalMatrix", NormalMatrix);
-    //global_shader->setUniform("ProjectionMatrix", Projection);
-    global_shader->setUniform("ModelViewMatrix", ModelViewMatrix);
-    global_shader->setUniform("Material.Ka", Ka);
-    global_shader->setUniform("Material.Kd", Kd);
-    global_shader->setUniform("Material.Ks", Ks);
-    global_shader->setUniform("Light.La", La);
-    global_shader->setUniform("Light.Ld", Ld);
-    global_shader->setUniform("Light.Ls", Ls);
-    global_shader->setUniform("Light.Position", LightPosition);
-    global_shader->setUniform("Material.Shininess", Shine);
-
-    display->Render( scene_graph );
-    global_shader->unuse();
-
-    glFinish( );
+    renderer->render( scene_graph );
     glutSwapBuffers( );
 }
 
@@ -400,6 +365,7 @@ void CleanupAndExit( )
 }
 
 void GenerateModels( ) {
+    cout << "Generating Models" << endl;
     int ext = 0;
     shared_ptr<Simple_equation_model_t> tmp;
     shared_ptr<VBOTorus> tmpt;
@@ -408,6 +374,7 @@ void GenerateModels( ) {
     tmpt = shared_ptr<VBOTorus> { new VBOTorus (0.7f, 0.3f, 50, 50) };
     tmpt->name = "vbo_torus";
     tmpt->renderPrimitive = UnmapRenderPrimitive(global_render_primitive);
+    tmpt->shader = global_shader;
     renderer->add_model( tmpt );
 
     //  Generate Some equation model
@@ -429,21 +396,24 @@ void GenerateModels( ) {
         tmp->name = "ex15_" + to_string( ext++ );
         tmp->renderPrimitive = UnmapRenderPrimitive(global_render_primitive);;
         tmp->setup_render_model( );
+        tmp->shader = global_shader;
         renderer->add_model( tmp );
     }
-
+    cout << "Done!" << endl;
 }
 
 void GenerateEntities( ) {
+   cout << "Generating Scene Entities" << endl;
    //  Actors
     GLfloat a = 0.0f;
     for ( int i = 0; i < 3; i++, a += 10.0f ) {
         shared_ptr<Actor> actor = shared_ptr<Actor>{ new Actor(a, 0.0f, /*a*/0.0f, a, 0.0f, 0.0f, global_model_id ) };
-        actor->setShader(global_shader);
         scene_graph.push_back(actor);
     }
+    selected = scene_graph[0];
     //  Selected Entity
-    selected = camera;
+//    selected = camera;
+    cout << "Done" << endl;
 }
 
 int UnmapRenderPrimitive (int rp)

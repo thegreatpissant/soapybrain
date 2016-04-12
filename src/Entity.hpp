@@ -14,16 +14,10 @@ using std::shared_ptr;
 //  3rd Party
 #include <glm/glm.hpp>
 
-//  Common
-#include "Shader.hpp"
-
 class Entity {
-private:
+public:
     glm::vec3 position;
     glm::vec3 orientation;
-    shared_ptr<ShaderProgram> mShader;
-
-public:
 
     Entity( float px, float py, float pz, float ox, float oy, float oz );
     Entity( glm::vec3 pos , glm::vec3 orien);
@@ -31,8 +25,6 @@ public:
     Entity( );
     void setPosition (glm::vec3 pos);
     void setOrientation (glm::vec3 orien);
-    void setShader (std::shared_ptr<ShaderProgram> shader);
-    shared_ptr<ShaderProgram> getShader ();
     glm::vec3 getPosition () const;
     glm::vec3 getOrientation () const;
     void move( glm::vec3 pos);

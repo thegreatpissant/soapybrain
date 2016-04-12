@@ -236,6 +236,16 @@ throw (ShaderProgramException)
     scrape();
 }
 
+void ShaderProgram::setName(std::__cxx11::string name)
+{
+    this->name = name;
+}
+
+string ShaderProgram::getName()
+{
+    return this->name;
+}
+
 void ShaderProgram::use ()         throw (ShaderProgramException)
 {
     glUseProgram (getHandle());
@@ -327,6 +337,7 @@ void ShaderProgram::printActiveUniforms ()
               [] (const map<string, int>::value_type &elem) {
         cout << elem.first << ": " << elem.second << endl;
     });
+    cout << "End of uniform list." << endl;
     unuse();
 }
 
