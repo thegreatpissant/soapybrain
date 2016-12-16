@@ -207,7 +207,7 @@ throw (ShaderProgramException)
         case GL_NO_ERROR:
             break;
 	case GL_INVALID_ENUM:
-            msg = string ("Enum not valid");
+            msg = string ("Enumeration argument not valid");
             break;
         case GL_INVALID_VALUE:
             msg = string ("value not valid");
@@ -233,6 +233,7 @@ throw (ShaderProgramException)
         }
         if (msg.size() > 0)
             throw (ShaderProgramException(msg));
+            
 
     }
     //  Link the shaders
