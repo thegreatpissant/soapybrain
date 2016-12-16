@@ -202,25 +202,36 @@ throw (ShaderProgramException)
             throw (ShaderProgramException("This is not a shader"));
 
         glAttachShader ( handle, shader_handles[i] );
-        bool error = false;
         string msg;
         switch (glGetError()) {
         case GL_NO_ERROR:
             break;
+	case GL_INVALID_ENUM:
+            msg = string ("Enum not valid");
+            break;
         case GL_INVALID_VALUE:
-            error = true;
             msg = string ("value not valid");
             break;
         case GL_INVALID_OPERATION:
-            error = true;
             msg = string  ("not a shader object, or already in a program");
             break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION:
+            msg = string ("framebuffer object is not complete");
+            break;
+	case GL_OUT_OF_MEMORY:
+	    msg = string ("not enough memory to execute the command");
+            break;
+        case GL_STACK_UNDERFLOW:
+            msg = string ("Command execution would cause internal stack underflow");
+            break;
+        case GL_STACK_OVERFLOW:
+            msg = string ("Command execution would cause internal stack overflow");
+            break;
         default:
-            error = true;
             msg = string ("Unknown error occured");
             break;
         }
-        if (error)
+        if (msg.size() > 0)
             throw (ShaderProgramException(msg));
 
     }
