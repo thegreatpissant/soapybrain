@@ -3,11 +3,11 @@
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 VertexNormal;
 
-out vec3 LightIntensity;
+out float LightIntensity;
 
 uniform vec4 LightPosition; //  Light position in eye coords
-uniform vec3 Kd;            //  Diffuse reflectivity
-uniform vec3 Ld;            //  Light source intensity
+uniform float Kd;            //  Diffuse reflectivity
+uniform float Ld;            //  Light source intensity
 
 uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
@@ -23,7 +23,8 @@ void main(void)
     vec3 s = normalize (vec3 (LightPosition - eyeCoords));
 
     //        //  The diffuse shading equation
-    LightIntensity = Ld * Kd * max (dot (s, tnorm), 0.0 );
+//    LightIntensity = Ld * Kd * max (dot (s, tnorm), 0.0 );
+    LightIntensity = Ld * Kd * max ( 0.0, dot (normalize(LightPosition -eyeCoords), vec4(VertexNormal,1.0)));
     //    Convert position to clip coordinates and pass along
     gl_Position = MVP * vec4 (vPosition, 1.0);
 }

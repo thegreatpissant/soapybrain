@@ -1,10 +1,10 @@
 #version 330
 
-in vec3 LightIntensity;
+in float LightIntensity;
 
-layout( location = 0 ) out vec4 FragColor;
+layout( location = 0 ) out vec3 FragColor;
 
 void main(void)
 {
-    FragColor = vec4(LightIntensity , 1.0);
+    FragColor = vec3(0.4, 0.4, 0.0 ) * LightIntensity; //  , 1.0);
 }
