@@ -30,7 +30,7 @@ void Entity::move( glm::vec3 pos)
 
 void Entity::orient (glm::vec3 orien)
 {
-    assert(false);
+    //assert(false);
     this->orientation += orien;
 }
 
