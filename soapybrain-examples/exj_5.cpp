@@ -119,6 +119,9 @@ float ypos = 0.0f;
 int main( int argc, char **argv ) {
     glutInit( &argc, argv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA );
+    glutInitContextVersion (3, 1);
+    glutInitContextFlags (GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG);
+
     display = shared_ptr<Display> {new Display() };
     glutInitWindowSize( display->getWidth(), display->getHeight() );
 
