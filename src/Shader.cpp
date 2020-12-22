@@ -236,7 +236,7 @@ throw (ShaderProgramException)
     scrape();
 }
 
-void ShaderProgram::setName(std::__cxx11::string name)
+void ShaderProgram::setName(string name)
 {
     this->name = name;
 }
