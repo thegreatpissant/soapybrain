@@ -75,7 +75,6 @@
 * Future Application Ideas
   Should inspiration come my way from this stuff put results here.
 ** Implement a version of Mathographics computer examples
-** Give it oculus support
 * Game state
   Indicates state for the current point in the lifetime of the
   simulation.  Once the current state snapshot is sent to the render

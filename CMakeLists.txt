@@ -12,6 +12,7 @@ set (VERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 if ( NOT UNIX )
     MESSAGE ( WARNING "Has been tested only on linux" )
 endif (NOT UNIX )
+set (OpenGL_GL_PREFERENCE "GLVND")
 
 file (GLOB RES_FILES shaders/*.frag shaders/*.vert shaders/*.glsl)
 
@@ -22,20 +23,6 @@ set (SOAPYBRAIN_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src" )
 set (SOAPYBRAIN_SHADER_DIR "${PROJECT_SOURCE_DIR}/shaders/")
 
 #   Add the shader files to the project space
-
-#   Setup OCULUS SDK
-set (OCULUS_SUPPORT off CACHE BOOL OFF)
-FIND_PATH(
-  OCULUS_SDK_DIR
-  "$ENV{HOME}/src/OculusSDKv3.2"
-)
-
-#   Setup Sixense SDK
-set (SIXENSE_SUPPORT off CACHE BOOL OFF)
-FIND_PATH(
-    SIXENSE_SDK_DIR
-    "$ENV{HOME}/src/sixenseSDK_linux_OSX"
-)
 
 add_subdirectory ("src")
 
