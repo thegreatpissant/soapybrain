@@ -28,6 +28,7 @@ using namespace std;
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/freeglut.h>
+// #include <openglut.h>
 
 // 3rd Party
 #include <glm/glm.hpp>
@@ -97,6 +98,7 @@ void GlutIdle( );
 void GlutReshape( int newWidth, int newHeight );
 void GlutDisplay( );
 void GlutKeyboard( unsigned char key, int x, int y );
+void GlutMouseMotion( int x, int y);
 void CleanupAndExit( );
 //  Models
 void GenerateModels( );
@@ -152,6 +154,7 @@ int main( int argc, char **argv ) {
     glutReshapeFunc( GlutReshape );
     glutDisplayFunc( GlutDisplay );
     glutKeyboardFunc( GlutKeyboard );
+    glutMotionFunc( GlutMouseMotion );
 
     //  Go forth and loop
     glutMainLoop( );
@@ -232,6 +235,11 @@ void GlutDisplay( )
     glutSwapBuffers( );
 }
 
+void GlutMouseMotion( int x, int y)
+{
+   cout << "x:" << x << "  y:" << y << std::endl;
+}
+
 void GlutKeyboard( unsigned char key, int x, int y )
 {
     switch ( key ) {
@@ -254,20 +262,20 @@ void GlutKeyboard( unsigned char key, int x, int y )
     case 'A':
         gqueue.push( queue_events::STRAFE_LEFT );
         break;
-    case 'd':
-    case 'D':
+    case 'f':
+    case 'F':
         gqueue.push( queue_events::STRAFE_RIGHT );
         break;
     case 's':
     case 'S':
-        gqueue.push( queue_events::MOVE_BACKWARD );
+        gqueue.push( queue_events::MOVE_FORWARD );
         break;
     case 'w':
     case 'W':
-        gqueue.push( queue_events::MOVE_FORWARD );
+        gqueue.push( queue_events::MOVE_BACKWARD );
         break;
-    case 'k':
-    case 'K':
+    case 'j':
+    case 'J':
         gqueue.push( queue_events::MOVE_UP );
         break;
     case '-':
@@ -276,8 +284,8 @@ void GlutKeyboard( unsigned char key, int x, int y )
     case '+':
         gqueue.push( queue_events::PITCH_DOWN );
         break;
-    case 'j':
-    case 'J':
+    case 'k':
+    case 'K':
         gqueue.push( queue_events::MOVE_DOWN );
         break;
     case 'c':
@@ -428,6 +436,7 @@ int UnmapRenderPrimitive (int rp)
         return GL_LINES;
     case 2:
         return GL_TRIANGLES;
+    default:
+        return GL_POINTS;
     }
-    return GL_POINTS;
 }
