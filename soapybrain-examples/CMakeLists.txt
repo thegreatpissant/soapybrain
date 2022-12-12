@@ -17,9 +17,7 @@ if(NOT OPENGL_FOUND)
     message(ERROR " OPENGL not found!")
 endif(NOT OPENGL_FOUND)
 set ( EXTRA_INCLUDES ${EXTRA_INCLUDES} OpenGL::GL )
-#  ${OPENGL_INCLUDE_DIR} )
 set ( EXTRA_LIBS ${EXTRA_LIBS} OpenGL::GL )
-#  ${OPENGL_LIBRARIES} )
 
 #   Look for GLEW
 find_package(GLEW REQUIRED)
