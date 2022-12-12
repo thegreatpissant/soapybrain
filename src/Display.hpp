@@ -20,9 +20,6 @@ private:
     int screen_width;
     int screen_height;
 
-    //	Set
-    shared_ptr<Camera> mCamera;
-
     //	Calculated
     glm::mat4 Perspective;
 

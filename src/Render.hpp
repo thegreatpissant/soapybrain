@@ -29,13 +29,14 @@ class Renderer {
 private:
     ModelID GID;
     ShaderID SID;
-    Camera DefaultCamera;
+    std::shared_ptr<Camera> camera;
     std::shared_ptr<Display> display;
 public:
     unordered_map<ModelID, std::shared_ptr<Model>> models;
     unordered_map<ShaderID, std::shared_ptr<ShaderProgram>> shaders;
 
     void set_display( std::shared_ptr<Display> disp );
+    void set_camera( std::shared_ptr<Camera> camera );
 
     Renderer( ):GID(0),SID(0) {};
     ~Renderer();

@@ -11,8 +11,8 @@ void Renderer::render( std::vector<std::shared_ptr<Actor>> actors ) {
     glFrontFace( GL_CCW );
     //  Render Objects
     static float rot = 1.0f;
-    DefaultCamera.update();
-    glm::mat4 vp = display->getPerspective() * DefaultCamera.get_viewmat();
+    camera->update();
+    glm::mat4 vp = display->getPerspective() * camera->get_viewmat();
     for( std::shared_ptr<Actor> a : actors ) {
         glm::mat4 model = glm::rotate( glm::mat4(1.0f), a->getOrientation().x + rot, glm::vec3(0.0f, 1.0f, 0.0f) );
         model[3][0] = a->position.x;
@@ -36,8 +36,9 @@ ModelID Renderer::add_model( std::shared_ptr<Model> model ) {
     std::cout << "Renderer added Model id " << GID << " Name " << model->name << std::endl;
     models[GID] = model;
     ++GID;
-    //    return GID
+    // return GID;
 }
+
 std::shared_ptr<Model> Renderer::get_model (ModelID mid) {
     if (models.empty())
     {
@@ -75,13 +76,18 @@ void Renderer::set_display(std::shared_ptr<Display> disp)
     this->display = disp;
 }
 
+void Renderer::set_camera(std::shared_ptr<Camera> camera)
+{
+    this->camera = camera;
+}
+
 Renderer::~Renderer()
 {
 }
 
 void Renderer::init( ) {
-    DefaultCamera.position = glm::vec3(0.0f, 2.5f, 15.0f);
-    DefaultCamera.update();
+    camera->position = glm::vec3(0.0f, 2.5f, 15.0f);
+    camera->update();
 
     glEnable(GL_DEPTH_TEST);
 }

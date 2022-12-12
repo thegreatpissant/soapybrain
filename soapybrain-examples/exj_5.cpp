@@ -65,7 +65,7 @@ queue<queue_events> gqueue;
 
 shared_ptr<Display> display { new Display };
 shared_ptr<Renderer> renderer;
-shared_ptr<Camera> camera;
+
 shared_ptr<Entity> selected;
 vector<shared_ptr<Actor>> scene_graph;
 
@@ -111,6 +111,7 @@ GLint UnmapRenderPrimitive ( int rp );
 
 //  Globalized user vars
 GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -15.0f }, rotate{ 0.0f };
+shared_ptr<Camera> camera { new Camera( strafe, height, depth, 0.0f, 0.0f, 0.0f ) };
 
 float dir = 1.0f;
 float xpos = 2.0f;
@@ -135,10 +136,10 @@ int main( int argc, char **argv ) {
 
     //  Initialize common systems
 
-    camera = shared_ptr<Camera>{ new Camera( strafe, height, depth, 0.0f, 0.0f, 0.0f ) };
     //  Renderer
     renderer = shared_ptr<Renderer> {new Renderer()};
     renderer->set_display(display);
+    renderer->set_camera(camera);
     renderer->init();
 
     //  Load our Application Items
@@ -417,7 +418,7 @@ void GenerateEntities( ) {
    cout << "Generating Scene Entities" << endl;
    //  Actors
     GLfloat a = 0.0f;
-    for ( int i = 0; i < 3; i++, a += 10.0f ) {
+    for ( int i = 0; i < 3; i++, a += 1.5f ) {
         shared_ptr<Actor> actor = shared_ptr<Actor>{ new Actor(a, 0.0f, /*a*/0.0f, a, 0.0f, 0.0f, global_model_id ) };
         scene_graph.push_back(actor);
     }
