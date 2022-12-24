@@ -8,29 +8,30 @@
 #define __ENTITY_H__
 
 //  StdLib
-#include <memory>
-using std::shared_ptr;
+#include <iostream>
 
 //  3rd Party
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 class Entity {
 public:
-    glm::vec3 position;
-    glm::vec3 orientation;
-
-    Entity( float px, float py, float pz, float ox, float oy, float oz );
+    glm::mat4 _scale;
+    glm::vec3 _rotation;
+    glm::vec3 _translation;
+    
+    friend std::ostream& operator<<(std::ostream& os, const Entity& ent);
+    
     Entity( glm::vec3 pos , glm::vec3 orien);
 
     Entity( );
-    void setPosition (glm::vec3 pos);
-    void setOrientation (glm::vec3 orien);
-    glm::vec3 getPosition () const;
-    glm::vec3 getOrientation () const;
-    void move( glm::vec3 pos);
-    void orient (glm::vec3 orien);
+    void setPosition(glm::vec3 pos);
+    void setOrientation(glm::vec3 angles);
+    glm::mat4 getTransform();
+    void move( glm::vec3 translation);
+    void rotate(glm::vec3 angles);
 
-    virtual void Update ();
+    virtual void Update();
     ~Entity();
 };
 

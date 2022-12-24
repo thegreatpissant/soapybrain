@@ -1,53 +1,57 @@
 #include "Entity.hpp"
 
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/transform.hpp>
+
 Entity::~Entity () {
 }
 
 void Entity::setPosition (glm::vec3 pos)
 {
-    position = pos;
+    this->_translation = pos;
 }
 
-void Entity::setOrientation (glm::vec3 orien)
+void Entity::setOrientation (glm::vec3 angles)
 {
-    orientation = orien;
+    this->_rotation = angles;
 }
 
-glm::vec3 Entity::getPosition () const
+std::ostream& operator<<(std::ostream& os, const Entity& ent)
 {
-    return this->position;
+    os << "Position: " << glm::to_string(ent._translation) << std::endl;
+    os << "Rotation: " << glm::to_string(ent._rotation) << std::endl;
+    return os;
 }
 
-glm::vec3 Entity::getOrientation () const
+glm::mat4 Entity::getTransform()
 {
-    return this->orientation;
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), this->_translation);
+    glm::mat4 rotationX = glm::rotate(translation, this->_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 rotationY = glm::rotate(rotationX, this->_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    return glm::rotate(rotationY, this->_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 }
-
-void Entity::move( glm::vec3 pos)
+void Entity::move( glm::vec3 offset)
 {
-    this->position += pos;
+    this->_translation += offset;
 }
 
-void Entity::orient (glm::vec3 orien)
+void Entity::rotate(glm::vec3 angles)
 {
-    //assert(false);
-    this->orientation += orien;
+    this->_rotation += angles;
 }
 
-Entity::Entity( float px, float py, float pz, float ox, float oy, float oz ) {
-    setPosition(glm::vec3(px, py, pz));
-    setOrientation(glm::vec3(ox, oy, oz));
-}
-
-Entity::Entity ( glm::vec3 pos, glm::vec3 orien)
+Entity::Entity ( glm::vec3 pos, glm::vec3 orientation)
 {
+    Entity();
     setPosition(pos);
-    setOrientation(orien);
+    setOrientation(orientation);
 }
 
 Entity::Entity( )
 {
-
+    this->_scale = glm::mat4(1.0f);
+    this->_rotation = glm::vec3(1.0f);
+    this->_translation = glm::vec3(0.0f);
 }
 
 void Entity::Update()

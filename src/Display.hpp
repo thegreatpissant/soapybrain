@@ -19,20 +19,20 @@ private:
     //	Set
     int screen_width;
     int screen_height;
+    float fov;
 
     //	Calculated
-    glm::mat4 Perspective;
+    glm::mat4 Projection;
 
     void CalculateReshape();
 
   public:
     Display( );
-    void init ();
     void Reshape ( int newWidth, int newHeight);
 
     int getWidth () const;
     int getHeight () const;
-    glm::mat4 getPerspective () const;
+    glm::mat4 getProjection () const;
 };
 
 #endif

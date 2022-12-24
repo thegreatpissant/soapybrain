@@ -230,7 +230,7 @@ void GenerateShaders( ) {
         oculus_shader->printActiveUniforms();
     }
     catch (ShaderProgramException excp) {
-        cerr << excp.what() << endl;
+        cerr << "Shader Program Exception failure" << excp.what() << endl;
         exit (EXIT_FAILURE);
     }
 
@@ -305,7 +305,7 @@ void GlutDisplay( )
                     camera->getPosition(),
                     camera->getPosition() + glm::vec3( cr.x, cr.y, cr.z ), glm::vec3( 0.0f, 1.0f, 0.0f ) );
         glm::mat4 model = glm::mat4(1.0f);
-        VP = display->getPerspective() * camera_matrix;
+        VP = display->getProjection() * camera_matrix;
 
         //  Set values in the shader
         global_shader->use();

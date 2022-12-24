@@ -58,10 +58,10 @@ class Shader
     Shader(GLenum type);
     ~Shader( );
 
-    void Compile( ) throw(ShaderProgramException);
-    void Type(GLenum ntype) throw(ShaderProgramException);
+    void Compile( ); 
+    void Type(GLenum ntype);
     void Source(string shader_source);
-    void SourceFile(string filename)throw(ShaderProgramException);
+    void SourceFile(string filename);
     void Delete( );
 
     string Dump ();
@@ -100,7 +100,7 @@ class ShaderProgram
     ShaderProgram( );
     ~ShaderProgram( );
 
-    void validate( ) throw(ShaderProgramException);
+    void validate( );
 
     bool isLinked( );
 
@@ -109,8 +109,8 @@ class ShaderProgram
 
     void addShader(GLuint shader_handle);
     void addShader(Shader &shader);
-    void compileShader(const char *filename, ShaderType shader_type) throw(ShaderProgramException);
-    void link( ) throw(ShaderProgramException);
+    void compileShader(const char *filename, ShaderType shader_type);
+    void link( );
     void setUniform(const char *name, float x, float y);
     void setUniform(const char *name, const glm::vec3 &v);
     void setUniform(const char *name, const glm::vec4 &v);
@@ -119,7 +119,7 @@ class ShaderProgram
     void setUniform(const char *name, float val);
     void setUniform(const char *name, int val);
     void setUniform(const char *name, bool val);
-    void use( ) throw(ShaderProgramException);
+    void use( );
     void unuse ();
     void cleanup ( );
 

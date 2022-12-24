@@ -4,35 +4,34 @@
 #include "Entity.hpp"
 
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 class Camera : public Entity {
 private:
     glm::mat4 viewmat;
 
 public:
-    Camera( ) {};
-
-    Camera( float px, float py, float pz, float ox, float oy, float oz )
-        : Entity( px, py, pz, ox, oy, oz )
+    Camera( ) : Entity( glm::vec3(1.0f), glm::vec3(1.0f))
     {
-        update();
+
+    };
+
+    Camera (glm::vec3 position, glm::vec3 orientation )
+        : Entity( position, orientation)
+    {
     }
 
-    Camera (glm::vec3 position, glm::vec3 orien)
-        : Entity( position, orien)
+    friend std::ostream& operator<<(std::ostream& os, const Camera& ent)
     {
-        update();
+        os << "--Camera--" << std::endl;
+        os << "_translation: " << glm::to_string(ent._translation) << std::endl;
+        os << "_rotation: " << glm::to_string(ent._rotation) << std::endl;
+        os << "_scale: " << glm::to_string(ent._scale) << std::endl;
+
+        return os;
     }
 
-    glm::mat4 get_viewmat()
-    {
-        return viewmat;
-    }
-
-    void update ()
-    {
-        viewmat = glm::lookAt(Entity::position,glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    }
 };
 #endif

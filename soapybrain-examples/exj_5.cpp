@@ -28,7 +28,6 @@ using namespace std;
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/freeglut.h>
-// #include <openglut.h>
 
 // 3rd Party
 #include <glm/glm.hpp>
@@ -46,6 +45,7 @@ using namespace std;
 #include "Model_vbotorus.hpp"
 
 enum class queue_events {
+    PRINT_ALL,
     STRAFE_LEFT,
     STRAFE_RIGHT,
     MOVE_FORWARD,
@@ -59,6 +59,8 @@ enum class queue_events {
     COLOR_CHANGE,
     MODEL_CHANGE,
     RENDER_PRIMITIVE_CHANGE,
+    CAMERA_MOVEMENT,
+    RESET,
     APPLICATION_QUIT
 };
 queue<queue_events> gqueue;
@@ -98,6 +100,7 @@ void GlutIdle( );
 void GlutReshape( int newWidth, int newHeight );
 void GlutDisplay( );
 void GlutKeyboard( unsigned char key, int x, int y );
+void GlutMouse( int button, int state, int x, int y );
 void GlutMouseMotion( int x, int y);
 void CleanupAndExit( );
 //  Models
@@ -110,13 +113,12 @@ void GenerateShaders( );
 GLint UnmapRenderPrimitive ( int rp );
 
 //  Globalized user vars
-GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ -15.0f }, rotate{ 0.0f };
-shared_ptr<Camera> camera { new Camera( strafe, height, depth, 0.0f, 0.0f, 0.0f ) };
-
-float dir = 1.0f;
-float xpos = 2.0f;
-float ypos = 0.0f;
-
+GLfloat strafe{ 1.0f }, height{ 0.0f }, depth{ 15.0f }, rotate{ 0.0f };
+glm::vec3 initial_camera_position(strafe, height, depth);
+shared_ptr<Camera> camera { new Camera( initial_camera_position, glm::vec3(0.0f)) };
+glm::vec3 mouse_pos_cur = glm::vec3(0.0f);
+glm::vec3 mouse_pos_offset = glm::vec3(0.0f);
+bool mouse_engaged = false;
 
 // MAIN //
 int main( int argc, char **argv ) {
@@ -151,11 +153,25 @@ int main( int argc, char **argv ) {
     GenerateEntities( );
 
     //  Boiler Plate
-    glutIdleFunc( GlutIdle );
-    glutReshapeFunc( GlutReshape );
     glutDisplayFunc( GlutDisplay );
+    glutOverlayDisplayFunc(NULL);
+    glutReshapeFunc( GlutReshape );
     glutKeyboardFunc( GlutKeyboard );
+    glutMouseFunc( GlutMouse );
     glutMotionFunc( GlutMouseMotion );
+    glutPassiveMotionFunc(NULL);
+    glutVisibilityFunc(NULL);
+    glutEntryFunc(NULL);
+    glutSpecialFunc(NULL);
+    glutSpaceballMotionFunc(NULL);
+    glutSpaceballRotateFunc(NULL);
+    glutSpaceballButtonFunc(NULL);
+    glutButtonBoxFunc(NULL);
+    glutDialsFunc(NULL);
+    glutTabletMotionFunc(NULL);
+    glutTabletButtonFunc(NULL);
+    glutMenuStatusFunc(NULL);
+    glutIdleFunc( GlutIdle );
 
     //  Go forth and loop
     glutMainLoop( );
@@ -175,33 +191,20 @@ void GenerateShaders( ) {
         diffuse_shader->addShader(fragment_shader.GetHandle());
         diffuse_shader->link();
         diffuse_shader->unuse();
+        diffuse_shader->printActiveUniforms();
+
     }
     catch (ShaderProgramException excp) {
-        cerr << excp.what () << endl;
+        cerr << "Diffusion shader exception: " << excp.what () << endl;
         exit (EXIT_FAILURE);
     }
     ShaderID difsid = renderer->add_shader(diffuse_shader);
 
-    try {
-        ads_vertex_shader.SourceFile( shader_dir + string("ads_shading.vert"));
-        ads_fragment_shader.SourceFile( shader_dir + string ("ads_shading.frag"));
-        ads_vertex_shader.Compile();
-        ads_fragment_shader.Compile();
-	ads_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
-        ads_shader->setName("Ads Shader");
-        ads_shader->addShader(ads_vertex_shader.GetHandle());
-        ads_shader->addShader(ads_fragment_shader.GetHandle());
-        ads_shader->link();
-        ads_shader->unuse();
-        ads_shader->printActiveUniforms();
-    }
-    catch (ShaderProgramException excp) {
-        cerr << excp.what() << endl;
-        exit (EXIT_FAILURE);
-    }
-    ShaderID adsid = renderer->add_shader(ads_shader);
-
-    //    global_shader = diffuse_shader;
+    /* 
+    ads_shader->setName("Ads Shader");
+    ads_vertex_shader.SourceFile( shader_dir + string("ads_shading.vert"));
+    ads_fragment_shader.SourceFile( shader_dir + string ("ads_shading.frag"));
+    */
     global_shader = difsid;
 }
 
@@ -236,9 +239,32 @@ void GlutDisplay( )
     glutSwapBuffers( );
 }
 
-void GlutMouseMotion( int x, int y)
+void GlutMouse( int button, int state, int x, int y )
 {
-   cout << "x:" << x << "  y:" << y << std::endl;
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        mouse_pos_cur.x = x;
+        mouse_pos_cur.y = y;
+        mouse_pos_offset.x = 0.0f;
+        mouse_pos_offset.y = 0.0f;
+        mouse_engaged = true;
+    } 
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) {
+        mouse_engaged = false;
+        mouse_pos_cur.x = 0;
+        mouse_pos_cur.y = 0;
+        mouse_pos_offset.x = 0;
+        mouse_pos_offset.y = 0;
+    }
+}
+void GlutMouseMotion( int y, int x)
+{
+   if (mouse_engaged) {
+        mouse_pos_offset.x = mouse_pos_cur.x - x;
+        mouse_pos_offset.y = mouse_pos_cur.y - y;
+        mouse_pos_cur.x = x;
+        mouse_pos_cur.y = y;
+        gqueue.push( queue_events::CAMERA_MOVEMENT);
+   }
 }
 
 void GlutKeyboard( unsigned char key, int x, int y )
@@ -263,8 +289,8 @@ void GlutKeyboard( unsigned char key, int x, int y )
     case 'A':
         gqueue.push( queue_events::STRAFE_LEFT );
         break;
-    case 'f':
-    case 'F':
+    case 'd':
+    case 'D':
         gqueue.push( queue_events::STRAFE_RIGHT );
         break;
     case 's':
@@ -301,13 +327,21 @@ void GlutKeyboard( unsigned char key, int x, int y )
     case 'R':
         gqueue.push( queue_events::RENDER_PRIMITIVE_CHANGE );
         break;
+    case 'z':
+    case 'Z':
+        gqueue.push( queue_events::RESET );
+        break;
+    case 'p':
+    case 'P':
+        gqueue.push( queue_events::PRINT_ALL);
+        break;
     }
 }
 
-const glm::vec3 back_movement(0.0f, 0.0f, 1.0f);
-const glm::vec3 forward_movement(0.0f, 0.0f, -1.0f);
-const glm::vec3 left_movement( -0.3f, 0.0f, 0.0f);
-const glm::vec3 right_movement( 0.3f, 0.0f, 0.0f);
+const glm::vec3 back_movement(0.0f, 0.0f, -1.0f);
+const glm::vec3 forward_movement(0.0f, 0.0f, 1.0f);
+const glm::vec3 left_movement( 0.3f, 0.0f, 0.0f);
+const glm::vec3 right_movement( -0.3f, 0.0f, 0.0f);
 const glm::vec3 up_movement(0.0f, 1.0f, 0.0f);
 const glm::vec3 down_movement(0.0f, -1.0f, 0.0f);
 
@@ -316,6 +350,14 @@ void GlutIdle( )
     //  Pump the events loop
     while ( !gqueue.empty( ) ) {
         switch ( gqueue.front( ) ) {
+        case queue_events::PRINT_ALL:
+            std::cout << "Printing camera" << std::endl;
+            std::cout << *camera << std::endl;
+            std::cout << "Printing Models" << std::endl;
+            for (int i = 0; i < scene_graph.size(); i++)
+                std::cout << *scene_graph[i] << std::endl;
+            break;
+
         case queue_events::MOVE_FORWARD:
             selected->move (forward_movement);
             break;
@@ -329,10 +371,10 @@ void GlutIdle( )
             selected->move(left_movement);
             break;
         case queue_events::YAW_RIGHT:
-            selected->orient(up_movement);
+            selected->rotate(up_movement);
             break;
         case queue_events::YAW_LEFT:
-            selected->orient(down_movement);
+            selected->rotate(down_movement);
             break;
         case queue_events::MOVE_UP:
             selected->move(up_movement);
@@ -341,10 +383,10 @@ void GlutIdle( )
             selected->move(down_movement);
             break;
         case queue_events::PITCH_UP:
-            selected->orient(right_movement);
+            selected->rotate(right_movement);
             break;
         case queue_events::PITCH_DOWN:
-            selected->orient(left_movement);
+            selected->rotate(left_movement);
             break;
         case queue_events::COLOR_CHANGE:
 //            color = ( color >= 4 ? 1 : color + 1 );
@@ -358,16 +400,23 @@ void GlutIdle( )
         case queue_events::MODEL_CHANGE:
             global_model_id += 1;
             global_model_id %= renderer->models.size();
-            for (int i = 0; i < scene_graph.size(); i++)
-                scene_graph[i]->model_id = global_model_id;
+            for (auto element = scene_graph.begin(); element != scene_graph.end(); ++element){
+                (*element)->model_id = global_model_id;
+            }
             break;
-
+        case queue_events::CAMERA_MOVEMENT:
+            camera->rotate(mouse_pos_offset * -0.001f);
+            break;
+        case queue_events::RESET:
+            camera->setPosition(initial_camera_position);
+            camera->setOrientation(glm::vec3(0.0f));
+            break;
         case queue_events::APPLICATION_QUIT:
             CleanupAndExit( );
         }
         gqueue.pop( );
     }
-
+    renderer->render(scene_graph);
     glutPostRedisplay( );
 }
 
@@ -417,15 +466,19 @@ void GenerateModels( ) {
 void GenerateEntities( ) {
    cout << "Generating Scene Entities" << endl;
    //  Actors
-    GLfloat a = 0.0f;
-    for ( int i = 0; i < 3; i++, a += 1.5f ) {
-        shared_ptr<Actor> actor = shared_ptr<Actor>{ new Actor(a, 0.0f, /*a*/0.0f, a, 0.0f, 0.0f, global_model_id ) };
+    GLfloat a = 0.1f;
+    for ( int i = 0; i < 4; i++) {
+        shared_ptr<Actor> actor = shared_ptr<Actor>{ 
+            new Actor( 
+                glm::vec3( a+(1.5f*i), 0.0f, 0.0f),
+                glm::vec3( a+(1.5f*i), 0.0f, 0.0f), 
+                global_model_id 
+            )
+        };
         scene_graph.push_back(actor);
     }
-    selected = scene_graph[0];
-    //  Selected Entity
-//    selected = camera;
     cout << "Done" << endl;
+    selected = camera;
 }
 
 int UnmapRenderPrimitive (int rp)

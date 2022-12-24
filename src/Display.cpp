@@ -2,10 +2,9 @@
 
 #include <GL/gl.h>
 
-Display::Display()  : screen_width{ 640 }, screen_height{ 480 }
+Display::Display()  : screen_width{ 640 }, screen_height{ 480 }, fov{75.0f}
 {
     CalculateReshape();
-    init();
 }
 
 void Display::Reshape (int newWidth, int newHeight)
@@ -15,18 +14,13 @@ void Display::Reshape (int newWidth, int newHeight)
     CalculateReshape();
 }
 
-glm::mat4 Display::getPerspective() const
+glm::mat4 Display::getProjection() const
 {
-    return Perspective;
+    return Projection;
 }
 void Display::CalculateReshape()
 {
-//    glViewport( 0, 0, screen_width, screen_height );
-    Perspective = glm::perspective( 75.0f, (float)screen_width/screen_height, 0.1f, 100.0f);
-}
-
-void Display::init()
-{
+    Projection = glm::perspective( fov, (float)screen_width/(float)screen_height, 0.1f, 1000.0f);
 }
 
 int Display::getHeight() const

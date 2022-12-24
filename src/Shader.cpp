@@ -29,7 +29,7 @@ Shader::~Shader ()
 }
 
 void Shader::Compile ()
-throw (ShaderProgramException)
+// throw (ShaderProgramException)
 {
     if ( type == GL_ZERO ) {
         string msg = string ("Shader type not specified.");
@@ -70,7 +70,7 @@ void Shader::Source( string shader_source )
 }
 
 void Shader::SourceFile(string filename)
-throw (ShaderProgramException)
+// throw (ShaderProgramException)
 {
     compiled = false;
     fstream ifile;
@@ -181,7 +181,7 @@ void ShaderProgram::addShader(Shader &shader)
 }
 
 void ShaderProgram::link ()
-throw (ShaderProgramException)
+// throw (ShaderProgramException)
 {
     //  Do we have shaders to link
     if (shader_handles.empty()) {
@@ -258,7 +258,8 @@ string ShaderProgram::getName()
     return this->name;
 }
 
-void ShaderProgram::use ()         throw (ShaderProgramException)
+void ShaderProgram::use ()
+//         throw (ShaderProgramException)
 {
     glUseProgram (getHandle());
 }
@@ -274,7 +275,8 @@ void ShaderProgram::cleanup()
     glDeleteProgram(getHandle());
 }
 
-void ShaderProgram::validate ()    throw (ShaderProgramException)
+void ShaderProgram::validate ()
+//    throw (ShaderProgramException)
 {
 
 }
@@ -344,7 +346,7 @@ void ShaderProgram::setUniform(const char *name, bool val)
 void ShaderProgram::printActiveUniforms ()
 {
     use();
-    cout << "Printing active uniforms for shader program" << endl;
+    cout << "Printing active uniforms for shader program:" << name << endl;
     for_each (uniformLocations.begin(), uniformLocations.end(),
               [] (const map<string, int>::value_type &elem) {
         cout << elem.first << ": " << elem.second << endl;

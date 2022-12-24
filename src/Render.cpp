@@ -5,28 +5,20 @@ using std::endl;
 
 void Renderer::render( std::vector<std::shared_ptr<Actor>> actors ) {
     //  Set some state
-    glClearColor (1.0f, 0.0f, 1.0f, 1.0f);
+    glClearColor (0.4f, 0.4f, 1.0f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable( GL_CULL_FACE );
     glFrontFace( GL_CCW );
     //  Render Objects
-    static float rot = 1.0f;
-    camera->update();
-    glm::mat4 vp = display->getPerspective() * camera->get_viewmat();
     for( std::shared_ptr<Actor> a : actors ) {
-        glm::mat4 model = glm::rotate( glm::mat4(1.0f), a->getOrientation().x + rot, glm::vec3(0.0f, 1.0f, 0.0f) );
-        model[3][0] = a->position.x;
-        model[3][1] = a->position.y;
-        model[3][2] = a->position.z;
-        model[3][3] = 1.0f;
-        glm::mat4 mvp = vp * model;
         auto shader = get_shader( a->model_id );
         shader->use();
-        shader->setUniform("MVP", mvp);
+        shader->setUniform("Model", a->getTransform());
+        shader->setUniform("View", glm::inverse(camera->getTransform()));
+        shader->setUniform("Projection", display->getProjection());
         get_model( a->model_id )->render();
         shader->unuse();
     }
-    rot += 0.2f;
     //  Cleanup
     glBindVertexArray( 0 );
     glFinish();
@@ -36,7 +28,7 @@ ModelID Renderer::add_model( std::shared_ptr<Model> model ) {
     std::cout << "Renderer added Model id " << GID << " Name " << model->name << std::endl;
     models[GID] = model;
     ++GID;
-    // return GID;
+    return GID;
 }
 
 std::shared_ptr<Model> Renderer::get_model (ModelID mid) {
@@ -86,8 +78,5 @@ Renderer::~Renderer()
 }
 
 void Renderer::init( ) {
-    camera->position = glm::vec3(0.0f, 2.5f, 15.0f);
-    camera->update();
-
     glEnable(GL_DEPTH_TEST);
 }
