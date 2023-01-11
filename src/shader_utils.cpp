@@ -9,26 +9,19 @@
 #include <cstdlib>
 
 #include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include <fstream>
-using std::fstream;
-
 #include <string>
-using std::string;
 
 typedef struct shaderinfo {
     GLuint shadertype;
     const char *filename;
 } ShaderInfo;
 
-string file_read_string( const char *filename ) {
-    fstream ifile;
+std::string file_read_string( const char *filename ) {
+    std::fstream ifile;
     ifile.open( filename, std::ios_base::in );
 
-    string istring, estring;
+    std::string istring, estring;
     while ( getline( ifile, istring ) ) {
         estring += istring + '\n';
     }
@@ -39,14 +32,14 @@ string file_read_string( const char *filename ) {
 /**
  * Display compilation errors from the OpenGL shader compiler
 */
-string get_shader_log( GLuint object ) {
+std::string get_shader_log( GLuint object ) {
     GLint log_length = 0;
     if ( glIsShader( object ) )
         glGetShaderiv( object, GL_INFO_LOG_LENGTH, &log_length );
     else if ( glIsProgram( object ) )
         glGetProgramiv( object, GL_INFO_LOG_LENGTH, &log_length );
     else {
-        return string("PRINTLOG: Not a Shader or a Program");
+        return std::string("PRINTLOG: Not a Shader or a Program");
     }
 
     char *log = new char[log_length];
@@ -54,7 +47,7 @@ string get_shader_log( GLuint object ) {
         glGetShaderInfoLog( object, log_length, NULL, log );
     else if ( glIsProgram( object ) )
         glGetProgramInfoLog( object, log_length, NULL, log );
-    string message = log;
+    std::string message = log;
     delete[] log;
     return message;
 }
@@ -63,13 +56,13 @@ string get_shader_log( GLuint object ) {
  * Compile the shader from 'filename', with error handeling
  */
 GLuint create_shader_string( const char *filename, GLenum type ) {
-    string shader_source = file_read_string( filename );
+    std::string shader_source = file_read_string( filename );
     if ( shader_source.empty( ) ) {
-        cerr << "Error Opening " << filename << endl;
+        std::cerr << "Error Opening " << filename << std::endl;
         exit( EXIT_FAILURE );
     }
     GLuint res = glCreateShader( type );
-    string source;
+    std::string source;
     source += shader_source;
     const GLchar *c_source = source.c_str( );
     glShaderSource( res, 1, &c_source, NULL );
@@ -77,8 +70,8 @@ GLuint create_shader_string( const char *filename, GLenum type ) {
     GLint compile_ok = GL_FALSE;
     glGetShaderiv( res, GL_COMPILE_STATUS, &compile_ok );
     if ( compile_ok == GL_FALSE ) {
-        cerr << "Compile failed on file : " << filename << endl;
-        cerr << get_shader_log( res ) << endl;
+        std::cerr << "Compile failed on file : " << filename << std::endl;
+        std::cerr << get_shader_log( res ) << std::endl;
         glDeleteShader( res );
         exit( EXIT_FAILURE );
     }
@@ -96,7 +89,7 @@ GLuint LoadShaders( ShaderInfo *si ) {
     GLint link_ok;
     glGetProgramiv( program, GL_LINK_STATUS, &link_ok );
     if ( !link_ok ) {
-        cerr << "glLinkProgram: " << get_shader_log ( program ) << endl;
+        std::cerr << "glLinkProgram: " << get_shader_log ( program ) << std::endl;
         return 0;
     }
     return program;

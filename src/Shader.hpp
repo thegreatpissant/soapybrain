@@ -7,9 +7,6 @@
 #include <string>
 #include <map>
 #include <vector>
-using std::string;
-using std::map;
-using std::vector;
 
 #include <GL/glew.h>
 
@@ -22,7 +19,7 @@ typedef struct shaderinfo
 } ShaderInfo;
 
 GLuint LoadShaders(ShaderInfo *si);
-string shader_log (GLuint object);
+std::string shader_log (GLuint object);
 //  ------------------------------------------------------- //
 //  The following shader class is inspired from the
 //  OpenGL 4.0 Shading Language Cookbook, David Wolff
@@ -30,7 +27,7 @@ string shader_log (GLuint object);
 class ShaderProgramException : public std::runtime_error
 {
   public:
-    ShaderProgramException(const string &msg) : std::runtime_error(msg)
+    ShaderProgramException(const std::string &msg) : std::runtime_error(msg)
     {
     }
 };
@@ -50,7 +47,7 @@ class Shader
   private:
     GLenum type;
     GLuint object;
-    string source;
+    std::string source;
     bool compiled;
 
   public:
@@ -60,16 +57,16 @@ class Shader
 
     void Compile( ); 
     void Type(GLenum ntype);
-    void Source(string shader_source);
-    void SourceFile(string filename);
+    void Source(std::string shader_source);
+    void SourceFile(std::string filename);
     void Delete( );
 
-    string Dump ();
+    std::string Dump ();
 
     GLenum GetType( ) const;
     GLuint GetObject( ) const;
     GLuint GetHandle() const;
-    string GetSource( ) const;
+    std::string GetSource( ) const;
 };
 
 // using ShaderID = GLint;
@@ -89,10 +86,10 @@ class ShaderProgram
   private:
     GLuint handle;
     bool linked;
-    vector<GLuint> shader_handles;
+    std::vector<GLuint> shader_handles;
     GLint uniform_count;
-    map<string, int> uniformLocations;
-    string name;
+    std::map<std::string, int> uniformLocations;
+    std::string name;
 
     int getUniformLocation(const char *name);
 
@@ -123,8 +120,8 @@ class ShaderProgram
     void unuse ();
     void cleanup ( );
 
-    void setName(string name);
-    string getName();
+    void setName(std::string name);
+    std::string getName();
 
     int getHandle( );
     void scrape( );

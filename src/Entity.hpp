@@ -1,18 +1,14 @@
 /*
  * Todo:
- * - Use Quaterion orientation
  * - Make a pure base class.  Do we use virtual somewhere?
  */
 
 #ifndef __ENTITY_H__
 #define __ENTITY_H__
 
-//  StdLib
 #include <iostream>
 
-//  3rd Party
 #include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 class Entity {
 public:

@@ -8,12 +8,6 @@
 #include <vector>
 #include <string>
 
-using std::vector;
-using std::string;
-using std::cerr;
-using std::endl;
-using std::shared_ptr;
-
 using ModelID = GLint;
 using ShaderID = GLint;
 
@@ -29,10 +23,10 @@ class Model
 {
   public:
     long numVertices;
-    string name;
-    vector<float> vertices;
-    vector<GLuint> vaos;
-    vector<GLuint> buffers;
+    std::string name;
+    std::vector<float> vertices;
+    std::vector<GLuint> vaos;
+    std::vector<GLuint> buffers;
     GLint renderPrimitive;
     ShaderID shader;
     Model( )
@@ -64,7 +58,7 @@ class Simple_equation_model_t : public Model
         glGenVertexArrays( this->vaos.size( ), &this->vaos[0] );
         if ( this->vaos[0] == 0 )
         {
-            cerr << this->name << " - Did not get a valid Vertex Attribute Object" << endl;
+            std::cerr << this->name << " - Did not get a valid Vertex Attribute Object" << std::endl;
         }
         glBindVertexArray( this->vaos[0] );
 

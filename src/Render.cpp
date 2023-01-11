@@ -1,7 +1,5 @@
 #include "Render.hpp"
 #include <iostream>
-using std::cout;
-using std::endl;
 
 void Renderer::render( std::vector<std::shared_ptr<Actor>> actors ) {
     //  Set some state
@@ -44,7 +42,7 @@ std::shared_ptr<Model> Renderer::get_model (ModelID mid) {
 
 ShaderID Renderer::add_shader( std::shared_ptr<ShaderProgram> shader )
 {
-    std::cout << "Renderer adding Shader id:" << SID << ", Name:\"" << shader->getName() << "\"" << endl;
+    std::cout << "Renderer adding Shader id:" << SID << ", Name:\"" << shader->getName() << "\"" << std::endl;
     shaders[SID] = shader;
     ++SID;
     return SID-1;

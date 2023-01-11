@@ -1,8 +1,5 @@
 #include "Model_vbotorus.hpp"
 
-#include <cstdio>
-#include <cmath>
-
 #define TWOPI 3.14159f * 2.0f
 
 VBOTorus::VBOTorus(float outerRadius, float innerRadius, int nsides, int nrings) :
@@ -123,8 +120,6 @@ void VBOTorus::generateVerts(float * verts, float * norms, float * tex,
             idx += 6;
         }
     }
-
-
 }
 
 int VBOTorus::getVertexArrayHandle() {

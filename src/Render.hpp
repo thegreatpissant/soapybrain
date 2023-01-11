@@ -4,9 +4,7 @@
 //  Std lib
 #include <memory>
 #include <unordered_map>
-using std::unordered_map;
 #include <vector>
-using std::vector;
 
 //  Libs
 #include <GL/glew.h>
@@ -32,8 +30,8 @@ private:
     std::shared_ptr<Camera> camera;
     std::shared_ptr<Display> display;
 public:
-    unordered_map<ModelID, std::shared_ptr<Model>> models;
-    unordered_map<ShaderID, std::shared_ptr<ShaderProgram>> shaders;
+    std::unordered_map<ModelID, std::shared_ptr<Model>> models;
+    std::unordered_map<ShaderID, std::shared_ptr<ShaderProgram>> shaders;
 
     void set_display( std::shared_ptr<Display> disp );
     void set_camera( std::shared_ptr<Camera> camera );

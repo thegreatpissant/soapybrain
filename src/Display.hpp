@@ -1,16 +1,11 @@
 #ifndef __DISPLAY_H__
 #define __DISPLAY_H__
 
-//  STDLIB
 #include <vector>
 #include <memory>
-using std::vector;
-using std::shared_ptr;
 
-//	Engine Includes
 #include "Camera.hpp"
 
-//  Third Part
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -54,7 +49,7 @@ Holds State with Properties of Display Target and Render Target
     - Execute render for object
 - Execute Buffer Flip
 
-* Oculus Rift
+* HMD
 - Recieve request with Scenegraph
 - Query Camera for position and orientation
 - Query Rift for position and orientation
