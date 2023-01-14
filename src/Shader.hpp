@@ -91,7 +91,7 @@ class ShaderProgram
     std::map<std::string, int> uniformLocations;
     std::string name;
 
-    int getUniformLocation(const char *name);
+    int getUniformLocation(const char * name);
 
   public:
     ShaderProgram( );
@@ -108,7 +108,7 @@ class ShaderProgram
     void addShader(Shader &shader);
     void compileShader(const char *filename, ShaderType shader_type);
     void link( );
-    void setUniform(const char *name, float x, float y);
+    void setUniform(const char *name, const glm::vec2 &v);
     void setUniform(const char *name, const glm::vec3 &v);
     void setUniform(const char *name, const glm::vec4 &v);
     void setUniform(const char *name, const glm::mat4 &m);

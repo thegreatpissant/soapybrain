@@ -21,19 +21,19 @@
 #include "Shader.hpp"
 #include "Actor.hpp"
 #include "Camera.hpp"
-#include "Display.hpp"
+#include "RenderTarget.hpp"
 
 class Renderer {
 private:
     ModelID GID;
     ShaderID SID;
     std::shared_ptr<Camera> camera;
-    std::shared_ptr<Display> display;
+    std::shared_ptr<RenderTarget> target;
 public:
     std::unordered_map<ModelID, std::shared_ptr<Model>> models;
     std::unordered_map<ShaderID, std::shared_ptr<ShaderProgram>> shaders;
 
-    void set_display( std::shared_ptr<Display> disp );
+    void set_target( std::shared_ptr<RenderTarget> target );
     void set_camera( std::shared_ptr<Camera> camera );
 
     Renderer( ):GID(0),SID(0) {};

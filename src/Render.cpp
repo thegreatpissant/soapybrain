@@ -3,6 +3,8 @@
 
 void Renderer::render( std::vector<std::shared_ptr<Actor>> actors ) {
     //  Set some state
+    glBindFramebuffer(GL_FRAMEBUFFER, target->framebuffer_id);
+    glViewport(0,0, target->getWidth(), target->getHeight());
     glClearColor (0.4f, 0.4f, 1.0f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable( GL_CULL_FACE );
@@ -11,9 +13,11 @@ void Renderer::render( std::vector<std::shared_ptr<Actor>> actors ) {
     for( std::shared_ptr<Actor> a : actors ) {
         auto shader = get_shader( a->model_id );
         shader->use();
+        //  Defaults for every shader??
         shader->setUniform("Model", a->getTransform());
         shader->setUniform("View", glm::inverse(camera->getTransform()));
-        shader->setUniform("Projection", display->getProjection());
+        shader->setUniform("Projection", target->getProjection());
+        //  Now the model
         get_model( a->model_id )->render();
         shader->unuse();
     }
@@ -61,9 +65,9 @@ std::shared_ptr<ShaderProgram> Renderer::get_shader( ModelID mid )
     return shaders[sid];
 }
 
-void Renderer::set_display(std::shared_ptr<Display> disp)
+void Renderer::set_target(std::shared_ptr<RenderTarget> target)
 {
-    this->display = disp;
+    this->target = target;
 }
 
 void Renderer::set_camera(std::shared_ptr<Camera> camera)

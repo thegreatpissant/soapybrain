@@ -4,7 +4,7 @@
  * DONE - Break out different model types.
  * DONE - Add a simple render system, yes it is very simple
  * DONE - Add an actor a subclass of an entity
- * PROOF - Use std library to load shaders
+ * DONE - Use std library to load shaders
  * PROOF - Rendering function in renderer only
  * PROOF - Independent model movement
  * PROOF - very simple scene graph of entities to render
@@ -17,29 +17,29 @@
  */
 
 #include <iostream>
+#include <string>
 #include <vector>
 #include <queue>
 #include <cstdlib>
 #include <memory>
 using namespace std;
 
-//  OpenGL
+//  OpenGL helpers
 #include <GL/glew.h>
-#include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/freeglut.h>
 
-// 3rd Party
+// glm
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform2.hpp>
 
-//  Engine parts
+//  Engine
 #include "Shader.hpp"
 #include "Render.hpp"
 #include "Model.hpp"
-#include "Display.hpp"
+#include "RenderTarget.hpp"
 #include "Actor.hpp"
 #include "Camera.hpp"
 #include "Model_vbotorus.hpp"
@@ -65,7 +65,7 @@ enum class queue_events {
 };
 queue<queue_events> gqueue;
 
-shared_ptr<Display> display { new Display };
+shared_ptr<RenderTarget> display { new RenderTarget };
 shared_ptr<Renderer> renderer;
 
 shared_ptr<Entity> selected;
@@ -75,21 +75,10 @@ vector<shared_ptr<Actor>> scene_graph;
 //  @@TODO Should move into a variable system
 Shader vertex_shader(GL_VERTEX_SHADER), fragment_shader(GL_FRAGMENT_SHADER);
 Shader ads_vertex_shader(GL_VERTEX_SHADER), ads_fragment_shader(GL_FRAGMENT_SHADER);
+shared_ptr<ShaderProgram> default_shader;
 shared_ptr<ShaderProgram> diffuse_shader;
 shared_ptr<ShaderProgram> ads_shader;
 ShaderID global_shader;
-glm::mat4 VP;
-glm::mat4 camera_matrix;
-glm::mat3 NormalMatrix;
-glm::mat4 ModelViewMatrix;
-glm::vec3 Ka = glm::vec3(0.3f, 0.5f, 0.3f);
-glm::vec3 Kd = glm::vec3(0.4f, 0.1f, 0.3f);
-glm::vec3 Ks = glm::vec3(0.1f, 0.4f, 0.2f);
-float Shine = 0.5f;
-glm::vec3 La = glm::vec3(1.0f, 1.0f, 1.0f);
-glm::vec3 Ld = glm::vec3(0.3f, 0.5f, 0.1f);
-glm::vec3 Ls = glm::vec3(0.7f, 0.2f, 2.8f);
-glm::vec4 LightPosition;
 GLint global_render_primitive = 0;
 GLint max_primitives = 3;
 GLint global_model_id = 0;
@@ -127,7 +116,7 @@ int main( int argc, char **argv ) {
     glutInitContextVersion (3, 1);
     glutInitContextFlags (GLUT_FORWARD_COMPATIBLE | GLUT_DEBUG);
 
-    display = shared_ptr<Display> {new Display() };
+    display = shared_ptr<RenderTarget> {new RenderTarget() };
     glutInitWindowSize( display->getWidth(), display->getHeight() );
 
     glutCreateWindow( argv[0] );
@@ -140,7 +129,7 @@ int main( int argc, char **argv ) {
 
     //  Renderer
     renderer = shared_ptr<Renderer> {new Renderer()};
-    renderer->set_display(display);
+    renderer->set_target(display);
     renderer->set_camera(camera);
     renderer->init();
 
@@ -181,59 +170,40 @@ void GenerateShaders( ) {
     //  Shaders
     string shader_dir(__SOAPYBRAIN_SHADER_DIR__);
     try {
-        vertex_shader.SourceFile(  shader_dir + string("diffuse_shading.vert"));
-        fragment_shader.SourceFile( shader_dir + string("diffuse_shading.frag"));
+        vertex_shader.SourceFile(shader_dir + string("default.vert"));
+        fragment_shader.SourceFile(shader_dir + string("default.frag"));
         vertex_shader.Compile();
         fragment_shader.Compile();
-        diffuse_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
-        diffuse_shader->setName("Diffuse Shader");
-        diffuse_shader->addShader(vertex_shader.GetHandle());
-        diffuse_shader->addShader(fragment_shader.GetHandle());
-        diffuse_shader->link();
-        diffuse_shader->unuse();
-        diffuse_shader->printActiveUniforms();
-
+        default_shader = shared_ptr<ShaderProgram> { new ShaderProgram };
+        default_shader->setName("Default Shader");
+        default_shader->addShader(vertex_shader.GetHandle());
+        default_shader->addShader(fragment_shader.GetHandle());
+        default_shader->link();
+        default_shader->unuse();
+        default_shader->printActiveUniforms();
     }
     catch (ShaderProgramException excp) {
         cerr << "Diffusion shader exception: " << excp.what () << endl;
         exit (EXIT_FAILURE);
     }
-    ShaderID difsid = renderer->add_shader(diffuse_shader);
+    ShaderID default_shader_id = renderer->add_shader(default_shader);
 
     /* 
     ads_shader->setName("Ads Shader");
     ads_vertex_shader.SourceFile( shader_dir + string("ads_shading.vert"));
     ads_fragment_shader.SourceFile( shader_dir + string ("ads_shading.frag"));
     */
-    global_shader = difsid;
+    global_shader = default_shader_id;
 }
 
 void GlutReshape( int newWidth, int newHeight )
 {
     display->Reshape(newWidth, newHeight);
-    glViewport(0,0, display->getWidth(), display->getHeight());
 }
 
 
 void GlutDisplay( )
 {
-    //	Light Movement
-    static float bounce = 0.0f;
-    static bool bounce_lr = true;  //  True = left; False = right;
-    const float bounce_distance = 10.0f;
-    if (bounce_lr) {
-        bounce -= 0.1f;
-        if (bounce <  (-1.0f*bounce_distance)) {
-            bounce_lr = false;
-        }
-    } else {
-        bounce += 0.1f;
-        if (bounce > bounce_distance ) {
-            bounce_lr = true;
-        }
-    }
-    LightPosition = camera_matrix * glm::vec4(bounce, 0.0f, -5.0f, 1.0f);
-
     //  Set values in the shader
     renderer->render( scene_graph );
     glutSwapBuffers( );
@@ -263,10 +233,16 @@ void GlutMouseMotion( int y, int x)
         mouse_pos_offset.y = mouse_pos_cur.y - y;
         mouse_pos_cur.x = x;
         mouse_pos_cur.y = y;
-        gqueue.push( queue_events::CAMERA_MOVEMENT);
+        gqueue.push(queue_events::CAMERA_MOVEMENT);
    }
 }
 
+void entity_update()
+{
+    for (auto element = scene_graph.begin(); element != scene_graph.end(); ++element){
+        (*element)->_rotation.y += .1f;
+    }
+}
 void GlutKeyboard( unsigned char key, int x, int y )
 {
     switch ( key ) {
@@ -416,6 +392,7 @@ void GlutIdle( )
         }
         gqueue.pop( );
     }
+    entity_update();
     renderer->render(scene_graph);
     glutPostRedisplay( );
 }
@@ -426,7 +403,8 @@ void CleanupAndExit( )
 }
 
 void GenerateModels( ) {
-    cout << "Generating Models" << endl;
+    std::string task = "Generating Models";
+    std::cout << task << std::endl;
     int ext = 0;
     shared_ptr<Simple_equation_model_t> tmp;
     shared_ptr<VBOTorus> tmpt;
@@ -460,11 +438,12 @@ void GenerateModels( ) {
         tmp->shader = global_shader;
         renderer->add_model( tmp );
     }
-    cout << "Done!" << endl;
+    cout << task << " - Done" << endl;
 }
 
 void GenerateEntities( ) {
-   cout << "Generating Scene Entities" << endl;
+   std::string task = "Generating Scene Entities";
+   std::cout << task << std::endl;
    //  Actors
     GLfloat a = 0.1f;
     for ( int i = 0; i < 4; i++) {
@@ -477,7 +456,7 @@ void GenerateEntities( ) {
         };
         scene_graph.push_back(actor);
     }
-    cout << "Done" << endl;
+    std::cout << task << " - Done" << std::endl;
     selected = camera;
 }
 

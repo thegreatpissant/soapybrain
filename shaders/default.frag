@@ -1,18 +1,10 @@
-#version 130
+#version 400
 
-vec4 fColor;
-uniform int color;
+in float LightIntensity;
 
-void main () {
-  if (color == 2) {
-    fColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );
-  } else if (color == 3) {
-    fColor = vec4 ( 0.0, 1.0, 0.0, 1.0 );
-  } else if (color == 1) {
-    fColor = vec4 ( 0.0, 0.0, 1.0, 0.0 );
-  } else {
-    fColor = vec4 ( 1.0 , 1.0, 1.0, 1.0 );
-  }
+layout( location = 0 ) out vec3 FragColor;
 
-  gl_FragColor = fColor;
+void main(void)
+{
+    FragColor = vec3(0.4, 0.4, 0.0 ) * LightIntensity; //  , 1.0);
 }

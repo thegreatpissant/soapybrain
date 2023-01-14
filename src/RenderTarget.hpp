@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-class Display {
+class RenderTarget {
 private:
     //	Set
     int screen_width;
@@ -22,12 +22,16 @@ private:
     void CalculateReshape();
 
   public:
-    Display( );
+    RenderTarget( );
     void Reshape ( int newWidth, int newHeight);
 
     int getWidth () const;
     int getHeight () const;
     glm::mat4 getProjection () const;
+
+    int framebuffer_id;
+
+    void setFrameBufferID(int id);
 };
 
 #endif

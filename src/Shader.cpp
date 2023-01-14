@@ -22,7 +22,6 @@ Shader::~Shader ()
 }
 
 void Shader::Compile ()
-// throw (ShaderProgramException)
 {
     if ( type == GL_ZERO ) {
         std::string msg = std::string ("Shader type not specified.");
@@ -197,37 +196,35 @@ void ShaderProgram::link ()
         glAttachShader ( handle, shader_handles[i] );
         std::string msg;
         switch (glGetError()) {
-        case GL_NO_ERROR:
-            break;
-	case GL_INVALID_ENUM:
-            msg = std::string ("Enumeration argument not valid");
-            break;
-        case GL_INVALID_VALUE:
-            msg = std::string ("value not valid");
-            break;
-        case GL_INVALID_OPERATION:
-            msg = std::string  ("not a shader object, or already in a program");
-            break;
-	case GL_INVALID_FRAMEBUFFER_OPERATION:
-            msg = std::string ("framebuffer object is not complete");
-            break;
-	case GL_OUT_OF_MEMORY:
-	    msg = std::string ("not enough memory to execute the command");
-            break;
-        case GL_STACK_UNDERFLOW:
-            msg = std::string ("Command execution would cause internal stack underflow");
-            break;
-        case GL_STACK_OVERFLOW:
-            msg = std::string ("Command execution would cause internal stack overflow");
-            break;
-        default:
-            msg = std::string ("Unknown error occured");
-            break;
+            case GL_NO_ERROR:
+                break;
+            case GL_INVALID_ENUM:
+                msg = std::string ("Enumeration argument not valid");
+                break;
+            case GL_INVALID_VALUE:
+                msg = std::string ("value not valid");
+                break;
+            case GL_INVALID_OPERATION:
+                msg = std::string  ("not a shader object, or already in a program");
+                break;
+            case GL_INVALID_FRAMEBUFFER_OPERATION:
+                msg = std::string ("framebuffer object is not complete");
+                break;
+            case GL_OUT_OF_MEMORY:
+                msg = std::string ("not enough memory to execute the command");
+                break;
+            case GL_STACK_UNDERFLOW:
+                msg = std::string ("Command execution would cause internal stack underflow");
+                break;
+            case GL_STACK_OVERFLOW:
+                msg = std::string ("Command execution would cause internal stack overflow");
+                break;
+            default:
+                msg = std::string ("Unknown error occured");
+                break;
         }
         if (msg.size() > 0)
             throw (ShaderProgramException(msg));
-            
-
     }
     //  Link the shaders
     glLinkProgram ( handle );
@@ -294,46 +291,70 @@ void ShaderProgram::bindFragDataLocation  (GLuint location, const char * name)
 
 }
 
-void ShaderProgram::setUniform (const char *name, float x, float y)
+void ShaderProgram::setUniform (const char *name, const glm::vec2 & v)
 {
-    float v2[2];
-    v2[0] = x; v2[1] = y;
-    glUniform2fv (uniformLocations.at(std::string(name)), 1, &v2[0]);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniform2fv (location, 1, &v[0]);
 }
 
 void ShaderProgram::setUniform(const char *name, const glm::vec3 & v )
 {
-    glUniform3fv (uniformLocations.at(std::string(name)), 1, &v[0]);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniform3fv (location, 1, &v[0]);
 }
 
 void ShaderProgram::setUniform(const char * name, const glm::vec4 &v )
 {
-    glUniform4fv (uniformLocations.at(std::string(name)), 1, &v[0]);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniform4fv (location, 1, &v[0]);
 }
 
 void ShaderProgram::setUniform(const char * name, const glm::mat4 &m )
 {
-    glUniformMatrix4fv (uniformLocations.at(std::string(name)), 1, GL_FALSE, &m[0][0]);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniformMatrix4fv (location, 1, GL_FALSE, &m[0][0]);
 }
 
 void ShaderProgram::setUniform(const char * name, const glm::mat3 &m )
 {
-    glUniformMatrix3fv (uniformLocations.at(std::string(name)), 1, GL_FALSE, &m[0][0]);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniformMatrix3fv (location, 1, GL_FALSE, &m[0][0]);
 }
 
 void ShaderProgram::setUniform(const char * name, float val)
 {
-    glUniform1f (uniformLocations.at(std::string(name)), val);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniform1f (location, val);
 }
 
 void ShaderProgram::setUniform(const char *name, int val)
 {
-    glUniform1i (uniformLocations.at(std::string(name)), val);
+    int location = this->getUniformLocation(name);
+    if (location != -1)
+        glUniform1i (location, val);
 }
 
 void ShaderProgram::setUniform(const char *name, bool val)
 {
 
+}
+
+int ShaderProgram::getUniformLocation(const char * name)
+{
+    try {
+        auto result = uniformLocations.at(std::string(name)); 
+        return result;
+    }
+    catch (std::out_of_range exception) {
+        std::cerr << "Failed to find shader uniform " << name << std::endl;
+        return -1;
+    }
 }
 
 void ShaderProgram::printActiveUniforms ()

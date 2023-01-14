@@ -32,8 +32,8 @@ set ( EXTRA_INCLUDES ${EXTRA_INCLUDES} ${GLUT_INCLUDE_DIRS} )
 add_definitions(-std=c++11)
 
 # Set headers and source
-set (${PROJECT_NAME}_headers ./Actor.hpp ./Camera.hpp ./Display.hpp ./Entity.hpp ./Model.hpp ./Model_vbotorus.hpp ./Render.hpp ./Shader.hpp )
-set (${PROJECT_NAME}_sources ./Actor.cpp ./Display.cpp ./Entity.cpp ./Model_vbotorus.cpp ./Render.cpp ./Shader.cpp shader_utils.cpp)
+set (${PROJECT_NAME}_headers ./Actor.hpp ./Camera.hpp ./RenderTarget.hpp ./Entity.hpp ./Model.hpp ./Model_vbotorus.hpp ./Render.hpp ./Shader.hpp )
+set (${PROJECT_NAME}_sources ./Actor.cpp ./RenderTarget.cpp ./Entity.cpp ./Model_vbotorus.cpp ./Render.cpp ./Shader.cpp shader_utils.cpp)
 
 #  Define the library and its dependencies
 add_library( Soapybrain SHARED ${${PROJECT_NAME}_headers} ${${PROJECT_NAME}_sources} )

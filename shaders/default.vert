@@ -1,12 +1,12 @@
-#version 130
+#version 400
 
-//layout(location = 0) in vec4 vPosition;
+layout (location = 0) in vec3 vPosition;
 
-uniform mat4 VP;
-uniform mat4 M;
-in vec4 vPosition;
+uniform mat4 Model;
+uniform mat4 View;
+uniform mat4 Projection;
 
 void main (void)
 {
-  gl_Position =  VP * M * vPosition;
+  gl_Position = Projection * View * Model * vec4(vPosition, 1.0);
 }
