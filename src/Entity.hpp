@@ -24,7 +24,8 @@ public:
     void setPosition(glm::vec3 pos);
     void setOrientation(glm::vec3 angles);
     glm::mat4 getTransform();
-    void move( glm::vec3 translation);
+    void move(glm::vec3 translation);
+    void relativeMove(glm::vec3 translation);
     void rotate(glm::vec3 angles);
 
     virtual void Update();

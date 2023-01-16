@@ -30,9 +30,19 @@ glm::mat4 Entity::getTransform()
     glm::mat4 rotationY = glm::rotate(rotationX, this->_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
     return glm::rotate(rotationY, this->_rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 }
-void Entity::move( glm::vec3 offset)
+void Entity::move(glm::vec3 offset)
 {
     this->_translation += offset;
+}
+
+void Entity::relativeMove(glm::vec3 offset)
+{
+    glm::mat4 transform = getTransform();
+    glm::mat4 relative = glm::translate(glm::mat4(1.0f), offset);
+    relative = glm::rotate(relative, this->_rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    relative = glm::rotate(relative, this->_rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    relative = glm::rotate(relative, this->_rotation.z, glm::vec3(1.0f, 0.0f, 1.0f));
+    this->_translation = (transform * relative)[3];
 }
 
 void Entity::rotate(glm::vec3 angles)

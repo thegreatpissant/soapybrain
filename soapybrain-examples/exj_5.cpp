@@ -335,16 +335,16 @@ void GlutIdle( )
             break;
 
         case queue_events::MOVE_FORWARD:
-            selected->move (forward_movement);
+            selected->relativeMove(forward_movement);
             break;
         case queue_events::MOVE_BACKWARD:
-            selected->move (back_movement);
+            selected->relativeMove(back_movement);
             break;
         case queue_events::STRAFE_RIGHT:
-            selected->move (right_movement);
+            selected->relativeMove(right_movement);
             break;
         case queue_events::STRAFE_LEFT:
-            selected->move(left_movement);
+            selected->relativeMove(left_movement);
             break;
         case queue_events::YAW_RIGHT:
             selected->rotate(up_movement);
